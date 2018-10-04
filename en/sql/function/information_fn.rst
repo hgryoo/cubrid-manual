@@ -1,13 +1,6 @@
-
-:meta-keywords: cubrid charset, cubrid coercibility, cubrid collation, cubrid current_user, cubrid default, cubrid last_insert_id, cubrid row_count
-
-:tocdepth: 3
-
 *********************
 Information Functions
 *********************
-
-.. contents::
 
 CHARSET
 =======
@@ -168,28 +161,6 @@ DATABASE, SCHEMA
     ============================================
       'demodb'              'demodb'
 
-DBTIMEZONE
-==========
-      
-.. function:: DBTIMEZONE()
-
-    Prints out a timezone of database server (offset or region name) as a string. (e.g. '-05:00', or 'Europe/Vienna').
-
-.. code-block:: sql
-
-    SELECT DBTIMEZONE();
-
-::
-    
-      dbtimezone
-    ======================
-      'Asia/Seoul'
-
-.. seealso:: 
-
-    :func:`SESSIONTIMEZONE`, :func:`FROM_TZ`, :func:`NEW_TIME`, :func:`TZ_OFFSET`
-
-
 DEFAULT
 =======
 
@@ -224,47 +195,6 @@ If any of constraints is not defined or the **UNIQUE** constraint is defined for
 .. note::
 
     In version lower than CUBRID 9.0, the value at the time of CREATE TABLE has been saved when the value of the DATE, DATETIME, TIME, TIMESTAMP column has been specified as SYS_DATE, SYS_DATETIME, SYS_TIME, SYS_TIMESTAMP while creating a table. Therefore, to enter the value at the time of data INSERT in version lower than CUBRID 9.0, the function should be entered to the VALUES clause of the INSERT syntax.
-    
-.. _disk_size:
-	
-DISK_SIZE
-=========
-
-.. function:: DISK_SIZE(expr)
-
-    This function returns the size in bytes required to store the value of *expr* after evaluation. Main usage is to get necessary size for storing values in database heap file.
-    
-    :param expr: Target expression to get the size.
-
-    :rtype: INTEGER
-    
-.. code-block:: sql
-
-     SELECT DISK_SIZE('abc'), DISK_SIZE(1);
-   
-::
-
-       disk_size('abc')   disk_size(1)
-    ==================================
-                      7              4
-                      
-
-The size depends on the actual content of value, :ref:`string compression<string_compression>` is also taken into account:
-    
-.. code-block:: sql
-
-     CREATE TABLE t1(s1 VARCHAR(10), s2 VARCHAR(300), c1 CHAR(10), c2 CHAR(300));
-     INSERT INTO t1 VALUES(REPEAT('a', 10), REPEAT('b', 300), REPEAT('c', 10), REPEAT('d', 300));
-     INSERT INTO t1 VALUES('a', 'b', 'c', 'd');
-     SELECT DISK_SIZE(s1), DISK_SIZE(s2), DISK_SIZE(c1), DISK_SIZE(c2) FROM t1;
-    
-::
-
-       disk_size(s1)   disk_size(s2)   disk_size(c1)   disk_size(c2)
-    ================================================================
-                  12              24              10             300
-                   4               4              10             300
-                   
     
 INDEX_CARDINALITY
 =================
@@ -613,27 +543,6 @@ ROW_COUNT
        row_count()
     ===============
                   4
-
-SESSIONTIMEZONE
-===============
-
-.. function:: SESSIONTIMEZONE()
-
-    Prints out a timezone of session (offset or region name) as a string. (e.g. '-05:00', or 'Europe/Vienna').
-
-.. code-block:: sql
-
-    SELECT SESSIONTIMEZONE();
-
-::
-
-      sessiontimezone
-    ======================
-      'Asia/Seoul'
-
-.. seealso:: 
-
-    :func:`DBTIMEZONE`, :func:`FROM_TZ`, :func:`NEW_TIME`, :func:`TZ_OFFSET`
 
 USER, SYSTEM_USER
 =================

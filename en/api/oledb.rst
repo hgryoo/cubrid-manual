@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid oledb driver, cubrid ole db driver, cubrid oledb api, cubrid ole db api, oledb programming
-:meta-description: CUBRID OLE DB driver is based on CCI API and provides an interface over .NET Framework using the Component Object Model (COM).
-
 *************
 OLE DB Driver
 *************
@@ -12,14 +8,12 @@ OLE DB (Object Linking and Embedding, Database) is an API designed by Microsoft 
 
 CUBRID OLE DB driver is written based on CCI API so affected by CCI configurations such as **CCI_DEFAULT_AUTOCOMMIT**.
 
-.. FIXME: To download OLD DB driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-oledb-driver .
+To download OLD DB driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-oledb-driver .
 
 .. note::
 
     *   If your CUBRID OLEDB driver version is 9.1.0.p1 or later, only one installation package is needed for both Windows 32 bit and 64 bit. Our new OLEDB installer supports CUBRID DB engine 8.4.1 or later.
-    *   If your CUBRID OLEDB Driver version is 9.1.0 or older, it may have a problem on 64 bit operating system. 
-
-.. FIXME: Please see our installation tutorial for an old version: http://www.cubrid.org/wiki_apis/entry/cubrid-oledb-driver-installation-instructions-old
+    *   If your CUBRID OLEDB Driver version is 9.1.0 or older, it may have a problem on 64 bit operating system. Please see our installation tutorial for an old version: http://www.cubrid.org/wiki_apis/entry/cubrid-oledb-driver-installation-instructions-old
 
 Installing and Configuring OLE DB
 =================================
@@ -39,11 +33,9 @@ Before you start developing applications with CUBRID, you will need the Provider
         *   README.txt
         *   uninstall.exe    
 
-*   **Building from source code**: If you want to change CUBRID OLED DB Data Provider Installer, you can build it for yourself by compiling the source code. 
+*   **Building from source code**: If you want to change CUBRID OLED DB Data Provider Installer, you can build it for yourself by compiling the source code. For details, see below:
 
-.. FIXME: For details, see below:
-
-.. FIXME:    http://www.cubrid.org/wiki_apis/entry/compiling-the-cubrid-ole-db-installer 
+    http://www.cubrid.org/wiki_apis/entry/compiling-the-cubrid-ole-db-installer 
 
     If you do not use the CUBRID OLED DB Provider installer, you should execute the command below to register the driver. The version of the driver should match the version of your operating system. For 32 bit, the **regsvr32** command should be executed in the **C:\Windows\system32** directory; for 64 bit, the **regsvr32** command should be executed in the **C:\Windows\SysWOW64** directory. ::
 

@@ -1,12 +1,8 @@
-
-:meta-keywords: csql, cubrid csql, cubrid commands, executing csql, csql options
-:meta-description: CUBRID CSQL is an application that allows users to use SQL statements through a command-driven interface. This section briefly explains how to use the CSQL Interpreter and associated commands.
-
 ****************
 CSQL Interpreter
 ****************
 
-To execute SQL statements in CUBRID, you need to use either a Graphical User Interface(GUI)-based CUBRID Manager or a console-based CSQL Interpreter.
+To execute SQL statements in CUBRID, you need to use either a Graphical User Interface(GUI)-based `CUBRID Query Browser <http://www.cubrid.org/wiki_tools/entry/cubrid-query-browser>`_ or a console-based CSQL Interpreter.
 
 CSQL is an application that allows users to use SQL statements through a command-driven interface. This section briefly explains how to use the CSQL Interpreter and associated commands.
 
@@ -103,7 +99,7 @@ To display the option list in the prompt, execute the **csql** utilities without
 
     $ csql
     A database-name is missing.
-    interactive SQL utility, version 10.1
+    interactive SQL utility, version 9.1
     usage: csql [OPTION] database-name[@host]
 
     valid options:
@@ -118,8 +114,6 @@ To display the option list in the prompt, execute the **csql** utilities without
       -c, --command=ARG            CSQL-commands
       -l, --line-output            display each value in a line
       -r, --read-only              read-only mode
-      -t, --plain-output           display results in a script-friendly format (only works with -c and -i)
-      -N, --skip-column-names      do not display column names in results (only works with -c and -i)
           --string-width           display each column which is a string type in this width
           --no-auto-commit         disable auto commit mode execution
           --no-pager               do not use pager
@@ -215,45 +209,6 @@ To display the option list in the prompt, execute the **csql** utilities without
 
         csql -r demodb
 
-.. option:: -t, --plain-output
-
-    It only shows column names and values and works with **-c** or **-i** option. Each column and value is separated by a tab and a new line, a tab and a backslash which are included in results are replaced by '\n', '\t' and '\\' for each. This option is ignored when it is given with **-l** option. 
-    
-    ::
-    
-        $ csql testdb@localhost -c "select * from test_tbl" -t
- 
-        col1 col2 col3
-        string1 12:16:10.090 PM 10/23/2014
-        string2 12:16:10.090 PM 10/23/2014
-        string3 12:16:10.090 PM 10/23/2014
-        string4 12:16:10.090 PM 10/23/2014
-        string5 12:16:10.090 PM 10/23/2014
-        string6 12:16:10.090 PM 10/23/2014
-        string7 12:16:10.090 PM 10/23/2014
-        string8 12:16:10.090 PM 10/23/2014
-        string9 12:16:10.090 PM 10/23/2014
-        string10 12:16:10.090 PM 10/23/2014
- 
-.. option:: -N, --skip-column-names
- 
-    It will hide column names from the results. It only works with **-c** or **-i** option and is usually used with **-t** option. This option is ignored when it is given with **-l** option. 
- 
-    ::
- 
-        $ csql testdb@localhost -c "select * from test_tbl" -t -N
- 
-        string1 12:16:10.090 PM 10/23/2014
-        string2 12:16:10.090 PM 10/23/2014
-        string3 12:16:10.090 PM 10/23/2014
-        string4 12:16:10.090 PM 10/23/2014
-        string5 12:16:10.090 PM 10/23/2014
-        string6 12:16:10.090 PM 10/23/2014
-        string7 12:16:10.090 PM 10/23/2014
-        string8 12:16:10.090 PM 10/23/2014
-        string9 12:16:10.090 PM 10/23/2014
-        string10 12:16:10.090 PM 10/23/2014
-
 .. option:: --no-auto-commit
 
     The following example shows how to stop the auto-commit mode with the **--no-auto-commit** option. If you don't configure **--no-auto-commit** option, the CSQL Interpreter runs in an auto-commit mode by default, and the SQL statement is committed automatically at every execution. Executing the **;AUtocommit** session command after starting the CSQL Interpreter will also have the same result. ::
@@ -295,7 +250,7 @@ To display the option list in the prompt, execute the **csql** utilities without
 .. option::  --no-trigger-action
 
     If you specify this option, triggers of the queries executed in this CSQL are not triggered.
-      
+
 .. _csql-session-commands:
 
 Session Commands
@@ -464,7 +419,7 @@ This command executes the checkpoint within the CSQL session. This command can o
 
 **Checkpoint** is an operation of flushing all dirty pages within the current data buffer to disks. You can also change the checkpoint interval using a command (**;set** *parameter_name* value) to set the parameter values in the CSQL session. You can see the examples of the parameter related to the checkpoint execution interval (**checkpoint_interval** and **checkpoint_every_size**). For more information, see :ref:`logging-parameters`. ::
 
-    sysadm> ;checkpoint
+    sysadmin> ;checkpoint
     Checkpoint has been issued.
 
 **Transaction Monitoring Or Termination (;Killtran)**
@@ -608,10 +563,10 @@ The command format is as follows.
  
     ;trace {on | off} [{text | json}]
  
-*   **on**: set on SQL trace.
-*   **off**: set off SQL trace.
-*   **text**: print out as a general TEXT format. If you omit OUTPUT clause, TEXT format is specified.
-*   **json**: print out as a JSON format.
+*   on: set on SQL trace.
+*   off: set off SQL trace.
+*   text: print out as a general TEXT format. If you omit OUTPUT clause, TEXT format is specified.
+*   json: print out as a JSON format.
 
 .. note:: CSQL interpreter which is run in the standalone mode(use -S option) does not support SQL trace feature.
     
@@ -623,7 +578,7 @@ The **;Info** session command allows you to check information such as schema, tr
     *** Lock Table Dump ***
      Lock Escalation at = 100000, Run Deadlock interval = 1
     Transaction (index  0, unknown, unknown@unknown|-1)
-    Isolation COMMITTED READ
+    Isolation REPEATABLE CLASSES AND READ UNCOMMITTED INSTANCES
     State TRAN_ACTIVE
     Timeout_period -1
     ......

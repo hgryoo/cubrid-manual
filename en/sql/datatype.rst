@@ -1,10 +1,6 @@
-
-:meta-keywords: cubrid data types, cubrid type conversion, cubrid numeric types, cubrid date time, cubrid strings, cubrid character, cubrid enum, cubrid blob/clob, cubrid collection types
-:meta-description: All CUBRID data types and conversion rules.
-
-***********
+**********
 Data Types
-***********
+**********
 
 Numeric Types
 =============
@@ -130,7 +126,7 @@ The **BIGINT** data type is used to represent big integers. The value range is a
 *   If a real number is entered for a **BIG** type, the number is rounded to zero decimal place and the integer value is stored.
 *   Based on the precision and the range of representation, the following order is applied.
 
-    **SMALLINT** ??**INTEGER** ??**BIGINT** ??**NUMERIC** 
+    **SMALLINT** ⊂ **INTEGER** ⊂ **BIGINT** ⊂ **NUMERIC** 
     
 *   **DEFAULT** constraint can be specified in a column of this type.
 
@@ -217,47 +213,30 @@ Date/Time Types
 
 Date/time data types are used to represent the date or time (or both together). CUBRID supports the following data types:
 
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| Type             | bytes     | Min.                      | Max.                      | Note                                                                  |
-+==================+===========+===========================+===========================+=======================================================================+
-| **DATE**         | 4         | 0001-01-01                | 9999-12-31                | As an exception, DATE '0000-00-00' format is allowed.                 |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| **TIME**         | 4         | 00:00:00                  | 23:59:59                  |                                                                       |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| **TIMESTAMP**    | 4         | 1970-01-01 00:00:01 (GMT) | 2038-01-19 03:14:07 (GMT) | As an exception, TIMESTAMP '0000-00-00 00:00:00' format is allowed.   |
-|                  |           | 1970-01-01 09:00:01 (KST) | 2038-01-19 12:14:07 (KST) |                                                                       |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| **DATETIME**     | 8         | 0001-01-01 00:00:0.000    | 9999-12-31 23:59:59.999   | As an exception, DATETIME '0000-00-00 00:00:00' format is allowed.    |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| **TIMESTAMPLTZ** | 4         | Depends on timezone       | Depends on timezone       | Timestamp with local timezone.                                        |
-|                  |           | 1970-01-01 00:00:01 (GMT) | 2038-01-19 03:14:07 (GMT) | As an exception, TIMESTAMPLTZ'0000-00-00 00:00:00' format is allowed. |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| **TIMESTAMPTZ**  | 8         | Depends on timezone       | Depends on timezone       | Timestamp with timezone.                                              |
-|                  |           | 1970-01-01 00:00:01 (GMT) | 2038-01-19 03:14:07 (GMT) | As an exception, TIMESTAMPTZ '0000-00-00 00:00:00' format is allowed. |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| **DATETIMELTZ**  | 8         | Depends on timezone       | Depends on timezone       | Datetime with local timezone.                                         |
-|                  |           | 0001-01-01 00:00:0.000 UTC| 9999-12-31 23:59:59.999   | As an exception, DATETIMELTZ '0000-00-00 00:00:00' format is allowed. |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
-| **DATETIMETZ**   | 12        | Depends on timezone       | Depends on timezone       | Datetime with timezone.                                               |
-|                  |           | 0001-01-01 00:00:0.000 UTC| 9999-12-31 23:59:59.999   | As an exception, DATETIMETZ '0000-00-00 00:00:00' format is allowed.  |
-+------------------+-----------+---------------------------+---------------------------+-----------------------------------------------------------------------+
++---------------+-----------+---------------------------+---------------------------+---------------------------------------------------------------------+
+| Type          | bytes     | Min.                      | Max.                      | Note                                                                |
++===============+===========+===========================+===========================+=====================================================================+
+| **DATE**      | 4         | 0001-01-01                | 9999-12-31                | As an exception, DATE '0000-00-00' format is allowed.               |
++---------------+-----------+---------------------------+---------------------------+---------------------------------------------------------------------+
+| **TIME**      | 4         | 00:00:00                  | 23:59:59                  |                                                                     |
++---------------+-----------+---------------------------+---------------------------+---------------------------------------------------------------------+
+| **TIMESTAMP** | 4         | 1970-01-01 00:00:01 (GMT) | 2038-01-19 03:14:07 (GMT) | As an exception, TIMESTAMP '0000-00-00 00:00:00' format is allowed. |
+|               |           | 1970-01-01 09:00:01 (KST) | 2038-01-19 12:14:07 (KST) |                                                                     |
++---------------+-----------+---------------------------+---------------------------+---------------------------------------------------------------------+
+| **DATETIME**  | 8         | 0001-01-01 00:00:0.000    | 9999-12-31 23:59:59.999   | As an exception, DATETIME '0000-00-00 00:00:00' format is allowed.  |
++---------------+-----------+---------------------------+---------------------------+---------------------------------------------------------------------+
 
 **Range and Resolution**
 
 *   By default, the range of a time value is represented by the 24-hour system. Dates follow the Gregorian calendar. An error occurs if a value that does not meet these two constraints is entered as a date or time.
 
-*   The range of year in **DATE** is 0001 - 9999 AD.
+*   The range of year in  **DATE** is 0001 - 9999 AD.
 
 *   From the CUBRID 2008 R3.0 version, if time value is represented with two-digit numbers, a number from 00 to 69 is converted into a number from 2000 to 2069; a number from 70 to 99 is converted into a number from 1970 to 1999. In earlier than CUBRID 2008 R3.0 version, if time value is represented with two-digit numbers, a number from 01 to 99 is converted into a number from 0001 to 0099.
 
 *   The range of **TIMESTAMP** is between 1970-01-01 00:00:01 and 2038-01-19 03 03:14:07 (GMT). For KST (GMT+9), values from 1970-01-01 09:00:01 to 2038-01-19 12:14:07 can be stored. timestamp'1970-01-01 00:00:00' (GMT) is the same as timestamp'0000-00-00 00:00:00'.
 
-*   The range of **TIMESTAMPLTZ**, **TIMESTAMPTZ** varies with timezone, but the value converted to UTC should be between 1970-01-01 00:00:01 and 2038-01-19 03 03:14:07.
-
-*   The range of **DATETIMELTZ**, **DATETIMETZ** varies with timezone, but the value converted to UTC should be between 0001-01-01 00:00:0.000 and 9999-12-31 23:59:59.999. A value stored in database may no longer be valid if session timezone changes.
-
 *   The results of date, time and timestamp operations may depend on the rounding mode. In these cases, for Time and Timestamp, the most approximate second is used as the minimum resolution; for Date, the most approximate date is used as the minimum resolution.
-
 
 **Coercions**
 
@@ -282,9 +261,6 @@ In general, zero is not allowed in **DATE**, **DATETIME**, and **TIMESTAMP** typ
 *   Some functions in which the **DATE**, **DATETIME**, and **TIMESTAMP** types are specified as an argument return different value based on the **return_null_on_function_errors** system parameter if every input argument value for date and time is 0. If **return_null_on_function_errors** is yes, **NULL** is returned; if no, an error is returned. The default value is **no**.
 *   The functions that return **DATE**, **DATETIME**, and **TIMESTAMP** types can return a value of 0 for date and time. However, these values cannot be stored in Date objects in Java applications. Therefore, it will be processed with one of the following based on the configuration of zeroDateTimeBehavior, the connection URL property: being handled as an exception, returning **NULL**, or returning a minimum value (see :ref:`jdbc-connection-conf`).
 *   If the **intl_date_lang** system is configured, input string of :func:`TO_DATE`, :func:`TO_TIME`, :func:`TO_DATETIME`, :func:`TO_TIMESTAMP`, :func:`DATE_FORMAT`, :func:`TIME_FORMAT`, :func:`TO_CHAR` and :func:`STR_TO_DATE` functions follows the corresponding locale date format. For details, see :ref:`stmt-type-parameters` and the description of each function.
-*   Types with timezone follow the same conversion rules as their parent type.
-
-.. note:: For literals of date/time types and date/time types with timezone, see :ref:`date-time-literal`.
 
 DATE
 ----
@@ -595,7 +571,7 @@ Available Format for Strings in Date/Time Type
 
     *   Separators should be identical in the input string.
 
-    *   For the Time-Date string, you can only use colon (:) for a Time separator and hyphen (-) or slash (/) for a Date separator. If you use a hyphen when entering date, you should enter like yyyy-mm-dd; in case of  a slash, enter like mm/dd/yyyy.
+    *   For the Time-Date string, you can only use colon (:) for a Time separator and hyphen (-) or slash (/) for a Date separator. If you use a hyphen when entering date, you should enter like yyyy-mm-dd; in case of a slash, enter like mm/dd/yyyy.
 
     The following rules will be applied in the part of date.
 
@@ -669,306 +645,6 @@ Available Format for Strings in Date/Time Type
         ========================================
           09:10:35 AM 04/20/2011
 
-.. CUBRIDSUS-14182
-
-
-
-.. _timezone-type:
-
-Date/Time Types with Timezone
-=============================
-
-Date/Time types with timezone are date/time types which can be input or output by specifying timezone. There are two ways of specifying timezone; specifying the name of local zone and specifying the offset of time.
-
-Timezone information are considered in the Date/Time types if TZ or LTZ is followed after the existing Date/Time types; TZ means timezone, and LTZ means local timezone.
-
-*   TZ type can be represented as <date/time type> WITH TIME ZONE. This stores UTC time and timezone information (decided by a user or session timezone) when this is created. TZ type requires 4 bytes more to store timezone information.
-*   LTZ type can be represented as <date/time type> WITH LOCAL TIME ZONE. This stores UTC time internally; when this value is output, this is  converted as a value of a local (current session) time zone.
-
-This table describes date/time types to compare date/time types with timezone together.
-
-UTC in the table means Coordinated Universal Time.
-
-+-----------+----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-| Category  | Type           | Input                   | Store                             | Output                                     | Description                                                     |
-+===========+================+=========================+===================================+============================================+=================================================================+
-| DATE      | DATE           | Without timezone        | Input value                       | Absolute (the same as input)               | Date                                                            |
-+-----------+----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-| DATETIME  | DATETIME       | Without timezone        | Input value                       | Absolute (the same as input)               | Date/time including milliseconds                                |
-|           +----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-|           | DATETIMETZ     | With timezone           | UTC + timezone(region or offset)  | Absolute (keep input timezone)             | Date/time + timezone                                            |
-|           +----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-|           | DATETIMELTZ    | With timezone           | UTC                               | Relative (transformed by session timezone) | Date/time in the session timezone                               |
-+-----------+----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-| TIME      | TIME           | Without timezone        | Input value                       | Absolute (the same as input)               | Time                                                            |
-+-----------+----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-| TIMESTAMP | TIMESTAMP      | Without timezone        | UTC                               | Relative (transformed by session timezone) | Input value is translated as a session timezone's value.        |
-|           +----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-|           | TIMESTAMPTZ    | With timezone           | UTC + timezone(region or offset)  | Absolute (keep input timezone)             | UTC + timestamp with timezone                                   |
-|           +----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-|           | TIMESTAMPLTZ   | With timezone           | UTC                               | Relative (transformed by session timezone) | Session timezone. Same as TIMESTAMP's value, but                |
-|           |                |                         |                                   |                                            | timezone specifier is output when this is printed out.          |
-+-----------+----------------+-------------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------+
-
-The other features of date/time types with timezone (e.g. maximum/minimum value, range, resolution) are the same with the features of general date/time types.
-
-.. note::
-
-    *   On CUBRID, TIMESTAMP is stored as second unit, after Jan. 1, 1970 UTC (UNIX epoch).
-    *   Some DBMS's TIMESTAMP is similar to CUBRID's DATETIME as the respect of saving milliseconds.
-
-To see examples of functions using timezone types, see :doc:`function/datetime_fn`.
-
-The following shows that the output values are different among DATETIME, DATETIMETZ and DATETIMELTZ when session timezone is changed.
-
-.. code-block:: sql
-
-    --  csql> ;set timezone="+09"
-
-    CREATE TABLE tbl (a DATETIME, b DATETIMETZ,  c DATETIMELTZ);
-    INSERT INTO tbl VALUES (datetime'2015-02-24 12:30', datetimetz'2015-02-24 12:30', datetimeltz'2015-02-24 12:30');
-
-    SELECT * FROM tbl;
-
-::
-
-    12:30:00.000 PM 02/24/2015     12:30:00.000 PM 02/24/2015 +09:00                12:30:00.000 PM 02/24/2015 +09:00
-
-.. code-block:: sql
-
-    -- csql> ;set timezone="+07"
-
-    SELECT * FROM tbl;
-
-::
-
-    12:30:00.000 PM 02/24/2015     12:30:00.000 PM 02/24/2015 +09:00                10:30:00.000 AM 02/24/2015 +07:00
-
-The following shows that the output values are different among TIMESTAMP, TIMESTAMPTZ and TIMESTAMPLTZ when session timezone is changed.
-
-.. code-block:: sql
-
-    -- ;set timezone="+09"
-
-    CREATE TABLE tbl (a TIMESTAMP, b TIMESTAMPTZ,  c TIMESTAMPLTZ);
-    INSERT INTO tbl VALUES (timestamp'2015-02-24 12:30', timestamptz'2015-02-24 12:30', timestampltz'2015-02-24 12:30');
-
-    SELECT * FROM tbl;
-
-::
-
-    12:30:00 PM 02/24/2015     12:30:00 PM 02/24/2015 +09:00                12:30:00 PM 02/24/2015 +09:00
-
-.. code-block:: sql
-
-    -- csql> ;set timezone="+07"
-
-    SELECT * FROM tbl;
-    
-::
-
-    10:30:00 AM 02/24/2015     12:30:00 PM 02/24/2015 +09:00                10:30:00 AM 02/24/2015 +07:00
-
-**Conversion from string to timestamp types**
-
-Conversion from string to timestamp/timestampltz/timestamptz are performed in context for creating timestamp objects from literals.
-
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| From/to                    | Timestamp                   | Timestampltz               | Timestamptz                  |
-+============================+=============================+============================+==============================+
-| String (without timezone)  | Interpret the date/time     | Interpret the date/time    | Interpret the date/time      |
-|                            | parts in session timezone.  | parts in session timezone. | parts in session timezone.   |
-|                            | Convert to UTC, encode and  | Convert to UTC, encode and | Convert to UTC, encode and   |
-|                            | store the Unix epoch.       | store the Unix epoch.      | store the Unix epoch and     |
-|                            |                             |                            | TZ_ID of session             |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| String (with timezone)     | Error (timezone part is not | Convert from value's       | Convert from value's         |
-|                            | supported for timestamp).   | timezone to UTC.           | timezone to UTC.             |
-|                            |                             | Encode and store the Unix  | Encode and store the Unix    |
-|                            |                             | epoch.                     | epoch and TZ_ID of value's   |
-|                            |                             |                            | timezone.                    |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-
-**Conversion from string to datetime types**
-
-Conversion from string to datetime/datetimeltz/datetimetz are performed in context for creating datetime objects from literals.
-
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| From/to                    | Datetime                    | Datetimeltz                | Datetimetz                   |
-+============================+=============================+============================+==============================+
-| String (without timezone)  | Store the parsed values     | Interpret the date/time    | Interpret the date/time      |
-|                            | from string.                | parts in session timezone. | parts in session timezone.   |
-|                            |                             | Convert to UTC and store   | Convert to UTC and store the |
-|                            |                             | the new values.            | new values and TZ_ID of      |
-|                            |                             |                            | session                      |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| String (with timezone)     | Error (timezone part is not | Convert from value's       | Convert from value's         |
-|                            | supported for datetime).    | timezone to UTC.           | timezone to UTC.             |
-|                            |                             | Store the new values in    | Store the new values in UTC  |
-|                            |                             | UTC reference.             | reference TZ_ID of           |
-|                            |                             |                            | string's timezone.           |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-
-
-**Conversion of datetime and timestamp types to string (printing of values)**
-
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| From/to                    | String (timezone printing   | String (timezone force     | String (no requirement for   |
-|                            | not allowed)                | print)                     | timezone - free choice)      |
-+============================+=============================+============================+==============================+
-| TIMESTAMP                  | Decode Unix epoch to        | Decode Unix epoch to       | Decode Unix epoch to session |
-|                            | session timezone and print  | session timezone and print | timezone and print.          |
-|                            |                             | with session timezone.     | Do not print timezone string |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| TIMESTAMPLTZ               | Decode Unix epoch to        | Decode Unix epoch to       | Decode Unix epoch to session |
-|                            | session timezone and print  | session timezone and print | timezone and print.          |
-|                            |                             | with session timezone.     | Print session timezone.      |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| TIMESTAMPTZ                | Decode Unix epoch to        | Decode Unix epoch to       | Decode Unix epoch to         |
-|                            | timezone from value and     | timezone from value and    | timezone from value and      |
-|                            | print it.                   | print it; print timezone   | print it; print timezone     |
-|                            |                             | from value.                | from value.                  |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| DATETIME                   | Print the stored values.    | Print the stored value and | Print the stored value.      |
-|                            |                             | session timezone.          | Do not print any timezone.   |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| DATETIMELTZ                | Convert from UTC to session | Convert from UTC to        | Convert from UTC to session  |
-|                            | timezone and print the new  | session timezone and print | timezone and print it.       |
-|                            | value.                      | it. Print session timezone | Print session timezone.      |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-| DATETIMELTZ                | Convert from UTC to value's | Convert from UTC to        | Convert from UTC to value's  |
-|                            | timezone and print the new  | value's timezone and print | timezone and print it.       |
-|                            | value.                      | it. Print value's timezone | Print value's timezone.      |
-+----------------------------+-----------------------------+----------------------------+------------------------------+
-
-Timezone Configuration
-----------------------
-
-The below shows the timezone related parameters configured in cubrid.conf. For parameter's configuration, see :ref:`cubrid-conf`.
-
-*   **timezone**
-
-    Specifies a timezone for a session. The default is a value of **server_timezone**. 
-    
-*   **server_timezone**
-
-    Specifies a timezone for a server. The default is a timezone of OS.
-    
-*   **tz_leap_second_support**
-
-    Sets for support for leap second as yes or no. The default is no.
-
-Timezone Function
------------------
-
-The following are timezone related functions. For each function's detail usage, click each function's name.
-
-*   :func:`DBTIMEZONE`
-*   :func:`SESSIONTIMEZONE`
-*   :func:`FROM_TZ`
-*   :func:`NEW_TIME`
-*   :func:`TZ_OFFSET`
-
-Functions with a Timezone Type
-------------------------------
-
-All functions which use DATETIME, TIMESTAMP or TIME typed value in their input value, can use timezone typed value.
-
-The below is an example of using timezone typed values, it works the same as the case without timezone. Exceptionally, if the type name ends with LTZ, the output value of this type follows the local timezone's setting (timezone parameter).
-
-On the below example, the default unit of a number is millisecond, which is the minimum unit of DATETIME type.
-
-.. code-block:: sql
-
-    SELECT datetimeltz '09/01/2009 03:30:30 pm' + 1;
-
-::
-
-    03:30:30.001 PM 09/01/2009 Asia/Seoul
-
-.. code-block:: sql
-
-    SELECT datetimeltz '09/01/2009 03:30:30 pm' - 1;
-
-::
-
-    03:30:29.999 PM 09/01/2009 Asia/Seoul
-
-On the below example, the default unit of a number is second, which is the minimum unit of TIMESTAMP type.
-
-.. code-block:: sql
-
-    SELECT timestamptz '09/01/2009 03:30:30 pm' + 1;
-    
-::
-
-    03:30:31 PM 09/01/2009 Asia/Seoul
-
-.. code-block:: sql
-
-    SELECT timestamptz '09/01/2009 03:30:30 pm' - 1;
-
-::
-
-    03:30:29 PM 09/01/2009 Asia/Seoul
-
-.. code-block:: sql
-
-    SELECT EXTRACT (hour from datetimetz'10/15/1986 5:45:15.135 am Europe/Bucharest');
-    
-    5
-
-A type which the name ends with LTZ follows the setting of local timezone. Therefore, if the value of timezone parameter is set to 'Asia/Seoul', EXTRACT function returns hour value of this timezone.
-
-.. code-block:: sql
-
-    -- csql> ;set timezone='Asia/Seoul'
-
-    SELECT EXTRACT (hour from datetimeltz'10/15/1986 5:45:15.135 am Europe/Bucharest');
-
-::
-
-    12
-
-
-Conversion Functions for Timezone Types
----------------------------------------
-
-The following are functions converting a string to a date/time typed value, or date/time typed value to a string; The value can include an information like an offset, a zone and a daylight saving.
-
-*   :func:`DATE_FORMAT`
-*   :func:`STR_TO_DATE`
-*   :func:`TO_CHAR`
-*   :func:`TO_DATETIME_TZ`
-*   :func:`TO_TIMESTAMP_TZ`
-
-For each function's usage, see the each function's explanation by clicking the function name.
-
-.. code-block:: sql
-
-    SELECT DATE_FORMAT (datetimetz'2012-02-02 10:10:10 Europe/Zurich CET', '%TZR %TZD %TZH %TZM');
-    SELECT STR_TO_DATE ('2001-10-11 02:03:04 AM Europe/Bucharest EEST', '%Y-%m-%d %h:%i:%s %p %TZR %TZD');
-    SELECT TO_CHAR (datetimetz'2001-10-11 02:03:04 AM Europe/Bucharest EEST');
-    SELECT TO_DATETIME_TZ ('2001-10-11 02:03:04 AM Europe/Bucharest EEST');
-    SELECT TO_TIMESTAMP_TZ ('2001-10-11 02:03:04 AM Europe/Bucharest');
-
-.. note::
-    
-    :func:`TO_TIMESTAMP_TZ` and :func:`TO_DATETIME_TZ` functions do the same behaviors with :func:`TO_TIMESTAMP` and :func:`TO_DATETIME` functions except that they can have TZR, TZD, TZH and TZM information in their date/time argument.
-
-CUBRID uses the region name of timezone in the IANA(Internet Assigned Numbers Authority) timezone database region; for IANA timezone, see http://www.iana.org/time-zones.
-
-IANA Timezone
--------------
-
-In IANA(Internet Assigned Numbers Authority) timezone database, there are lots of codes and data which represent the history of localtime for many representative locations around the globe.
-
-This database is periodically updated to reflect changes made by political bodies to time zone boundaries, UTC offsets, and daylight-saving rules. Its management procedure is described in `BCP 175: Procedures for Maintaining the Time Zone Database <http://tools.ietf.org/html/rfc6557>`_. For more details, see http://www.iana.org/time-zones.
-
-CUBRID supports IANA timezone, and a user can use the IANA timezone library in the CUBRID installation package as it is. If you want to update as the recent timezone, update timezone first, compile timezone library, and restart the database. 
-
-Regarding this, see :ref:`timezone-library`.
-
 Bit Strings
 ===========
 
@@ -1002,7 +678,7 @@ BIT(n)
 
 Fixed-length binary or hexadecimal bit strings are represented as **BIT** (*n*), where *n* is the maximum number of bits. If *n* is not specified, the length is set to 1. If *n* is not specified, the length is set to 1. The bit string is filled with 8-bit unit from the left side. For example, the value of B'1' is the same as the value of B'10000000'. Therefore, it is recommended to declare a length by 8-bit unit, and input a value by 8-bit unit.
 
-.. note:: If you input B'1' to the BIT(4) column, it is printed out X'8' on CSQL, X'80' on CUBRID Manager or application program.
+.. note:: If you input B'1' to the BIT(4) column, it is printed out X'8' on CSQL, X'80' on CUBRID Manager, Query Browser or application program.
 
 *   *n* must be a number greater than 0.
 *   If the length of the string exceeds *n*, it is truncated and filled with 0s.
@@ -1033,7 +709,7 @@ BIT VARYING(n)
 
 A variable-length bit string is represented as **BIT VARYING** (*n*), where *n* is the maximum number of bits. If *n* is not specified, the length is set to 1,073,741,823 (maximum value). *n* is the maximum number of bits. If *n* is not specified, the maximum length is set to 1,073,741,823. The bit string is filled with 8-bit values from the left side. For example, the value of B'1' is the same as the value of B'10000000'. Therefore, it is recommended to declare a length by 8-bit unit, and input a value by 8-bit unit.
 
-.. note:: If you input B'1' to the BIT VARYING(4) column, it is printed out X'8' on CSQL, X'80' on CUBRID Manager or application program.
+.. note:: If you input B'1' to the BIT VARYING(4) column, it is printed out X'8' on CSQL, X'80' on CUBRID Manager, Query Browser or application program.
 
 *   If the length of the string exceeds *n*, it is truncated and filled with 0s.
 *   The remainder of the string is not filled with 0s even if a bit string smaller than *n* is stored.
@@ -1127,15 +803,6 @@ The following are the rules that are applied when using the character string typ
 
     For example, when you extract a column value from a **CHAR** (5) data type and insert it into a column with a **CHAR** (10) data type, the data type is automatically coerced to **CHAR** (10). If you want to coerce a character string explicitly, use the **CAST** operator (See :func:`CAST`).
 
-.. _string_compression:
-	
-**String compression**
-	
-	Variable character type values (VARCHAR(n)) may be compressed (using LZO1X algorithm) before being stored in database (heap file, index file or list file). Compression is attempted if size in bytes is at least 255 bytes (this value is predefined and cannot be changed). If the compression is not efficient (compressed value size and its overhead is equal or greater than the original uncompressed value), the value is stored uncompressed. Compression is activated by default and may be disabled by setting the system parameter  :ref:`enable_string_compression<enable_string_compression>`. The overhead of compression is eight bytes : four for size of compressed buffer and four for the size of expected uncompressed string.
-	Compressed strings are decompressed when they are read from database.
-	To determine if a value is compressed or not, one may use the :ref:`DISK_SIZE<disk_size>` function result and compare it with the result of :ref:`OCTET_LENGTH<octet_length>` function on the same argument. A smaller value for DISK_SIZE (ignoring the value overhead) indicates that compression is used.
-	
-	
 CHAR(n)
 -------
 
@@ -2087,12 +1754,7 @@ An implicit type conversion represents an automatic conversion of a type of expr
 
 **SET**, **MULTISET**, **LIST** and **SEQUENCE** should be converted explicitly.
 
-If you convert the **DATETIME** and the **TIMESTAMP** types (including types having timezone) to the **DATE** type or the **TIME** type, data loss may occur. If you convert the **DATE** type to the **DATETIME** type or the **TIMESTAMP** type (or types with timezone), the time will be set to '12:00:00 AM.'
-
-Timezone part of values with timezone types has only a reference purpose, their absolute value is stored as UTC reference.
-When converting from a value of type with timezone to a type without timezone, a conversion is operated as if session timezone is used.
-When converting from a value of type without timezone to a type with timezone, the conversion takes place considering the session timezone. 
-For more details on converting to/from value with timezone type see :ref:`date-time-type`.
+If you convert the **DATETIME** and the **TIMESTAMP** types to the **DATE** type or the **TIME** type, data loss may occur. If you convert the **DATE** type to the **DATETIME** type or the **TIMESTAMP** type, the time will be set to '12:00:00 AM.'
 
 If you convert a string type or an exact numeric type to a floating-point numeric type, the value may not be accurate. Because a string type and an exact type use a decimal precision to represent the value, but a floating-point numeric type uses a binary precision.
 
@@ -2100,95 +1762,79 @@ The implicit type conversion executed by CUBRID is as follows:
 
 **Implicit Type Conversion Table 1**
 
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | From \\ To       | DATETIME     | DATETIMELTZ  | DATETIMETZ   | DATE     | TIME     | TIMESTAMP     | TIMESTAMPLTZ  | TIMESTAMPTZ   |
-    +==================+==============+==============+==============+==========+==========+===============+===============+===============+
-    | **DATETIME**     | \-           | O            | O            | O        | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **DATETIMELTZ**  | O            | \-           | O            | O        | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **DATETIMETZ**   | O            | O            | \-           | O        | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **DATE**         | O            | O            | O            | \-       |          | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **TIME**         |              |              |              |          | \-       |               |               |               |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **TIMESTAMP**    | O            | O            | O            | O        | O        | \-            | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **TIMESTAMPLTZ** | O            | O            | O            | O        | O        | O             | \-            | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **TIMESTAMPTZ**  | O            | O            | O            | O        | O        | O             | O             | \-            |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **DOUBLE**       |              |              |              |          | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **FLOAT**        |              |              |              |          | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **NUMERIC**      |              |              |              |          |          | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **BIGINT**       |              |              |              |          | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **INT**          |              |              |              |          | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **SHORT**        |              |              |              |          | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **BIT**          |              |              |              |          |          |               |               |               |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **VARBIT**       |              |              |              |          |          |               |               |               |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **CHAR**         | O            | O            | O            | O        | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
-    | **VARCHAR**      | O            | O            | O            | O        | O        | O             | O             | O             |
-    +------------------+--------------+--------------+--------------+----------+----------+---------------+---------------+---------------+
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | From \\ To    | DATETIME     | DATE     | TIME     | TIMESTAMP     | DOUBLE     | FLOAT     | NUMERIC     | BIGINT     |
+    +===============+==============+==========+==========+===============+============+===========+=============+============+
+    | **DATETIME**  | \-           | O        | O        | O             |            |           |             |            |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **DATE**      | O            | \-       |          | O             |            |           |             |            |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **TIME**      |              |          | \-       |               |            |           |             |            |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **TIMESTAMP** | O            | O        | O        | \-            |            |           |             |            |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **DOUBLE**    |              |          | O        | O             | \-         | O         | O           | O          |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **FLOAT**     |              |          | O        | O             | O          | \-        | O           | O          |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **NUMERIC**   |              |          |          | O             | O          | O         | \-          | O          |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **BIGINT**    |              |          | O        | O             | O          | O         | O           | \-         |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **INT**       |              |          | O        | O             | O          | O         | O           | O          |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **SHORT**     |              |          | O        | O             | O          | O         | O           | O          |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **BIT**       |              |          |          |               |            |           |             |            |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **VARBIT**    |              |          |          |               |            |           |             |            |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **CHAR**      | O            | O        | O        | O             | O          | O         | O           | O          |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
+    | **VARCHAR**   | O            | O        | O        | O             | O          | O         | O           | O          |
+    +---------------+--------------+----------+----------+---------------+------------+-----------+-------------+------------+
 
 .. _number-2-time:
 
-    **Limitations when numeric value is changed as TIME or TIMESTAMP (TIMESTAMPLTZ, TIMESTAMPTZ)**
+    **Limitations when numeric value is changed as TIME or TIMESTAMP**
 
-    *   All numeric types except for **NUMERIC** type can be converted into **TIME** type; at this time, it represents a value of the remainder which is calculated by dividing the input number into 86,400 seconds(1 day), and the remainder is calculated as seconds.
+    *   All numeric types except for NUMERIC type can be converted into TIME type; at this time, it represents a value of the remainder which is calcuated by dividing the input number into 86,400 seconds(1 day), and the remainder is calculated as seconds.
 
-    *   All numeric types including **NUMERIC** can be converted into **TIMESTAMP**, **TIMESTAMPLTZ**, **TIMESTAMPTZ** types ; at this time, the input number cannot exceed 2,147,483,647 as the maximum.
+    *   All numeric types including NUMERIC can be converted into TIMESTAMP type; at this time, the input number cannot exceed 2,147,483,647 as the maximum.
 
 **Implicit Type Conversion Table 2**
 
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | From \\ To       | INT     | SHORT     | BIT     | VARBIT     | CHAR     | VARCHAR     | DOUBLE     | FLOAT     | NUMERIC     | BIGINT     |
-    +==================+=========+===========+=========+============+==========+=============+============+===========+=============+============+
-    | **DATETIME**     |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **DATETIMELTZ**  |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **DATETIMETZ**   |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **DATE**         |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **TIME**         |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **TIMESTAMP**    |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **TIMESTAMPLTZ** |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **TIMESTAMPTZ**  |         |           |         |            | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+	
-    | **DOUBLE**       | O       | O         |         |            | O        | O           | \-         | O         | O           | O          |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **FLOAT**        | O       | O         |         |            | O        | O           | O          | \-        | O           | O          |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **NUMERIC**      | O       | O         |         |            | O        | O           | O          | O         | \-          | O          |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **BIGINT**       | O       | O         |         |            | O        | O           | O          | O         | O           | \-         |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **INT**          | \-      | O         |         |            | O        | O           | O          | O         | O           | O          |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **SHORT**        | O       | \-        |         |            | O        | O           | O          | O         | O           | O          |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **BIT**          |         |           | \-      | O          | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **VARBIT**       |         |           | O       | \-         | O        | O           |            |           |             |            |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **CHAR**         | O       | O         | O       | O          | \-       | O           | O          | O         | O           | O          |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
-    | **VARCHAR**      | O       | O         | O       | O          | O        | \-          | O          | O         | O           | O          |
-    +------------------+---------+-----------+---------+------------+----------+-------------+------------+-----------+-------------+------------+
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | From \\ To    | INT     | SHORT     | BIT     | VARBIT     | CHAR     | VARCHAR     |
+    +===============+=========+===========+=========+============+==========+=============+
+    | **DATETIME**  |         |           |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **DATE**      |         |           |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **TIME**      |         |           |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **TIMESTAMP** |         |           |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **DOUBLE**    | O       | O         |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **FLOAT**     | O       | O         |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **NUMERIC**   | O       | O         |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **BIGINT**    | O       | O         |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **INT**       | \-      | O         |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **SHORT**     | O       | \-        |         |            | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **BIT**       |         |           | \-      | O          | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **VARBIT**    |         |           | O       | \-         | O        | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **CHAR**      | O       | O         | O       | O          | \-       | O           |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
+    | **VARCHAR**   | O       | O         | O       | O          | O        | \-          |
+    +---------------+---------+-----------+---------+------------+----------+-------------+
 
 Conversion Rules
 ----------------
@@ -2254,11 +1900,11 @@ The following are the conversion rules according to an operand type of the compa
 |                   +-------------------+----------------------------------------------+----------------+
 |                   | String Type       | None                                         | String         |
 |                   +-------------------+----------------------------------------------+----------------+
-|                   | Date/Time Type    | Converts operand1 to Date/Time type          | Date/Time      |
+|                   | Date/Time Type    | Converts operand1 to date/time type          | Date/Time      |
 +-------------------+-------------------+----------------------------------------------+----------------+
 | Date/Time Type    | Numeric Type      | Converts operand2 to Date/Time               | TIME/TIMESTAMP |
 |                   +-------------------+----------------------------------------------+----------------+
-|                   | String Type       | Converts operand2 to Date/Time type          | Date/Time      |
+|                   | String Type       | Converts operand2 to date/time type          | Date/Time      |
 |                   +-------------------+----------------------------------------------+----------------+
 |                   | Date/Time Type    | Converts it to the type with higher priority | Date/Time      |
 +-------------------+-------------------+----------------------------------------------+----------------+
@@ -2533,7 +2179,7 @@ Arithmetic Operation
     ::
 
          ERROR: Cannot coerce '10' to type datetime.    
-     
+
 *   **Numeric Type & String Type Operands**
 
     If a numeric type and a string type are operands, they will be applied according to the following rules.
@@ -2551,7 +2197,7 @@ Arithmetic Operation
         ==========================
           9.199999999999999e+00
 
-    Unlike CUBRID 2008 R3.1 and the earlier versions, the string in the date/time format, that is, the string such as '2010-09-15' is not converted to the date/time type. You can use a literal DATE'2010-09-15' with the date/time type for addition and subtraction operations.
+    Unlike CUBRID 2008 R3.1 and the earlier versions, the string in the date/time format, that is, the string such as '2010-09-15' is not converted to the date/time type. You can use a literal (DATE'2010-09-15') with the date/time type for addition and subtraction operations.
 
     .. code-block:: sql
 

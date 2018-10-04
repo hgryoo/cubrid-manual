@@ -1,6 +1,6 @@
-****************************
-Data Manipulation Statements
-****************************
+*****************
+Data Manipulation
+*****************
 
 .. toctree::
     :maxdepth: 2
@@ -14,5 +14,4 @@ Data Manipulation Statements
     merge.rst
     truncate.rst
     prepare.rst
-    do.rst
-    cte.rst
+    show.rst

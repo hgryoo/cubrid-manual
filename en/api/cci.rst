@@ -1,13 +1,9 @@
-
-:meta-keywords: CCI driver, database c driver, cubrid cci, cubrid c driver
-:meta-description: CUBRID CCI (C Client Interface) driver implements an interface to enable access from C-based application to CUBRID database server through broker. It is also used as back-end infrastructure for creating tools (PHP, ODBC, etc.) which use the CAS application servers.
-
 .. _cci-overview:
 
 CCI Overview
 ============
 
-CUBRID CCI (C Client Interface) driver implements an interface to enable access from C-based application to CUBRID database server through broker. It is also used as back-end infrastructure for creating tools (PHP, ODBC, etc.) which use the CAS application servers. In this environment, the CUBRID broker sends queries received from applications to a database and transfers the result to applications.
+CUBRID CCI (CCI Client Interface) driver implements an interface to enable access from C-based application to CUBRID database server through broker. It is also used as back-end infrastructure for creating tools (PHP, ODBC, etc.) which use the CAS application servers. In this environment, the CUBRID broker sends queries received from applications to a database and transfers the result to applications.
 
 It is automatically installed upon CUBRID installation and can be found in the **$CUBRID/lib** directory. A header file as well as library files is required to use the driver.
 
@@ -25,7 +21,7 @@ Because CUBRID CCI driver is connected through the CUBRID broker, you can manage
 
 .. image:: /images/image54.jpg
 
-.. FIXME: To download CCI driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-cci-driver .
+To download CCI driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-cci-driver .
 
 CCI Programming
 ===============
@@ -807,21 +803,7 @@ The following shows the structs used in CCI API functions.
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | char \*buf                              |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
-| **T_CCI_DATE**           | struct   | short yr                                | Representation of datetime, timestamp, date,     |
-|                          |          +-----------------------------------------+ and time type                                    |
-|                          |          | short mon                               |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | short day                               |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | short hh                                |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | short mm                                |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | short ss                                |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | short ms                                |                                                  |
-+--------------------------+----------+-----------------------------------------+--------------------------------------------------+
-| **T_CCI_DATE_TZ**        | struct   | short yr                                | Representation of date/time types with timezone  |
+| **T_CCI_DATE**           | struct   | short yr                                | Representation of timestamp, date, and time type |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | short mon                               |                                                  |
 |                          |          +-----------------------------------------+                                                  |
@@ -834,12 +816,10 @@ The following shows the structs used in CCI API functions.
 |                          |          | short ss                                |                                                  |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | short ms                                |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | char tz[64]                             |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
 | **T_CCI_SET**            | void*    |                                         | Representation of set type                       |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
-| **T_CCI_COL_INFO**       | struct   | **T_CCI_U_EXT_TYPE**                    | Representation of column information for the     |
+| **T_CCI_COL_INFO**       | struct   | **T_CCI_U_TYPE**                        | Representation of column information for the     |
 |                          |          | type                                    | **SELECT**                                       |
 |                          |          |                                         | statement                                        |
 |                          |          +-----------------------------------------+                                                  |
@@ -866,15 +846,12 @@ The following shows the structs used in CCI API functions.
 | **T_CCI_PARAM_INFO**     | struct   | **T_CCI_PARAM_MODE**                    | Representation of input parameter info           |
 |                          |          | mode                                    |                                                  |
 |                          |          +-----------------------------------------+                                                  |
-|                          |          | **T_CCI_U_EXT_TYPE**                    |                                                  |
+|                          |          | **T_CCI_U_TYPE**                        |                                                  |
 |                          |          | type                                    |                                                  |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | short scale                             |                                                  |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | int precision                           |                                                  |
-+--------------------------+----------+-----------------------------------------+--------------------------------------------------+
-| **T_CCI_U_EXT_TYPE**     | unsigned |                                         | Database type info                               |
-|                          | char     |                                         |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
 | **T_CCI_U_TYPE**         | enum     | **CCI_U_TYPE_UNKNOWN**                  | Database type info                               |
 |                          |          +-----------------------------------------+                                                  |
@@ -921,20 +898,6 @@ The following shows the structs used in CCI API functions.
 |                          |          | **CCI_U_TYPE_CLOB**                     |                                                  |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | **CCI_U_TYPE_ENUM**                     |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_U_TYPE_UINT**                     |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_U_TYPE_USHORT**                   |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_U_TYPE_UBIGINT**                  |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_U_TYPE_TIMESTAMPTZ**              |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_U_TYPE_TIMESTAMPLTZ**             |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_U_TYPE_DATETIMETZ**               |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_U_TYPE_DATETIMELTZ**              |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
 | **T_CCI_A_TYPE**         | enum     | **CCI_A_TYPE_STR**                      | Representation of type info used in API          |
 |                          |          +-----------------------------------------+                                                  |
@@ -955,18 +918,6 @@ The following shows the structs used in CCI API functions.
 |                          |          | **CCI_A_TYPE_BLOB**                     |                                                  |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | **CCI_A_TYPE_CLOB**                     |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_A_TYPE_CLOB**                     |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_A_TYPE_REQ_HANDLE**               |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_A_TYPE_UINT**                     |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_A_TYPE_UBIGINT**                  |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_A_TYPE_DATE_TZ**                  |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CCI_A_TYPE_UINT**                     |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
 | **T_CCI_DB_PARAM**       | enum     | **CCI_PARAM_ISOLATION_LEVEL**           | System parameter names                           |
 |                          |          +-----------------------------------------+                                                  |
@@ -1103,38 +1054,6 @@ The following shows the structs used in CCI API functions.
 |                          |          | **CUBRID_STMT_DROP_USER**               |                                                  |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | **CUBRID_STMT_ALTER_USER**              |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_SET_SYS_PARAMS**          |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_ALTER_INDEX**             |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_CREATE_STORED_PROCEDURE** |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_DROP_STORED_PROCEDURE**   |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_PREPARE_STATEMENT**       |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_EXECUTE_PREPARE**         |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_DEALLOCATE_PREPARE**      |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_TRUNCATE**                |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_DO**                      |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_SELECT_UPDATE**           |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_SET_SESSION_VARIABLES**   |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_DROP_SESSION_VARIABLES**  |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_MERGE**                   |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_SET_NAMES**               |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_ALTER_STORED_PROCEDURE**  |                                                  |
-|                          |          +-----------------------------------------+                                                  |
-|                          |          | **CUBRID_STMT_KILL**                    |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
 | **T_CCI_CURSOR_POS**     | enum     | **CCI_CURSOR_FIRST**                    |                                                  |
 |                          |          +-----------------------------------------+                                                  |
@@ -1142,9 +1061,15 @@ The following shows the structs used in CCI API functions.
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | **CCI_CURSOR_LAST**                     |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+
-| **T_CCI_TRAN_ISOLATION** | enum     | **TRAN_READ_COMMITTED**                 |                                                  |
+| **T_CCI_TRAN_ISOLATION** | enum     | **TRAN_COMMIT_CLASS_UNCOMMIT_INSTANCE** |                                                  |
 |                          |          +-----------------------------------------+                                                  |
-|                          |          | **TRAN_REPEATABLE_READ**                |                                                  |
+|                          |          | **TRAN_COMMIT_CLASS_COMMIT_INSTANCE**   |                                                  |
+|                          |          +-----------------------------------------+                                                  |
+|                          |          | **TRAN_REP_CLASS_UNCOMMIT_INSTANCE**    |                                                  |
+|                          |          +-----------------------------------------+                                                  |
+|                          |          | **TRAN_REP_CLASS_COMMIT_INSTANCE**      |                                                  |
+|                          |          +-----------------------------------------+                                                  |
+|                          |          | **TRAN_REP_CLASS_REP_INSTANCE**         |                                                  |
 |                          |          +-----------------------------------------+                                                  |
 |                          |          | **TRAN_SERIALIZABLE**                   |                                                  |
 +--------------------------+----------+-----------------------------------------+--------------------------------------------------+

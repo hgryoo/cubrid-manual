@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid logging, slow query, error log, deadlock detect, cubrid fail-over, cubrid fail-back
-:meta-description: Troubleshoot CUBRID database and High Availability nodes by consulting logs.
-
 ***************
 Troubleshooting
 ***************
@@ -59,7 +55,7 @@ There is a slow query in the application log but that is not printed as slow que
 Some examples are as below.
  
 *   Check if there is a low speed of the network between application and broker.
-*   Check if there is a case that CAS was restarted by watching the broker log(exists in **$CUBRID/log/broker** directory). If it is revealed as CASes are not enough, you should enlarge the number of CASes; to do so, the value of :ref:`MAX_NUM_APPL_SERVER <max-num-appl-server>` should be enlarged properly. Also the value of :ref:`max_clients <max_clients>` should be enlarged if needed.
+*   Check if there is a case that CAS was restarted by watching the broker log(exists in $CUBRID/log/broker directory). If it is revealed as CASes are not enough, you should enlarge the number of CASes; to do so, the value of :ref:`MAX_NUM_APPL_SERVER <max-num-appl-server>` should be enlarged properly. Also the value of :ref:`max_clients <max_clients>` should be enlarged if needed.
 
 If application log and CAS SQL log show the slow query log together and there is almost no gab between the slow query times of application log and the CAS SQL log, the cause which the query was slow will exist between the broker and DB server. For example, the query execution in the DB server was slow.
 
@@ -92,16 +88,40 @@ Slow query information in an application and in a broker is stored in each file 
 Server Error Log
 ================
 
-You can get various information from the server error log by setting  **error_log_level** parameter in cubrid.conf. The default of **error_log_level** is **NOTIFICATION**. For how to set this parameter, see :ref:`error-parameters`.
+You can get various information from the server error log by setting  **error_log_level** parameter in cubrid.conf. The default of **error_log_level** is ERROR. If you want to get NOTIFICATION messages, set the value of **error_log_level** as NOTIFICATION. For how to set this parameter, see :ref:`error-parameters`.
 
 .. 4957
+
+Detecting Inconsistency between Index and Data
+----------------------------------------------
+
+By the isolation level, we can say it is an error or we cannot be sure to say that when inconsistency between index and data is detected.
+
+When transaction allows UNCOMMITTED INSTANCE(the value of isolation_level in cubrid.conf is 1 or 3), index and data can be inconsistent for a fleeting moment. Therefore, if you want to print out this case, the value of **error_log_level** in cubrid.conf should be NOTIFICATION. Displayed messages are as follows.
+
+::
+
+    ----  database server error log
+    Time: 03/15/11 15:20:31.804 - NOTIFICATION *** CODE = -545, Tran = 1, CLIENT = cdbs034.cub:csql(3926), EID = 3
+    Internal error: INDEX u_foo_i ON CLASS foo (CLASS_OID: 0|550|8). Key and OID: 0|600|16 entry on B+tree: 0|209|590 is incorrect. The object does not exist.
+
+When transaction allows COMMITTED INSTANCE(the value of isolation_level in cubrid.conf is 2, 4 or more), index and data should not always be inconsistent. Therefore, if you want to print out this case, the value of **error_log_level** in cubrid.conf should be ERROR. Displayed messages are as follows.
+
+::
+
+    ----  database server error log
+    Time: 03/15/11 15:14:35.907 - ERROR *** ERROR CODE = -545, Tran = 1, CLIENT = cdbs034.cub:csql(3776), EID = 1
+    Internal error: INDEX u_foo_i ON CLASS foo (CLASS_OID: 0|550|8). Key and OID: 0|600|2 entry on B+tree: 0|209|590 is incorrect. The object does not exist.
+    
+    ---- client error log
+    ERROR: Internal error: INDEX u_foo_i ON CLASS foo (CLASS_OID: 0|550|8). Key and OID: 0|600|2 entry on B+tree: 0|209|590 is incorrect. The object does not exist.
 
 .. 10703 
 
 Detecting Overflow Keys or Overflow Pages
 ------------------------------------------
 
-When overflow keys or overflow pages occur, **NOTIFICATION** messages are written to the server error log. Through this message, users can detect DB performance became slow because of overflow keys or overflow pages. If possible, overflow keys or overflow pages should not appear. That is, it is better not to use the index on the big size column, and not to define the record size largely.
+When overflow keys or overflow pages occur, NOTIFICATION messages are written to the server error log. Through this message, users can detect DB performance became slow because of overflow keys or overflow pages. If possible, overflow keys or overflow pages should not appear. That is, it is better not to use the index on the big size column, and not to define the record size largely.
 
 ::
 
@@ -121,7 +141,7 @@ When overflow keys or overflow pages occur, **NOTIFICATION** messages are writte
 Detecting log recovery time
 ---------------------------
 
-When DB sever is started or backup volume is restored, you can check the duration of the log recovery by printing out the **NOTIFICATION** messages, the starting time and the ending time of the log recovery, to the server error log or an error log file of restoredb. In these messages, the number of logs and the number of log pages to redo are written together.
+When DB sever is started or backuped volume is restored, you can check the duration of the log recovery by printing out the NOTIFICATION messages, the starting time and the ending time of the log recovery, to the server error log or an error log file of restoredb. In these messages, the number of logs and the number of log pages to redo are written together.
 
 :: 
   
@@ -136,23 +156,30 @@ When DB sever is started or backup volume is restored, you can check the duratio
 Detecting a Deadlock
 --------------------
 
-Locks related information is written to the server error log.
+If a deadlock occurs when **error_log_level** in cubrid.conf is NOTIFICATION, locks related information is written to the server error log.
+
+In the following error log file information, (1) indicates a table name which caused a deadlock, (2) indicates an index name
 
 ::
 
-    demodb_20160202_1811.err
+    demodb_20111102_1811.err
     
           ...
           
-    Your transaction (index 1, public@testhost|csql(21541)) timed out waiting on    X_LOCK lock on instance 0|650|3 of class t because of deadlock. You are waiting for user(s) public@testhost|csql(21529) to finish.
-    
-          ...
+         OID = -532| 520| 1
+    (1) Object type: Index key of class ( 0| 417| 7) = tbl.
+         BTID = 0| 123| 530
+    (2) Index Name : i_tbl_col1
+         Total mode of holders = NS_LOCK, Total mode of waiters = NULL_LOCK.
+         Num holders= 1, Num blocked-holders= 0, Num waiters= 0
+         LOCK HOLDERS:
+        Tran_index = 2, Granted_mode = NS_LOCK, Count = 1
+        ...
 
-          
 Detecting the change of HA status
 ================================= 
   
-Detecting the change of HA status can be checked in the cub_master process log. This log file is stored in the **$CUBRID/log** directory as named in *<host_name>.cub_master.err*.
+Detecting the change of HA status can be checked in the cub_master process log. This log file is stored in the $CUBRID/log directory as named in <host_name>.cub_master.err.
   
 Detecting HA split-brain
 ------------------------
@@ -217,16 +244,16 @@ The following is examples that replicated DB volumes' restoration is impossible 
 
 *   When a restoration of server is failed.
 
-When replicated DB volumes' restoration is impossible like above cases, **"cubrid heartbeat start"** command is failed; for each case, you should fix it properly.
+When replicated DB volumes' restoration is impossible like above cases, "cubrid heartbeat start" command is failed; for each case, you should fix it properly.
 
 
 Typical Unrestorable Failure
 ----------------------------
 
 If server process is the cause of the cases that automatic restoration of DB volumes without user intervention is impossible, that cases will be very various, so descriptions for those are omitted.
-The following describes the error messages when **copylogdb** or **applylogdb** process is the cause.
+The following describes the error messages when copylogdb or applylogdb process is the cause.
 
-*   When **copylogdb** process is the cause
+*   When copylogdb process is the cause
 
 +---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
 | Cause                                                         | Error message                                                                                    |
@@ -236,7 +263,7 @@ The following describes the error messages when **copylogdb** or **applylogdb** 
 | Detected as the other DB's log.                               | Log \"/home1/cubrid/DB/tdb01_cdbs037.cub/tdb01_lgat\" does not belong to the given database.     |
 +---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
 
-*   When **applylogdb** process is the cause
+*   When applylogdb process is the cause
 
 +---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
 | Cause                                                         | Error message                                                                                    |
@@ -249,7 +276,7 @@ The following describes the error messages when **copylogdb** or **applylogdb** 
 | DB creation time in the current replication logs.             |                                                                                                  |
 | That is, it's not the previous log to be being applied.       |                                                                                                  |
 +---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
-| Different database locale.                                    | Locale initialization: Active log file(/home1/cubrid/DB/tdb01_cdbs037.cub/tdb01_lgat) charset    |
+| Diffent database locale.                                      | Locale initialization: Active log file(/home1/cubrid/DB/tdb01_cdbs037.cub/tdb01_lgat) charset    |
 |                                                               | is not valid (iso88591), expecting utf8.                                                         |
 +---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
 

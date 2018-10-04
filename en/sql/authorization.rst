@@ -1,15 +1,11 @@
-
-:meta-keywords: cubrid authorization, cubrid dba, cubrid user
-:meta-description: CUBRID has two types of users by default: DBA and PUBLIC. DBA and DBA members can create, drop and alter users by using SQL statements.
-
-***************
-User Management
-***************
+***************************
+Database User Authorization
+***************************
 
 Database User
 =============
 
-To know the user name's writing rule, see :doc:`identifier`.
+To create the user name, see :doc:`/sql/identifier`.
 
 CUBRID has two types of users by default: **DBA** and **PUBLIC**. At initial installation of the product, no password is set.
 
@@ -19,24 +15,22 @@ CUBRID has two types of users by default: **DBA** and **PUBLIC**. At initial ins
 
 .. _create-user:
 
-CREATE USER
-===========
+Managing User
+=============
 
 **DBA** and **DBA** members can create, drop and alter users by using SQL statements. At the initial installation, passwords for users are not configured. ::
 
     CREATE USER user_name
-    [PASSWORD password]
-    [GROUPS user_name [{, user_name } ... ]]
-    [MEMBERS user_name [{, user_name } ... ]] 
-    [COMMENT 'comment_string'];
+    [ PASSWORD password ]
+    [ GROUPS user_name [ {, user_name } ... ] ]
+    [ MEMBERS user_name [ {, user_name } ... ] ] ;
     
     DROP USER user_name;
     
     ALTER USER user_name PASSWORD password;
 
-*   *user_name*: specifies the user name to create, delete or change.
-*   *password*: specifies the user password to create or change.
-*   *comment_string*: specifies a comment for the user.
+*   *user_name*: Specifies the user name to create, delete or change.
+*   *password*: Specifies the user password to create or change.
 
 The following example shows how to create a user (*Fred*), change a password, and delete the user.
 
@@ -70,31 +64,10 @@ The following example shows how to create the same groups as above but use the *
     CREATE USER design MEMBERS smith;
     CREATE USER company MEMBERS engineering, marketing, design;
 
-User's COMMENT
---------------
-
-A comment for a user can be written as follows.
-
-.. code-block:: sql
-
-    CREATE USER designer GROUPS dbms, qa COMMENT 'user comment';
-
-A comment for a user can be changed as the following ALTER USER statement.
-
-.. code-block:: sql
-    
-    ALTER USER DESIGNER COMMENT 'new comment';
-    
-You can see a comment for a user with this syntax.
-
-.. code-block:: sql
-
-    SELECT name, comment FROM db_user;
-
 .. _granting-authorization:
 
-GRANT
-=====
+Granting Authorization
+======================
 
 In CUBRID, the smallest grant unit of authorization is a table. You must grant appropriate authorization to other users (groups) before allowing them to access the table you created.
 
@@ -150,8 +123,8 @@ The following example shows how to grant retrieving authorization on the *record
     *   Before granting **SELECT**, **UPDATE**, **DELETE** and **INSERT** authorization for a virtual table, the owner of the virtual table must have **SELECT** and **GRANT** authorization for all the tables included in the query specification. The **DBA** user and the members of the **DBA** group are automatically granted all authorization for all tables.
     *   To execute the **TRUNCATE** statement, the **ALTER**, **INDEX**, and **DELETE** authorization is **required**.
 
-REVOKE
-======
+Revoking Authorization
+======================
 
 You can revoke authorization using the **REVOKE** statement. The authorization granted to a user can be revoked anytime. If more than one authorization is granted to a user, all or part of the authorization can be revoked. In addition, if authorization on multiple tables is granted to more than one user using one **GRANT** statement, the authorization can be selectively revoked for specific users and tables.
 
@@ -184,8 +157,8 @@ The following example shows how to execute the **REVOKE** statement revoking all
 
 .. _change-owner:
 
-ALTER ... OWNER
-===============
+Changing Owner
+==============
 
 Database Administrator (**DBA**) or a member of the **DBA** group can change the owner of table, view, trigger, and Java stored functions/procedures by using the following query. ::
 

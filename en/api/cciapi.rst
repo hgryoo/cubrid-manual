@@ -1,7 +1,3 @@
-
-:meta-keywords: CCI driver, CCI api, cubrid cci
-:meta-description: CUBRID CCI API Reference for your C-based back-end application.
-
 CCI API Reference
 =================
 
@@ -816,8 +812,9 @@ cci_connect_with_url
     The **cci_connect_with_url** function connects a database by using connection information passed with a *url* argument. If broker's HA feature is used in CCI, you must specify the connection information of the standby broker server with altHosts property, which is used for the failover, in the *url* argument of this function. It returns the ID of a connection handle on success; it returns an error code on failure. For details about HA features of broker, see :ref:`duplexing-brokers`.
 
     :param url: (IN) A string that contains server connection information. 
-    :param db_user: (IN) Database user name. If this is NULL, it becomes <*db_user*> in *url*. If this is an empty string ("") or <*db_user*> in *url* is not specified, DB user name becomes **PUBLIC**.
-    :param db_passwd: (IN) Database user password. If this is NULL, <*db_password*> in *url* is used. If <*db_password*> in *url* is not specified, DB password becomes an empty string ("").
+    :param db_user: (IN) Database user name. If it is NULL or an empty string, it becomes <*db_user*> in *url*. If both of this value and <*db_user*> in *url* are not specified, DB user name becomes **PUBLIC**.
+    :param db_passwd: (IN) Database user password. If it is NULL or an empty string, use <*db_password*> in *url*. If both of this value and <*db_password*> in *url* are not specified, DB password becomes NULL.
+
     :return: Success: Connection handle ID (int), Failure: Error code
 
         *   **CCI_ER_NO_MORE_MEMORY**
@@ -856,7 +853,7 @@ cci_connect_with_url
     *   *port*: A port number
     *   *db_name*: A name of the database
     *   *db_user*: A name of the database user
-    *   *db_password*: A database user password. You cannot include ':' in the password of the *url* string.
+    *   *db_password*: A database user password
 
     *   **altHosts** = *standby_broker1_host*, *standby_broker2_host*, ...: Specifies the broker information of the standby server, which is used for failover when it is impossible to connect to the active server. You can specify multiple brokers for failover, and the connection to the brokers is attempted in the order listed in **alhosts**.
     
@@ -901,7 +898,23 @@ cci_connect_with_url_ex
 
     The **cci_connect_with_url_ex** function returns **CCI_ER_DBMS** error and checks the error details in the database error buffer (*err_buf*) at the same time. In that point, it is different from :c:func:`cci_connect_with_url` and the others are the same as the :c:func:`cci_connect_with_url` function. 
     
+    :param url: (IN) A string that contains server connection information
+    :param db_user: (IN) Database user name. If it is NULL or an empty string, use <*db_user*> in *url*.
+    :param db_passwd: (IN) Database user password. If it is NULL or an empty string, use <*db_password*> in *url*.
     :param err_buf: Database error buffer    
+    :return: Success: Connection handle ID (int), Failure: Error code
+
+        *   **CCI_ER_NO_MORE_MEMORY**
+        *   **CCI_ER_HOSTNAME**
+        *   **CCI_ER_INVALID_URL**
+        *   **CCI_ER_CON_HANDLE**
+        *   **CCI_ER_CONNECT**
+        *   **CCI_ER_DBMS**
+        *   **CCI_ER_COMMUNICATION**
+        *   **CCI_ER_LOGIN_TIMEOUT**
+
+cci_cursor
+----------
 
 .. c:function:: int cci_cursor(int req_handle, int offset, T_CCI_CURSOR_POS origin, T_CCI_ERROR *err_buf)
 
@@ -1024,7 +1037,7 @@ cci_datasource_change_property
     ========================= =========== ============================== =========================================================================================================================
     default_autocommit        bool        true/false                     Whether auto-commit or not. The default is CCI_DEFAULT_AUTOCOMMIT in cubrid_broker.conf; the default of this is ON(true)
     default_lock_timeout      msec        number                         lock timeout                                                      
-    default_isolation         string      See the table of               isolation level. The default is isolation_level in cubrid.conf; the default of this is "READ COMMITTED".
+    default_isolation         string      See the table of               isolation level. The default is isolation_level in cubrid.conf; the default of this is "TRAN_READ_UNCOMMITTED".
                                           :c:func:`cci_property_set`                                                                     
     login_timeout             msec        number                         login timeout. The default is 0(infinite wait). It can also be used when you call prepare or execute functions; 
                                                                          at this time reconnection can happen.
@@ -1198,17 +1211,17 @@ cci_execute
     :param max_col_size: (IN) The maximum length of a column to be fetched when it is a string data type in bytes. If this value is 0, full length is fetched.
     :param err_buf: (OUT) Database error buffer
     :return: 
-      * **SELECT** : Returns the number of results
-      * **INSERT**, **UPDATE** : Returns the number of rows reflected
-      * Others queries : 0
-      * Failure : Error code
+        * **SELECT** : Returns the number of results
+        * **INSERT**, **UPDATE** : Returns the number of rows reflected
+        * Others queries : 0
+        * Failure : Error code
       
-        *   **CCI_ER_REQ_HANDLE**
-        *   **CCI_ER_BIND**
-        *   **CCI_ER_DBMS**
-        *   **CCI_ER_COMMUNICATION**
-        *   **CCI_ER_QUERY_TIMEOUT**
-        *   **CCI_ER_LOGIN_TIMEOUT**
+            *   **CCI_ER_REQ_HANDLE**
+            *   **CCI_ER_BIND**
+            *   **CCI_ER_DBMS**
+            *   **CCI_ER_COMMUNICATION**
+            *   **CCI_ER_QUERY_TIMEOUT**
+            *   **CCI_ER_LOGIN_TIMEOUT**
   
     Through a *flag*, the way of query execution can be set as all queries or the first one.
     
@@ -1633,7 +1646,7 @@ cci_get_data
     :param req_handle: (IN) Request handle
     :param col_no: (IN) One-based column index. It starts with 1.
     :param type: (IN) Data type (defined in the **T_CCI_A_TYPE**) of *value* variable
-    :param value: (OUT) Variable address for data to be stored. If *type* is one of (CCI_A_TYPE_STR, CCI_A_TYPE_SET, CCI_A_TYPE_BLOB or CCI_A_TYPE_CLOB) and the value of a column is NULL, the *value* will be NULL, too.
+    :param value: (OUT) Variable address for data to be stored
     :param indicator: (OUT) **NULL** indicator. (-1 : **NULL**)
 
      *   If *type* is **CCI_A_TYPE_STR** : -1 is returned in case of **NULL**; the length of string stored in *value* is returned, otherwise.
@@ -1725,9 +1738,7 @@ cci_get_db_parameter
     +---------------------------------+--------------+----------+
     | **CCI_PARAM_MAX_STRING_LENGTH** | int \*       | get only |
     +---------------------------------+--------------+----------+
-    | **CCI_PARAM_AUTO_COMMIT**       | int \*       | get only |
-    +---------------------------------+--------------+----------+  
-    
+
     In :c:func:`cci_get_db_parameter` and :c:func:`cci_set_db_parameter`, the input/output unit of **CCI_PARAM_LOCK_TIMEOUT** is milliseconds.
 
     .. warning:: In the earlier version of CUBRID 9.0, you should be careful that the output unit of **CCI_PARAM_LOCK_TIMEOUT** is second.
@@ -1923,8 +1934,9 @@ cci_get_query_plan
 .. c:function:: int cci_get_query_plan(int req_handle, char **out_buf_p)
 
     Saves the query plan to the result buffer; the query plan about the request handle which the cci_prepare function returned.
-    You can call this function whether to call the cci_execute function or not. 
 
+    You can call this function whether to call the cci_execute function or not. 
+    
     After calling the cci_get_query_plan function, if the use of a result buffer ends, you should call the :c:func:`cci_query_info_free` function to release the result buffer created by cci_get_query_plan function.
 
     ::
@@ -2210,8 +2222,8 @@ cci_is_updatable
     :param req_handle: (IN) Request handle for the prepared statement
     :return: 
     
-        *   1 : updatable
-        *   0 : not updatable
+        *   1: updatable
+        *   0: not updatable
         *   **CCI_ER_REQ_HANDLE**
 
 cci_next_result
@@ -2587,9 +2599,21 @@ cci_property_set
     +============================+=======================================+
     | SERIALIZABLE               | "TRAN_SERIALIZABLE"                   |
     +----------------------------+---------------------------------------+
-    | REPEATABLE READ            | "TRAN_REP_READ"                       |
+    | REPEATABLE READ CLASS with | "TRAN_REP_CLASS_REP_INSTANCE"         |
+    | REPEATABLE READ INSTANCES  | or "TRAN_REP_READ"                    |
     +----------------------------+---------------------------------------+
-    | READ COMMITTED             | "TRAN_READ_COMMITTED"                 |
+    | REPEATABLE READ CLASS with | "TRAN_REP_CLASS_COMMIT_INSTANCE"      |
+    | READ COMMITTED INSTANCES   | or "TRAN_READ_COMMITTED"              |
+    |                            | or "TRAN_CURSOR_STABILITY"            |
+    +----------------------------+---------------------------------------+
+    | REPEATABLE READ CLASS with | "TRAN_REP_CLASS_UNCOMMIT_INSTANCE"    |
+    | READ UNCOMMITTED INSTANCES | or "TRAN_READ_UNCOMMITTED"            |
+    +----------------------------+---------------------------------------+
+    | READ COMMITTED CLASS with  | "TRAN_COMMIT_CLASS_COMMIT_INSTANCE"   |
+    | READ COMMITTED INSTANCES   |                                       |
+    +----------------------------+---------------------------------------+
+    | READ COMMITTED CLASS with  | "TRAN_COMMIT_CLASS_UNCOMMIT_INSTANCE" |
+    | READ UNCOMMITTED INSTANCES |                                       |
     +----------------------------+---------------------------------------+
 
     DB user's name and password can be specified by the setting of **user** and **password** directly, or by the setting of **user** and **password** in **url**.
@@ -2934,276 +2958,248 @@ cci_schema_info
 
     **Record for Each Type**
 
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | Type                                                                                                               | Column Order     | Column Name        | Column Type         |
-    +====================================================================================================================+==================+====================+=====================+
-    | CCI_SCH_CLASS                                                                                                      | 1                | NAME               | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | TYPE               | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: system class   | 
-    |                                                                                                                    |                  |                    | * 1: vclass         |
-    |                                                                                                                    |                  |                    | * 2: class          |
-    |                                                                                                                    |                  |                    | * 3: proxy          |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | REMARKS            | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_VCLASS                                                                                                     | 1                | NAME               | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | TYPE               | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 1: vclass         |
-    |                                                                                                                    |                  |                    | * 3: proxy          |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | REMARKS            | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_QUERY_SPEC                                                                                                 | 1                | QUERY_SPEC         | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_ATTRIBUTE                                                                                                  | 1                | NAME               | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | DOMAIN             | short               |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | SCALE              | short               |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 4                | PRECISION          | int                 |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 5                | INDEXED            | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | 1: indexed          |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 6                | NON_NULL           | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | 1: non null         |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 7                | SHARED             | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | 1: shared           |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 8                | UNIQUE             | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | 1: unique           |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 9                | DEFAULT            | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 10               | ATTR_ORDER         | int                 |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | base = 1            |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 11               | CLASS_NAME         | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 12               | SOURCE_CLASS       | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 13               | IS_KEY             | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | 1: key              |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 14               | REMARKS            | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_CLASS_ATTRIBUTE                                                                                            |                  |                    |                     |
-    |                                                                                                                    |                  |                    |                     |
-    | When the attribute of the CCI_SCH_CLASS_ATTRIBUTE column is INSTANCE or SHARED,                                    |                  |                    |                     |
-    | the order and the name values are identical to those of the column of CCI_SCH_ATTRIBUTE.                           |                  |                    |                     |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_CLASS_METHOD                                                                                               | 1                | NAME               | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | RET_DOMAIN         | short               |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | ARG_DOMAIN         | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_METHOD_FILE                                                                                                | 1                | METHOD_FILE        | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_SUPERCLASS                                                                                                 | 1                | CLASS_NAME         | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | TYPE               | short               |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_SUBCLASS                                                                                                   | 1                | CLASS_NAME         | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | TYPE               | short               |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_CONSTRAINT                                                                                                 | 1                | TYPE               | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: unique         |
-    |                                                                                                                    |                  |                    | * 1: index          |
-    |                                                                                                                    |                  |                    | * 2: reverse unique |
-    |                                                                                                                    |                  |                    | * 3: reverse index  |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | NAME               | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | ATTR_NAME          | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 4                | NUM_PAGES          | int                 |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 5                | NUM_KEYS           | int                 |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 6                | PRIMARY_KEY        | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 1: primary key    |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 7                | KEY_ORDER          | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | base = 1            |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 8                | ASC_DESC           | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_TRIGGER                                                                                                    | 1                | NAME               | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | STATUS             | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | EVENT              | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 4                | TARGET_CLASS       | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 5                | TARGET_ATTR        | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 6                | ACTION_TIME        | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 7                | ACTION             | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 8                | PRIORITY           | float               |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 9                | CONDITION_TIME     | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 10               | CONDITION          | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 11               | REMARKS            | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_CLASS_PRIVILEGE                                                                                            | 1                | CLASS_NAME         | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | PRIVILEGE          | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | GRANTABLE          | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_ATTR_PRIVILEGE                                                                                             | 1                | ATTR_NAME          | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | PRIVILEGE          | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | GRANTABLE          | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_DIRECT_SUPER_CLASS                                                                                         | 1                | CLASS_NAME         | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | SUPER_CLASS_NAME   | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_PRIMARY_KEY                                                                                                | 1                | CLASS_NAME         | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | ATTR_NAME          | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | KEY_SEQ            | int                 |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | base = 1            |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 4                | KEY_NAME           | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_IMPORTED_KEYS                                                                                              | 1                | PKTABLE_NAME       | char \*             |
-    |                                                                                                                    |                  |                    |                     |
-    | Used to retrieve primary key columns that are referred by a foreign key column in a given table.                   |                  |                    |                     |
-    | The results are sorted by PKTABLE_NAME and KEY_SEQ.                                                                |                  |                    |                     |
-    |                                                                                                                    |                  |                    |                     |
-    | If this type is specified as a parameter, a foreign key table is specified for                                     |                  |                    |                     |
-    | class_name                                                                                                         |                  |                    |                     |
-    | , and                                                                                                              |                  |                    |                     |
-    | NULL                                                                                                               |                  |                    |                     |
-    | is specified for                                                                                                   |                  |                    |                     |
-    | attr_name.                                                                                                         |                  |                    |                     |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | PKCOLUMN_NAME      | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | FKTABLE_NAME       | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 4                | FKCOLUMN_NAME      | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 5                | KEY_SEQ            | short               |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 6                | UPDATE_ACTION      | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: cascade        |
-    |                                                                                                                    |                  |                    | * 1: restrict       |
-    |                                                                                                                    |                  |                    | * 2: no action      |
-    |                                                                                                                    |                  |                    | * 3: set null       |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 7                | DELETE_ACTION      | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: cascade        |
-    |                                                                                                                    |                  |                    | * 1: restrict       |
-    |                                                                                                                    |                  |                    | * 2: no action      |
-    |                                                                                                                    |                  |                    | * 3: set null       |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 8                | FK_NAME            | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 9                | PK_NAME            | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_EXPORTED_KEYS                                                                                              | 1                | PKTABLE_NAME       | char \*             |
-    |                                                                                                                    |                  |                    |                     |
-    | Used to retrieve primary key columns that are referred by all foreign key columns.                                 |                  |                    |                     |
-    | The results are sorted by FKTABLE_NAME and KEY_SEQ.                                                                |                  |                    |                     |
-    | If this type is specified as a parameter, a primary key table is specified for                                     |                  |                    |                     |
-    | class_name                                                                                                         |                  |                    |                     |
-    | , and                                                                                                              |                  |                    |                     |
-    | NULL                                                                                                               |                  |                    |                     |
-    | is specified for                                                                                                   |                  |                    |                     |
-    | attr_name.                                                                                                         |                  |                    |                     |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | PKCOLUMN_NAME      | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | FKTABLE_NAME       | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 4                | FKCOLUMN_NAME      | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 5                | KEY_SEQ            | short               |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 6                | UPDATE_ACTION      | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: cascade        |
-    |                                                                                                                    |                  |                    | * 1: restrict       |
-    |                                                                                                                    |                  |                    | * 2: no action      |
-    |                                                                                                                    |                  |                    | * 3: set null       |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 7                | DELETE_ACTION      | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: cascade        |
-    |                                                                                                                    |                  |                    | * 1: restrict       |
-    |                                                                                                                    |                  |                    | * 2: no action      |
-    |                                                                                                                    |                  |                    | * 3: set null       |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 8                | FK_NAME            | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 9                | PK_NAME            | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
-    | CCI_SCH_CROSS_REFERENCE                                                                                            | 1                | PKTABLE_NAME       | char \*             |
-    |                                                                                                                    |                  |                    |                     |
-    | Used to retrieve foreign key information when primary keys and foreign keys in a given table are cross referenced. |                  |                    |                     |
-    | The results are sorted by FKTABLE_NAME and KEY_SEQ.                                                                |                  |                    |                     |
-    |                                                                                                                    |                  |                    |                     |
-    | If this type is specified as a parameter, a primary key is specified for                                           |                  |                    |                     |
-    | class_name                                                                                                         |                  |                    |                     |
-    | , and a foreign key table is specified for                                                                         |                  |                    |                     |
-    | attr_name.                                                                                                         |                  |                    |                     |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 2                | PKCOLUMN_NAME      | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 3                | FKTABLE_NAME       | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 4                | FKCOLUMN_NAME      | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 5                | KEY_SEQ            | short               |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 6                | UPDATE_ACTION      | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: cascade        |
-    |                                                                                                                    |                  |                    | * 1: restrict       |
-    |                                                                                                                    |                  |                    | * 2: no action      |
-    |                                                                                                                    |                  |                    | * 3: set null       |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 7                | DELETE_ACTION      | short               |
-    |                                                                                                                    |                  |                    |                     |
-    |                                                                                                                    |                  |                    | * 0: cascade        |
-    |                                                                                                                    |                  |                    | * 1: restrict       |
-    |                                                                                                                    |                  |                    | * 2: no action      |
-    |                                                                                                                    |                  |                    | * 3: set null       |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 8                | FK_NAME            | char \*             |
-    |                                                                                                                    +------------------+--------------------+---------------------+
-    |                                                                                                                    | 9                | PK_NAME            | char \*             |
-    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+---------------------+
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | Type                                                                                                               | Column Order     | Column Name        | Column Type      |
+    +====================================================================================================================+==================+====================+==================+
+    | CCI_SCH_CLASS                                                                                                      | 1                | NAME               | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | TYPE               | short            |
+    |                                                                                                                    |                  |                    | 0 : system class |
+    |                                                                                                                    |                  |                    | 1 : vclass       |
+    |                                                                                                                    |                  |                    | 2 : class        |
+    |                                                                                                                    |                  |                    | 3 : proxy        |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_VCLASS                                                                                                     | 1                | NAME               | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | TYPE               | short            |
+    |                                                                                                                    |                  |                    | 1 : vclass       |
+    |                                                                                                                    |                  |                    | 3 : proxy        |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_QUERY_SPEC                                                                                                 | 1                | QUERY_SPEC         | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_ATTRIBUTE                                                                                                  | 1                | NAME               | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | DOMAIN             | int              |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | SCALE              | int              |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 4                | PRECISION          | int              |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 5                | INDEXED            | int              |
+    |                                                                                                                    |                  |                    | 1 : indexed      |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 6                | NON_NULL           | int              |
+    |                                                                                                                    |                  |                    | 1 : non null     |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 7                | SHARED             | int              |
+    |                                                                                                                    |                  |                    | 1 : shared       |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 8                | UNIQUE             | int              |
+    |                                                                                                                    |                  |                    | 1 : unique       |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 9                | DEFAULT            | void \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 10               | ATTR_ORDER         | int              |
+    |                                                                                                                    |                  |                    | base : 1         |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 11               | CLASS_NAME         | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 12               | SOURCE_CLASS       | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 13               | IS_KEY             | short            |
+    |                                                                                                                    |                  |                    | 1 : key          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_CLASS_ATTRIBUTE                                                                                            |                  |                    |                  |
+    |                                                                                                                    |                  |                    |                  |
+    | When the attribute of the CCI_SCH_CLASS_ATTRIBUTE column is INSTANCE or SHARED,                                    |                  |                    |                  |
+    | the order and the name values are identical to those of the column of CCI_SCH_ATTRIBUTE.                           |                  |                    |                  |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_CLASS_METHOD                                                                                               | 1                | NAME               | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | RET_DOMAIN         | int              |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | ARG_DOMAIN         | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_METHOD_FILE                                                                                                | 1                | METHOD_FILE        | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_SUPERCLASS                                                                                                 | 1                | CLASS_NAME         | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | TYPE               | short            |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_SUBCLASS                                                                                                   | 1                | CLASS_NAME         | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | TYPE               | short            |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_CONSTRAINT                                                                                                 | 1                | TYPE               | int              |
+    |                                                                                                                    |                  | 0 : unique         |                  |
+    |                                                                                                                    |                  | 1 : index          |                  |
+    |                                                                                                                    |                  | 2 : reverse unique |                  |
+    |                                                                                                                    |                  | 3 : reverse index  |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | NAME               | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | ATTR_NAME          | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 4                | NUM_PAGES          | int              |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 5                | NUM_KEYS           | int              |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 6                | PRIMARY_KEY        | short            |
+    |                                                                                                                    |                  | 1 : primary key    |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 7                | KEY_ORDER          | short            |
+    |                                                                                                                    |                  |                    | base : 1         |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_TRIGGER                                                                                                    | 1                | NAME               | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | STATUS             | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | EVENT              | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 4                | TARGET_CLASS       | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 5                | TARGET_ATTR        | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 6                | ACTION_TIME        | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 7                | ACTION             | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 8                | PRIORITY           | float            |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 9                | CONDITION_TIME     | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 10               | CONDITION          | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_CLASS_PRIVILEGE                                                                                            | 1                | CLASS_NAME         | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | PRIVELEGE          | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | GRANTABLE          | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_ATTR_PRIVILEGE                                                                                             | 1                | ATTR_NAME          | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | PRIVILEGE          | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | GRANTABLE          | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_DIRECT_SUPER_CLASS                                                                                         | 1                | CLASS_NAME         | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | SUPER_CLASS_NAME   | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_PRIMARY_KEY                                                                                                | 1                | CLASS_NAME         | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | ATTR_NAME          | char \*          |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | KEY_SEQ            | short            |
+    |                                                                                                                    |                  |                    | base : 1         |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 4                | KEY_NAME           | char \*          |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_IMPORTED_KEYS                                                                                              | 1                | PKTABLE_NAME       | char \*\*        |
+    |                                                                                                                    |                  |                    |                  |
+    | Used to retrieve primary key columns that are referred by a foreign key column in a given table.                   |                  |                    |                  |
+    | The results are sorted by PKTABLE_NAME and KEY_SEQ.                                                                |                  |                    |                  |
+    |                                                                                                                    |                  |                    |                  |
+    | If this type is specified as a parameter, a foreign key table is specified for                                     |                  |                    |                  |
+    | class_name                                                                                                         |                  |                    |                  |
+    | , and                                                                                                              |                  |                    |                  |
+    | NULL                                                                                                               |                  |                    |                  |
+    | is specified for                                                                                                   |                  |                    |                  |
+    | attr_name.                                                                                                         |                  |                    |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | PKCOLUMN_NAME      | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | FKTABLE_NAME       | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 4                | FKCOLUMN_NAME      | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 5                | KEY_SEQ            | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 6                | UPDATE_ACTION      | int \*           |
+    |                                                                                                                    |                  | cascade=0          |                  |
+    |                                                                                                                    |                  | restrict=1         |                  |
+    |                                                                                                                    |                  | no action=2        |                  |
+    |                                                                                                                    |                  | set null=3         |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 7                | DELETE_ACTION      | int \*           |
+    |                                                                                                                    |                  | cascade=0          |                  |
+    |                                                                                                                    |                  | restrict=1         |                  |
+    |                                                                                                                    |                  | no action=2        |                  |
+    |                                                                                                                    |                  | set null=3         |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 8                | FK_NAME            | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 9                | PK_NAME            | char \*\*        |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_EXPORTED_KEYS                                                                                              | 1                | PKTABLE_NAME       | char \*\*        |
+    |                                                                                                                    |                  |                    |                  |
+    | Used to retrieve primary key columns that are referred by all foreign key columns.                                 |                  |                    |                  |
+    | The results are sorted by FKTABLE_NAME and KEY_SEQ.                                                                |                  |                    |                  |
+    | If this type is specified as a parameter, a primary key table is specified for                                     |                  |                    |                  |
+    | class_name                                                                                                         |                  |                    |                  |
+    | , and                                                                                                              |                  |                    |                  |
+    | NULL                                                                                                               |                  |                    |                  |
+    | is specified for                                                                                                   |                  |                    |                  |
+    | attr_name.                                                                                                         |                  |                    |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | PKCOLUMN_NAME      | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | FKTABLE_NAME       | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 4                | FKCOLUMN_NAME      | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 5                | KEY_SEQ            | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 6                | UPDATE_ACTION      | int \*           |
+    |                                                                                                                    |                  | cascade=0          |                  |
+    |                                                                                                                    |                  | restrict=1         |                  |
+    |                                                                                                                    |                  | no action=2        |                  |
+    |                                                                                                                    |                  | set null=3         |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 7                | DELETE_ACTION      | int \*           |
+    |                                                                                                                    |                  | cascade=0          |                  |
+    |                                                                                                                    |                  | restrict=1         |                  |
+    |                                                                                                                    |                  | no action=2        |                  |
+    |                                                                                                                    |                  | set null=3         |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 8                | FK_NAME            | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 9                | PK_NAME            | char \*\*        |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
+    | CCI_SCH_CROSS_REFERENCE                                                                                            | 1                | PKTABLE_NAME       | char \*\*        |
+    |                                                                                                                    |                  |                    |                  |
+    | Used to retrieve foreign key information when primary keys and foreign keys in a given table are cross referenced. |                  |                    |                  |
+    | The results are sorted by FKTABLE_NAME and KEY_SEQ.                                                                |                  |                    |                  |
+    |                                                                                                                    |                  |                    |                  |
+    | If this type is specified as a parameter, a primary key is specified for                                           |                  |                    |                  |
+    | class_name                                                                                                         |                  |                    |                  |
+    | , and a foreign key table is specified for                                                                         |                  |                    |                  |
+    | attr_name.                                                                                                         |                  |                    |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 2                | PKCOLUMN_NAME      | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 3                | FKTABLE_NAME       | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 4                | FKCOLUMN_NAME      | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 5                | KEY_SEQ            | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 6                | UPDATE_ACTION      | int \*           |
+    |                                                                                                                    |                  | cascade=0          |                  |
+    |                                                                                                                    |                  | restrict=1         |                  |
+    |                                                                                                                    |                  | no action=2        |                  |
+    |                                                                                                                    |                  | set null=3         |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 7                | DELETE_ACTION      | int \*           |
+    |                                                                                                                    |                  | cascade=0          |                  |
+    |                                                                                                                    |                  | restrict=1         |                  |
+    |                                                                                                                    |                  | no action=2        |                  |
+    |                                                                                                                    |                  | set null=3         |                  |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 8                | FK_NAME            | char \*\*        |
+    |                                                                                                                    +------------------+--------------------+------------------+
+    |                                                                                                                    | 9                | PK_NAME            | char \*\*        |
+    +--------------------------------------------------------------------------------------------------------------------+------------------+--------------------+------------------+
 
     In the **cci_schema_info** function, the *type* argument supports the pattern matching of the **LIKE** statement for the *class_name* and *attr_name*.
 

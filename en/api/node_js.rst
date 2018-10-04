@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid node.js driver, cubrid node.js api, cubrid node.js programming
-:meta-description: CUBRID Node.js driver is developed in 100% JavaScript and does not require specific platform compilation.
-
 **************
 Node.js Driver
 **************
@@ -20,8 +16,7 @@ For more details, see http://nodejs.org/.
 
 If you want to download CUBRRID Node.js driver or find the recent information, see the following sites:
 
-.. FIXME: *   Introducing project: http://www.cubrid.org/wiki_apis/entry/cubrid-node-js-driver
-
+*   Introducing project: http://www.cubrid.org/wiki_apis/entry/cubrid-node-js-driver
 *   source code main repository: https://github.com/CUBRID/node-cubrid
 
 Installing Node.js 
@@ -45,18 +40,16 @@ If you uninstall CUBRID Node.js driver, do the following command. ::
 CUBRID Node.js Programming
 ==========================
 
-.. FIXME: Connection
-.. FIXME: ----------
+Connection
+----------
 
-.. FIXME: * `Connecting to CUBRID through Node.js Driver <http://www.cubrid.org/wiki_apis/entry/connecting-to-cubrid-through-node-js-driver>`_
+* `Connecting to CUBRID through Node.js Driver <http://www.cubrid.org/wiki_apis/entry/connecting-to-cubrid-through-node-js-driver>`_
 
 Examples
 --------
 
-.. FIXME: The following blog is missing
-.. FIXME: * `Common uses of CUBRID Node.js API with examples <http://www.cubrid.org/blog/cubrid-appstools/common-uses-of-cubrid-nodejs-api-with-examples/>`_
-.. FIXME: * `Executing Queries with CUBRID Node.js Driver <http://www.cubrid.org/wiki_apis/entry/executing-queries-with-cubrid-node-js-driver>`_
-
+* `Common uses of CUBRID Node.js API with examples <http://www.cubrid.org/blog/cubrid-appstools/common-uses-of-cubrid-nodejs-api-with-examples/>`_
+* `Executing Queries with CUBRID Node.js Driver <http://www.cubrid.org/wiki_apis/entry/executing-queries-with-cubrid-node-js-driver>`_
 * `Example using events <https://github.com/CUBRID/node-cubrid#usage>`_
 * `Example based on asyc Node.js module <https://github.com/CUBRID/node-cubrid#usage>`_
 * `Example plain callback style <https://github.com/CUBRID/node-cubrid#usage>`_

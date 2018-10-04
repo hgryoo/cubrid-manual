@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid jsp, loadjava utility
-:meta-description: CUBRID supports to develop stored functions and procedures in Java. Java stored functions/procedures are executed on the JVM (Java Virtual Machine) hosted by CUBRID.
-
 ******************************
 Java Stored Function/Procedure
 ******************************
@@ -148,16 +144,6 @@ Create a CUBRID stored function and publish the Java class as shown below.
     AS LANGUAGE JAVA 
     NAME 'SpCubrid.HelloCubrid() return java.lang.String';
 
-.. CREATE OR REPLACE FUNCTION is allowed from 10.0: CUBRIDSUS-6542
-
-Or with **OR REPLACE** syntax, you can replace the current stored function/procedure or create the new stored function/procedure.
-
-.. code-block:: java
-
-    CREATE OR REPLACE FUNCTION hello() RETURN STRING
-    AS LANGUAGE JAVA
-    NAME 'SpCubrid.HelloCubrid() return java.lang.String';    
-    
 Call the Java stored function/procedure
 ---------------------------------------
 
@@ -298,21 +284,16 @@ If there is a return value, it is a function; if not, it is a procedure.
 
 ::
 
-    CREATE [OR REPLACE] FUNCTION function_name[(param [COMMENT 'param_comment_string'] [, param [COMMENT 'param_comment_string']]...)] RETURN sql_type
+    CREATE FUNCTION function_name[(param[, param]...)] RETURN sql_type
     {IS | AS} LANGUAGE JAVA
-    NAME 'method_fullname (java_type_fullname [,java_type_fullname]...) [return java_type_fullname]'
-    COMMENT 'sp_comment';
+    NAME 'method_fullname (java_type_fullname[,java_type_fullname]...) [return java_type_fullname]';
 
-    CREATE [OR REPLACE] PROCEDURE procedure_name[(param [COMMENT 'param_comment_string'][, param [COMMENT 'param_comment_string']] ...)]
+    CREATE PROCEDURE procedure_name[(param[, param] ...)]
     {IS | AS} LANGUAGE JAVA
-    NAME 'method_fullname (java_type_fullname [,java_type_fullname]...) [return java_type_fullname]';
-    COMMENT 'sp_comment_string';
+    NAME 'method_fullname (java_type_fullname[,java_type_fullname]...) [return java_type_fullname]';
 
     parameter_name [IN|OUT|IN OUT|INOUT] sql_type
        (default IN)
-
-*   *param_comment_string*: specifies the parameter's comment string.
-*   *sp_comment_string*: specifies the Java stored function/procedure's comment string.
 
 If the parameter of a Java stored function/procedure is set to **OUT**, it will be passed as a one-dimensional array whose length is 1. Therefore, a Java method must store its value to pass in the first space of the array.
 
@@ -410,38 +391,6 @@ A Java stored function/procedure can be deleted only by the user who published i
 
     DROP FUNCTION hello, sp_int;
     DROP PROCEDURE Athlete_Add;
-
-COMMENT of Java Stored Function/Procedure
------------------------------------------
-
-A comment of stored function/procedure can be written at the end of the statement as follows.
-
-.. code-block:: sql
-
-
-    CREATE FUNCTION Hello() RETURN VARCHAR
-    AS LANGUAGE JAVA
-    NAME 'SpCubrid.HelloCubrid() return java.lang.String'
-    COMMENT 'function comment';
-
-A comment of a paramenter can be written as follows.
-
-.. code-block:: sql
-
-    CREATE OR REPLACE FUNCTION test(i in number COMMENT 'arg i') 
-    RETURN NUMBER AS LANGUAGE JAVA NAME 'SpTest.testInt(int) return int' COMMENT 'function test';
-
-A comment of a stored function/procedure can be shown by running the following syntax.
-
-.. code-block:: sql
-
-    SELECT sp_name, comment FROM db_stored_procedure; 
-
-A comment for a parameter of a function can be shown by running the following syntax.
-
-.. code-block:: sql
-          
-    SELECT sp_name, arg_name, comment FROM db_stored_procedure_args;
 
 Java Stored Function/Procedure Call
 ===================================

@@ -1,13 +1,6 @@
-
-:meta-keywords: cubrid md5, cubrid sha1, cubrid sha2
-
-:tocdepth: 3
-
 *******************
 Encryption Function
 *******************
-
-.. contents::
 
 MD5
 ===

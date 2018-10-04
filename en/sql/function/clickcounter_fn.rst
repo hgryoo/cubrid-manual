@@ -1,14 +1,6 @@
-
-:meta-keywords: cubrid incr, cubrid decr
-:meta-description: The **INCR** and **DECR** functions are called "click counters" and can be effectively used to quickly update a counter.
-
-:tocdepth: 3
-
 ***********************
 Click Counter Functions
 ***********************
-
-.. contents::
 
 INCR, DECR
 ==========

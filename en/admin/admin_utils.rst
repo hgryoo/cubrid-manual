@@ -1,11 +1,7 @@
-
-:meta-keywords: cubrid create, cubrid add volume, cubrid backup, cubrid online backup, cubrid restore, cubrid unload, cubrid load, cubrid space, cubrid compact, cubrid optimize, cubrid plan dump, cubrid stat dump, cubrid check, cubrid diag, cubrid commands
-:meta-description: CUBRID comprehensive list of utilities and commands. Utilities: createdb, deletedb, backupdb, restoredb, compactdb, statdump, diagdb, checkdb, genlocale, gen_tz and many others. CUBRID commands for HA, Locale and Timezone.
-
 .. _cubrid-utilities:
 
-cubrid Utilities
-================
+cubrid Management Utilities
+===========================
 
 The following shows how to use the cubrid management utilities. ::
 
@@ -38,20 +34,161 @@ The following shows how to use the cubrid management utilities. ::
         synccolldb [option] <database-name>  --- Synchronizing the DB collation with the system collation
         genlocale [option] <database-name>  --- Compiling the locale information to use
         dumplocale [option] <database-name>   --- Printing human readable text for the compiled binary locale information
-        gen_tz [option] [<database-name>]  --- Generates C source file containing timezone data ready to be compiled into a shared library
-        dump_tz [option]  --- Displaying timezone related information
 
 cubrid Utility Logging
 ----------------------
  
 CUBRID supports logging feature for the execution result of **cubrid** utilities; for details, see :ref:`cubrid-utility-logging`.
 
+Database Users
+==============
+
+A CUBRID database user can have members with the same authorization. If authorization **A** is granted to a user, the same authorization is also granted to all members belonging to the user. A database user and its members are called a "group."; a user who has no members is called a "user."
+
+CUBRID provides **DBA** and **PUBLIC** users by default.
+
+*   **DBA** can access every object in the database, that is, it has authorization at the highest level. Only **DBA** has sufficient authorization to add, alter and delete the database users.
+
+*   All users including **DBA** are members of **PUBLIC**. Therefore, all database users have the authorization granted to **PUBLIC** . For example, if authorization **B** is added to **PUBLIC** group, all database members will automatically have the **B** authorization.
+
+.. _databases-txt-file:
+
+databases.txt File
+==================
+
+CUBRID stores information on the locations of all existing databases in the **databases.txt** file. This file is called the "database location file." A database location file is used when CUBRID executes utilities for creating, renaming, deleting or replicating databases; it is also used when CUBRID runs each database. By default, this file is located in the **databases** directory under the installation directory. The directory is located through the environment variable **CUBRID_DATABASES**. 
+
+::
+
+    db_name db_directory server_host logfile_directory
+
+The format of each line of a database location file is the same as defined by the above syntax; it contains information on the database name, database path, server host and the path to the log files. The following example shows how to check the contents of a database location file.
+
+::
+
+    % more databases.txt
+
+    dist_testdb /home1/user/CUBRID/bin d85007 /home1/user/CUBRID/bin
+    dist_demodb /home1/user/CUBRID/bin d85007 /home1/user/CUBRID/bin
+    testdb /home1/user/CUBRID/databases/testdb d85007 /home1/user/CUBRID/databases/testdb
+    demodb /home1/user/CUBRID/databases/demodb d85007 /home1/user/CUBRID/databases/demodb
+
+By default, the database location file is stored in the **databases** directory under the installation directory. You can change the default directory by modifying the value of the **CUBRID_DATABASES** environment variable. The path to  the database location file must be valid so that the **cubrid** utility for database management can access the file properly. You must enter the directory path correctly and check if you have write permission on the file. The following example shows how to check the value configured in the **CUBRID_DATABASES** environment variable.
+
+::
+
+    % set | grep CUBRID_DATABASES
+    CUBRID_DATABASES=/home1/user/CUBRID/databases
+
+An error occurs if an invalid directory path is set in the **CUBRID_DATABASES** environment variable. If the directory path is valid but the database location file does not exist, a new location information file is created. If the **CUBRID_DATABASES** environment variable has not been configured at all, CUBRID retrieves the location information file in the current working directory.
+
+.. _db-create-add-delete:
+
+Creating Database, Adding Volume, Deleting Database
+===================================================
+
+The volumes of CUBRID database are classified as permanent volume, temporary volume and backup volume.
+
+*   In the permanent volumes,
+
+    *   there are generic, data, index and temp volumes in database volumes.
+    *   there are an active log, an archiving log and a background archiving log in log volumes.
+    
+*   In temporary volume, there is a temporary temp volume.
+
+For more details on volumes, see :ref:`database-volume-structure`.
+
+The following is an example of files related to the database when testdb database is operated.
+
++----------------+-------+-----------------+----------------+------------------------------------------------------------------------------------------------------+
+| File name      | Size  | Type            | Classification | Description                                                                                          |
++================+=======+=================+================+======================================================================================================+
+| testdb         | 40MB  | generic         | Database       | The firstly created volume when DB is created. This is used as **generic** volume and includes       |
+|                |       |                 | volume         | the meta information of DB. The file size is 40M because "cubrid createdb" is executed after         |
+|                |       |                 |                | db_volume_size in cubrid.conf is specified as 40M                                                    |
+|                |       |                 |                | or the option of "cubrid createdb", --db-volume-size is specified as 40M.                            |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_x001    | 40MB  | one of generic, |                | Automatically created **generic** file or a file created by the user's command for adding a volume.  |
+|                |       | data, index and |                | The size of **generic** file which was automatically created became 40MB because DB was started      |
+|                |       | temp            |                | after specifying db_volume_size in cubrid.conf as 40M.                                               |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_x002    | 40MB  | one of generic, |                | Automatically created **generic** file or a file created by the user's command for adding a volume.  |
+|                |       | data, index and |                |                                                                                                      |
+|                |       | temp            |                |                                                                                                      |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_x003    | 40MB  | one of generic, |                | Automatically created **generic** file or a file created by the user's command for adding a volume.  |
+|                |       | data, index and |                |                                                                                                      |
+|                |       | temp            |                |                                                                                                      |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_x004    | 40MB  | one of generic, |                | Automatically created **generic** file or a file created by the user's command for adding a volume.  |
+|                |       | data, index and |                |                                                                                                      |
+|                |       | temp            |                |                                                                                                      |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_x005    | 40MB  | one of generic, |                | Automatically created **generic** file or a file created by the user's command for adding a volume.  |
+|                |       | data, index and |                |                                                                                                      |
+|                |       | temp            |                |                                                                                                      |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_x006    | 2GB   | one of generic, |                | Automatically created **generic** file or a file created by the user's command for adding a volume.  |
+|                |       | data, index and |                | The size became 2GB because DB was restarted after specifying db_volume_size in cubrid.conf as 2G or |
+|                |       | temp            |                | the option of "cubrid addvoldb", --db-volume-size is specified as 2G.                                |
++----------------+-------+-----------------+----------------+------------------------------------------------------------------------------------------------------+
+| testdb_t32766  | 360MB | temporary temp  | None           | a file created temporarily when the space of **temp** volume is insufficient during running          |
+|                |       |                 |                | the **temp** volume required query(e.g.: sorting, scanning, index creation).                         |
+|                |       |                 |                | This is removed when DB is restarted. But, this should not be deleted arbitrarily.                   |
++----------------+-------+-----------------+----------------+------------------------------------------------------------------------------------------------------+
+| testdb_lgar_t  | 40MB  | background      | Log            | A log file which is related to the background archiving feature.                                     |
+|                |       | archiving       | volume         | This is used when storing the archiving log.                                                         |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_lgar224 | 40MB  | archiving       |                | Archiving logs are continuously archived and the files ending with three digits are created.         |
+|                |       |                 |                | At this time, archiving logs from 001~223 seem to be removed normally by "cubrid backupdb" -r option |
+|                |       |                 |                | or the setting of log_max_archives in cubrid.conf. When archiving logs are removed, you can see the  |
+|                |       |                 |                | removed archiving log numbers in the REMOVE section of lginf file. See :ref:`managing-archive-logs`. |
++----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
+| testdb_lgat    | 40MB  | active          |                | Active log file                                                                                      |
++----------------+-------+-----------------+----------------+------------------------------------------------------------------------------------------------------+
+
+*   Database volume file
+
+    *   In the above, testdb, testdb_x001 ~ testdb_x006 are classified as the database volume files.
+    *   File size is determined by "db_volume_size" in cubrid.conf or the "--db-volume-size" option of "cubrid createdb" and "cubrid addvoldb".
+    *  The type of an automatically created volume is always **generic**.
+    
+*   Log volume file
+
+    *   In the above, testdb_lgar_t, testdb_lgar22 and testdb_lgat are classified as the log volume files.
+    *   File size is determined by "log_volume_size" in cubrid.conf or the "--log-volume-size" option of "cubrid createdb".
+
+.. note::
+
+    Temp volume is a space where the intermediate and final results of query processing and sorting are temporarily stored; this is separated as temporary temp volume and permanent temp volume.
+
+    The examples of queries that can use permanent temp volume or temporary temp volume are as follows:
+
+    *   Queries creating the resultset like **SELECT**
+    *   Queries including **GROUP BY** or **ORDER BY**
+    *   Queries including a subquery
+    *   Queries executing sort-merge join
+    *   Queries including the **CREATE INDEX** statement
+
+    When executing the queries above, the temp volume is used after exhausting the memory space (the space size is determined by the system parameter **temp_file_memory_size_in_pages** specified in **cubrid.conf**) assigned to store **SELECT** results or sort the data. The order in which the storage space is used to store the results of query processing and sorting is as follows: when the current storage space is exhausted, the next storage space is used.
+
+    *   **temp_file_memory_size_in_pages** memory secured by the system parameter
+    *   Permanent temp volume
+    *   Temporary temp volume (for details, see the below)
+
+    To prevent the system from insufficient disk space (as the size of temporary temp volume is increased than expected because a query which requires a big-sized temp space is executed), we recommend that     you should;
+    
+    *   secure the expected permanent temp volume in advance and 
+    *   limit the size of the space used in the temporary temp volume when a query is executed.
+    
+    Permanent temp volume secures this space as running "cubrid addvoldb -p temp", and the maximum temporary temp space which is occupied during a query runs can be limited by the **temp_file_max_size_in_pages** (default is -1, which means infinite) parameter in **cubrid.conf**.
+
 .. _creating-database:
 
 .. _createdb:
 
-createdb
---------
+Creating Database
+-----------------
 
 The **cubrid createdb** utility creates databases and initializes them with the built-in CUBRID system tables. It can also define initial users to be authorized in the database and specify the locations of the logs and databases. In general, the **cubrid createdb** utility is used only by DBA. 
 
@@ -87,7 +224,7 @@ The following shows [options] available with the **cubrid** **createdb** utility
 
 .. option:: --db-volume-size=SIZE
 
-    This option specifies the size of the database volume that will be created first. The default value is the value of the system parameter **db_volume_size**. You can set units as K, M, G and T, which stand for kilobytes (KB), megabytes (MB), gigabytes (GB), and terabytes (TB) respectively; if you omit the unit, bytes will be applied. The size of the database is always rounded up to 64 disk sectors, which depends on the size of a page and can be 16M, 32M or 64M for page size 4k, 8k and 16k respectively.
+    This option specifies the size of the database volume that will be created first. The default value is the value of the system parameter **db_volume_size**, and the minimum value is 20M. You can set units as K, M, G and T, which stand for kilobytes (KB), megabytes (MB), gigabytes (GB), and terabytes (TB) respectively. If you omit the unit, bytes will be applied.
 
     The following example shows how to create a database named *testdb* and assign 512 MB to its first volume. ::
 
@@ -114,7 +251,7 @@ The following shows [options] available with the **cubrid** **createdb** utility
     This option specifies the size of the log volume page. The default value is the same as data page size. The minimum value is 4K and the maximum value is 16K. K stands for kilobytes (KB).
     The value of page size is one of the following: 4K, 8K, or 16K. If a value between 4K and 16K is specified, system rounds up the number. If a value greater than 16K or less than 4K, the specified number is used.
 
-    The following example shows how to create  a database named *testdb* and configure its log volume page size 8K. ::
+    The following example shows how to create a database named *testdb* and configure its log volume page size 8K. ::
 
         cubrid createdb --log-page-size=8K testdb en_US
 
@@ -126,7 +263,7 @@ The following shows [options] available with the **cubrid** **createdb** utility
 
         cubrid createdb --comment "a new database for study" testdb en_US
 
-.. option:: -F, --file-path=PATH
+.. option:: -F, --file_path=PATH
 
     The **-F** option specifies an absolute path to a directory where the new database will be created. If the **-F** option is not specified, the new database is created in the current working directory.
 
@@ -134,7 +271,7 @@ The following shows [options] available with the **cubrid** **createdb** utility
 
         cubrid createdb -F "/dbtemp/new_db/" testdb en_US
 
-.. option:: -L, --log-path=PATH
+.. option:: -L, --log_path=PATH
 
     The **-L** option specifies an absolute path to the directory where database log files are created. If the **-L** option is not specified, log files are created in the directory specified by the **-F** option. 
     If neither **-F** nor **-L** option is specified, database log files are created in the current working directory.
@@ -180,25 +317,24 @@ The following shows [options] available with the **cubrid** **createdb** utility
         #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         # NAME volname COMMENTS volcmnts PURPOSE volpurp NPAGES volnpgs
         NAME data_v1 COMMENTS "data information volume" PURPOSE data NPAGES 1000
-        NAME data_v2 COMMENTS "data information volume" NPAGES 1000
+        NAME data_v2 COMMENTS "data information volume" PURPOSE data NPAGES 1000
+        NAME data_v3 PURPOSE data NPAGES 1000
+        NAME index_v1 COMMENTS "index information volume" PURPOSE index NPAGES 500
         NAME temp_v1 COMMENTS "temporary information volume" PURPOSE temp NPAGES 500
+        NAME generic_v1 COMMENTS "generic information volume" PURPOSE generic NPAGES 500
         #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
     As shown in the example, the specification of each volume consists following. ::
 
-        [NAME volname] [COMMENTS volcmnts] [PURPOSE volpurp] NPAGES volnpgs
+        NAME volname COMMENTS volcmnts PURPOSE volpurp NPAGES volnpgs
 
     *   *volname*: The name of the volume to be created. It must follow the UNIX file name conventions and be a simple name not including the directory path. The specification of a volume name can be omitted. If it is, the "database name to be created by the system_volume identifier" becomes the volume name.
 
     *   *volcmnts*: Comment to be written in the volume header. It contains information on the additional volume to be created. The specification of the comment on a volume can also be omitted.
 
-    *   *volpurp*: The purpose for which the volume will be used. It can be either permanent data (default option) or temporary. 
+    *   *volpurp*: It must be one of the following types: **data**, **index**, **temp**, or **generic** based on the purpose of storing volumes. The specification of the purpose of a volume can be omitted in which case the default value is **generic**.
 
-	.. note:: 
-		For backward compatibility, all old keywords, **data**, **index**, **temp**, or **generic** are accepted. **temp** stands for temporary data purpose, while the rest stand for permanent data purpose.
-
-
-    *   *volnpgs*: The number of pages of the additional volume to be created. The specification of the number of pages of the volume cannot be omitted; it must be specified. The actual volume size is rounded up to the next multiple of **64 sectors**.
+    *   *volnpgs*: The number of pages of the additional volume to be created. The specification of the number of pages of the volume cannot be omitted; it must be specified.
 
 .. option:: --user-definition-file=FILE
 
@@ -280,26 +416,32 @@ The following shows [options] available with the **cubrid** **createdb** utility
 
 .. note::
 
-    *   **temp_file_max_size_in_pages** is a parameter used to configure the maximum size of temporary volumes - used for complicated queries or storing arrays - on the disk. With the default value **-1**, the temporary volumes size is only limited by the capacity of the disk specified by the **temp_volume_path** parameter. If the value is 0, no temporary volumes can be created. In this case, a permanent volume with temporary data purpose should be added by using the :ref:`cubrid addvoldb <adding-database-volume>` utility. For an efficient storage management, it is recommended to use the latter approach.
+    *   **temp_file_max_size_in_pages** is a parameter used to configure the maximum number of pages assigned to store the temporary temp volume - used for complicated queries or storing arrays - on the disk. While the default value is **-1**, the temporary temp volume may be increased up to the amount of extra space on the disk specified by the **temp_volume_path** parameter. If the value is 0, the temporary temp volume cannot be created. In this case, the permanent temp volume should be added by using the :ref:`cubrid addvoldb <adding-database-volume>` utility. For the efficient management of the volume, it is recommended to add a volume for each usage. 
         
-    *   By using the :ref:`cubrid spacedb <spacedb>` utility, you can check the remaining space of each volume. By using the :ref:`cubrid addvoldb <adding-database-volume>` utility, you can add more volumes as needed while managing the database. You are advised to add more volumes when there is less system load. When all preassigned volumes are completely in use, the database system automatically creates new volumes.
+    *   By using the :ref:`cubrid spacedb <spacedb>` utility, you can check the reaming space of each volume. By using the :ref:`cubrid addvoldb <adding-database-volume>` utility, you can add more volumes as needed while managing the database. When adding a volume while managing the database, you are advised to do so when there is less system load. Once the assigned volume for a usage is completely in use, a **generic** volume will be created, so it is suggested to add extra volume for a usage that is expected to require more space.
 
-The following example shows how to create a database, with additional volumes, including one for temporary data purpose. ::
+The following example shows how to create a database, classify volume usage, and add volumes such as **data**, **index**, and **temp**. ::
 
     cubrid createdb --db-volume-size=512M --log-volume-size=256M cubriddb en_US
-    cubrid addvoldb -S -n cubriddb_DATA01 --db-volume-size=512M cubriddb
-    cubrid addvoldb -S -p temp -n cubriddb_TEMP01 --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p data -n cubriddb_DATA01 --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p data -n cubriddb_DATA02 --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p index -n cubriddb_INDEX01 cubriddb --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p temp -n cubriddb_TEMP01 cubriddb --db-volume-size=512M cubriddb
 
 .. _adding-database-volume:
 
 .. _addvoldb:
 
-addvoldb
---------
+Adding Database Volume
+----------------------
 
-If you want to micromanage CUBRID storage volumes, addvoldb is the tool for you. You can finely tune each file name, path, purpose, and size. The database system can handle all storage by itself, but it uses default values to configure each new volume.
+When the total free space size of the **generic** volumes has become smaller than the size which is specified at the system parameter **generic_vol_prealloc_size** (default: 50M) in :ref:`disk-parameters`, **generic** volume is added automatically. Automatically adding a volume is done when a new page is required; The volume is not expanded when only a SELECT queries are executed.
 
-The command for manually adding a database volume is as follows.
+CUBRID volumes are separated by the purpose of the usage such as data storage, index storage, temporary result storage; **generic** volume can be used for data and index storage.
+
+For the each type(purpose) of volumes, see :ref:`database-volume-structure`.
+
+In comparison, the command for adding a database volume manually is as follows.
 
 ::
 
@@ -311,11 +453,13 @@ The command for manually adding a database volume is as follows.
     
 *   *database_name*: Specifies the name of the database to which a volume is to be added without including the path name to the directory where the database is to be created.
 
-The following example shows how to create a database, with additional multi-purpose volumes. ::
+The following example shows how to create a database, classify volume usage, and add volumes such as **data**, **index**, and **temp**. ::
 
     cubrid createdb --db-volume-size=512M --log-volume-size=256M cubriddb en_US
-    cubrid addvoldb -S -n cubriddb_DATA01 --db-volume-size=512M cubriddb
-    cubrid addvoldb -S -p temp -n cubriddb_TEMP01 --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p data -n cubriddb_DATA01 --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p data -n cubriddb_DATA02 --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p index -n cubriddb_INDEX01 cubriddb --db-volume-size=512M cubriddb
+    cubrid addvoldb -S -p temp -n cubriddb_TEMP01 cubriddb --db-volume-size=512M cubriddb
 
 The following shows [options] available with the **cubrid addvoldb** utility.
 
@@ -323,54 +467,46 @@ The following shows [options] available with the **cubrid addvoldb** utility.
 
 .. option:: --db-volume-size=SIZE
 
-    **--db-volume-size** is an option that specifies the size of the volume to be added to a specified database. If the **--db-volume-size** option is omitted, the value of the system parameter **db_volume_size** is used by default. You can set units as K, M, G and T, which stand for kilobytes (KB), megabytes (MB), gigabytes (GB), and terabytes (TB) respectively. If you omit the unit, bytes will be applied. The size of the database is always rounded up to 64 disk sectors, which depends on the size of a page and can be 16M, 32M or 64M for page size 4k, 8k and 16k respectively.
+    **--db-volume-size** is an option that specifies the size of the volume to be added to a specified database. If the **--db-volume-size** option is omitted, the value of the system parameter **db_volume_size** is used by default. You can set units as K, M, G and T, which stand for kilobytes (KB), megabytes (MB), gigabytes (GB), and terabytes (TB) respectively. If you omit the unit, bytes will be applied.
 
     The following example shows how to add a volume for which 256 MB are assigned to the *testdb* database. ::
 
-        cubrid addvoldb --db-volume-size=256M testdb
+        cubrid addvoldb -p data --db-volume-size=256M testdb
 
 .. option:: -n, --volume-name=NAME
 
     This option specifies the name of the volume to be added to a specified database. The volume name must follow the file name protocol of the operating system and be a simple one without including the directory path or spaces. 
     If the **-n** option is omitted, the name of the volume to be added is configured by the system automatically as "database name_volume identifier". For example, if the database name is *testdb*, the volume name *testdb_x001* is automatically configured.
     
-    The following example shows how to specify a different name, *testdb_v1*, to newly added volume. ::
+    The following example shows how to add a volume for which 256 MB are assigned to the *testdb* database in standalone mode. The volume name *testdb_v1* will be created. ::
 
-        cubrid addvoldb -n testdb_v1 testdb
+        cubrid addvoldb -S -n testdb_v1 --db-volume-size=256M testdb
 
 .. option::  -F, --file-path=PATH
 
     This option specifies the directory path where the volume to be added will be stored. If the **-F** option is omitted, the value of the system parameter **volume_extension_path** is used by default.
 
-    The following example shows how to add a volume in the */dbtemp/addvol* directory. Since the **-n** option is not specified for the volume name, the volume name *testdb_x001* will be created. ::
+    The following example shows how to add a volume for which 256 MB are assigned to the *testdb* database in standalone mode. The added volume is created in the /dbtemp/addvol directory. Because the **-n** option is not specified for the volume name, the volume name *testdb_x001* will be created. ::
 
-        cubrid addvoldb -F /dbtemp/addvol/ testdb
+        cubrid addvoldb -S -F /dbtemp/addvol/ --db-volume-size=256M testdb
 
 .. option:: --comment COMMENT
 
     This option facilitates to retrieve information on the added volume by adding such information in the form of comments. It is recommended that the contents of a comment include the name of **DBA** who adds the volume, or the purpose of adding the volume. The comment must be enclosed in double quotes.  
     
-    The following example shows how to add a volume and inserts a comment with additional information. ::
+    The following example shows how to add a volume for which 256 MB are assigned to the *testdb* database in standalone mode and inserts a comment about the volume. ::
 
-        cubrid addvoldb --comment "Data volume added by cheolsoo kim because permanent data space was almost depleted." testdb
+        cubrid addvoldb -S --comment "data volume added_cheolsoo kim" --db-volume-size=256M testdb
 
 .. option:: -p, --purpose=PURPOSE
 
-    This option specifies the purpose of the volume to be added. The purpose defines the type of files that will be stored in added volume:
-    
-    * **PERMANENT DATA** to store table rows, indexes and system files.
-    * **TEMPORARY DATA** to store intermediate and final results of query processing and sorting.
-    
-    If not specified, the purpose of the volume is by default considered **PERMANENT DATA**. The following example shows how to change it to temporary. ::
-    
-        cubrid addvoldb -p temp testdb
+    This option specifies the purpose of the volume to be added. The reason for specifying the purpose of the volume is to improve the I/O performance by storing volumes separately on different disk drives according to their purpose. 
+    Parameter values that can be used for the **-p** option are **data**, **index**, **temp** and **generic**. The default value is **generic**. For the purpose of each volume, see :ref:`database-volume-structure`.
 
-    .. note::
+    The following example shows how to add a volume for which 256 MB are assigned to the *testdb* database in standalone mode. ::
 
-	    PERMANENT DATA volumes used to be classified as generic, data and index. The design of volumes has been changed, and since then the classification no longer exists. In order to avoid invalidating your old scripts, we chose to keep the keywords as valid options, but their effect will be the same. The only remaining option value with a real effect is temp.
-        
-	    For detailed information on each purpose, see :ref:`database-volume-structure`.
-    
+        cubrid addvoldb -S -p index --db-volume-size=256M testdb
+
 .. option:: -S, --SA-mode
 
     This option accesses the database in standalone mode without running the server process. This option has no parameter. If the **-S** option is not specified, the system assumes to be in client/server mode. ::
@@ -383,20 +519,18 @@ The following shows [options] available with the **cubrid addvoldb** utility.
 
         cubrid addvoldb -C --db-volume-size=256M testdb
 
-.. option:: --max-writesize-in-sec=SIZE
+.. option:: --max_writesize-in-sec=SIZE
 
-    The **--max-writesize-in-sec** is used to limit the impact of  system operating when you add a volume to the database. This can limit the maximum writing size per second. The unit of this option is K(kilobytes) and M(megabytes). The minimum value is 160K. If you set this value as less than 160K, it is changed as 160K. It can be used only in client/server mode.
+    The --max_writesize-in-sec is used to limit the impact of  system operating when you add a volume to the database. This can limit the maximum writing size per second. The unit of this option is K(kilobytes) and M(megabytes). The minimum value is 160K. If you set this value as less than 160K, it is changed as 160K. It can be used only in client/server mode.
     
     The below is an example to limit the writing size of the 2GB volume as 1MB. Consuming time will be about 35 minutes(= (2048MB/1MB) /60 sec.). ::
     
         cubrid addvoldb -C --db-volume-size=2G --max-writesize-in-sec=1M testdb
 
-.. _deleting-database:
-
 .. _deletedb:
 
-deletedb
---------
+Deleting Database
+-----------------
 
 The **cubrid deletedb** utility is used to delete a database. You must use the **cubrid deletedb** utility to delete a database, instead of using the file deletion commands of the operating system; a database consists of a few interdependent files. 
 
@@ -431,10 +565,13 @@ The following shows [options] available with the **cubrid deletedb** utility.
     
         cubrid deletedb -d testdb
 
+Renaming Database, Altering Host, Copying/Moving Database, Registering Database
+===============================================================================
+        
 .. _renamedb:
 
-renamedb
---------
+Renaming Database
+-----------------
 
 The **cubrid renamedb** utility renames a database. The names of information volumes, log volumes and control files are also renamed to conform to the new database one.
 
@@ -450,7 +587,7 @@ In contrast, the **cubrid alterdbhost** utility configures or changes the host n
 
 *   *dest_database_name*: The new name of the database. It must not be the same as that of an existing database. The path name to the directory where the database is to be created must not be included.
 
-The following shows [options] available with the **cubrid renamedb** utility.
+The following shows [options] available with the **cubrid deletedb** utility.
 
 .. program:: renamedb
 
@@ -496,8 +633,8 @@ The following shows [options] available with the **cubrid renamedb** utility.
 
 .. _alterdbhost:
 
-alterdbhost
------------
+Renaming Database Host
+----------------------
 
 The **cubrid alterdbhost** utility sets or changes the host name of the specified database. It changes the host name set in the **databases.txt** file. ::
 
@@ -517,8 +654,8 @@ The following shows the option available with the **cubrid alterdbhost** utility
 
 .. _copydb:
 
-copydb
-------
+Copying/Moving Database
+-----------------------
 
 The **cubrid copydb** utility copy or move a database to another location. As arguments, source and target name of database must be given. A target database name must be different from a source database name. When the target name argument is specified, the location of target database name is registered in the **databases.txt** file. 
 
@@ -564,7 +701,7 @@ The following shows [options] available with the **cubrid copydb** utility.
 
         cubrid copydb -E home/usr/CUBRID/databases/extvols demodb new_demodb
 
-.. option:: -i, --control-file=FILE
+.. option:: -i, --control_file=FILE
 
     The **-i** option specifies an input file where a new directory path information and a source volume are stored to copy or move multiple volumes into a different directory, respectively. This option cannot be used with the **-E** option. An input file named copy_path is specified in the example below. ::
 
@@ -574,9 +711,9 @@ The following shows [options] available with the **cubrid copydb** utility.
 
         # volid   source_fullvolname   dest_fullvolname
         0 /usr/databases/demodb        /drive1/usr/databases/new_demodb
-        1 /usr/databases/demodb_data1  /drive1/usr/databases/new_demodb_data1
-        2 /usr/databases/ext/demodb_ext1 /drive2//usr/databases/new_demodb_ext1
-        3 /usr/databases/ext/demodb_ext2  /drive2/usr/databases/new_demodb_ext2
+        1 /usr/databases/demodb_data1  /drive1/usr/databases/new_demodb new_data1
+        2 /usr/databases/ext/demodb index1 /drive2//usr/databases/new_demodb new_index1
+        3 /usr/ databases/ext/demodb index2  /drive2/usr/databases/new_demodb new_index2
 
     *   *volid*: An integer that is used to identify each volume. It can be checked in the database volume control file (**database_name_vinf**).
 
@@ -610,8 +747,8 @@ The following shows [options] available with the **cubrid copydb** utility.
 
 .. _installdb:
 
-installdb
----------
+Registering Database
+--------------------
 
 The **cubrid installdb** utility is used to register the information of a newly installed database to **databases.txt**, which stores database location information. The execution of this utility does not affect the operation of the database to be registered. 
 
@@ -651,15 +788,25 @@ The following shows [options] available with the **cubrid installdb** utility.
 
 .. include:: backup.inc
 
+.. _unload-load:
+
+Unloading and Loading Database
+==============================
+
+To use a new version of CUBRID database, you may need to migrate an existing data to a new one. For this purpose, you can use the "Export to an ASCII text file" and "Import from an ASCII text file" features provided by CUBRID.
+
 .. include:: migration.inc
+
+Checking and Compacting Database Space
+======================================
 
 .. _spacedb:
 
-spacedb
--------
+Checking Used Space
+-------------------
 
 The **cubrid spacedb** utility is used to check how much space of database volumes is being used. 
-The tool can show brief aggregated information on database space usage, or detailed descriptions of all volumes and files in use, based on its options. Information returned by the **cubrid spacedb** utility includes the volume ID's, names, purpose and total/free space of each volume.
+It shows a brief description of all permanent data volumes in the database. Information returned by the **cubrid spacedb** utility includes the ID, name, purpose and total/free space of each volume. You can also check the total number of volumes and used/unused database pages. 
 
 ::
 
@@ -699,86 +846,94 @@ The following shows [options] available with the **cubrid spacedb** utility.
     This option specifies the size unit of the space information of the database to be one of PAGE, M(MB), G(GB), T(TB), H(print-friendly). The default value is **H**. 
     If you set the value to H, the unit is automatically determined as follows: M if 1 MB = DB size < 1024 MB, G if 1 GB = DB size < 1024 GB. ::
 
+        $ cubrid spacedb --size-unit=M testdb
         $ cubrid spacedb --size-unit=H testdb
-        
+
         Space description for database 'testdb' with pagesize 16.0K. (log pagesize: 16.0K)
 
-        type                purpose            volume_count         used_size           free_size           total_size
-        PERMANENT           PERMANENT DATA                2            61.0 M             963.0 M                1.0 G
-        PERMANENT           TEMPORARY DATA                1            12.0 M             500.0 M              512.0 M
-        TEMPORARY           TEMPORARY DATA                1            40.0 M              88.0 M              128.0 M
-        -                   -                             4           113.0 M               1.5 G                1.6 G
+        Volid  Purpose    total_size   free_size  Vol Name
 
-        Space description for all volumes:
-        volid               type                purpose             used_size           free_size           total_size         volume_name
-            0               PERMANENT           PERMANENT DATA         60.0 M             452.0 M              512.0 M         /home1/cubrid/testdb
-            1               PERMANENT           PERMANENT DATA          1.0 M             511.0 M              512.0 M         /home1/cubrid/testdb_x001
-            2               PERMANENT           TEMPORARY DATA         12.0 M             500.0 M              512.0 M         /home1/cubrid/testdb_x002
-        32766               TEMPORARY           TEMPORARY DATA         40.0 M              88.0 M              128.0 M         /home1/cubrid/testdb_t32766
+            0   GENERIC       20.0 M      17.0 M  /home1/cubrid/testdb
+            1      DATA       20.0 M      19.5 M  /home1/cubrid/testdb_x001
+            2     INDEX       20.0 M      19.6 M  /home1/cubrid/testdb_x002
+            3      TEMP       20.0 M      19.6 M  /home1/cubrid/testdb_x003
+            4      TEMP       20.0 M      19.9 M  /home1/cubrid/testdb_x004
+        -------------------------------------------------------------------------------
+            5                100.0 M      95.6 M
+        Space description for temporary volumes for database 'testdb' with pagesize 16.0K.
+
+        Volid  Purpose    total_size   free_size  Vol Name
 
         LOB space description file:/home1/cubrid/lob
 
 .. option:: -s, --summarize
 
-    This option aggregates volume count, used size, free size and total size by volume types and purposes. There are three classes of volumes: permanent volumes with permanent data, permanent volumes with temporary data and temporary volume with temporary data; no temporary volumes with permanent data. Last row shows the total values for all types of volumes. ::
+    This option aggregates total_pages, used_pages and free_pages by DATA, INDEX, GENERIC, TEMP and TEMP TEMP, and outputs them. ::
 
         $ cubrid spacedb -s testdb
 
-        Space description for database 'testdb' with pagesize 16.0K. (log pagesize: 16.0K)
+        Summarized space description for database 'testdb' with pagesize 16.0K. (log pagesize: 16.0K)
 
-        type                purpose            volume_count         used_size           free_size           total_size
-        PERMANENT           PERMANENT DATA                2            61.0 M             963.0 M                1.0 G
-        PERMANENT           TEMPORARY DATA                1            12.0 M             500.0 M              512.0 M
-        TEMPORARY           TEMPORARY DATA                1            40.0 M              88.0 M              128.0 M
-        -                   -                             4           113.0 M               1.5 G                1.6 G
+        Purpose     total_size   used_size   free_size  volume_count
+        -------------------------------------------------------------
+              DATA      20.0 M       0.5 M      19.5 M          1
+             INDEX      20.0 M       0.4 M      19.6 M          1
+           GENERIC      20.0 M       3.0 M      17.0 M          1
+              TEMP      40.0 M       0.5 M      39.5 M          2
+         TEMP TEMP       0.0 M       0.0 M       0.0 M          0
+        -------------------------------------------------------------
+             TOTAL     100.0 M       4.4 M      95.6 M          5
 
 .. option:: -p, --purpose
 
-    This option shows detailed information on the purpose of stored data. The information includes number of files, used size, size of file tables, reserved sectors size and total size. ::
+    This option separates the used space as data_size, index_size and temp_size, and outputs them.
+
+    ::
     
         Space description for database 'testdb' with pagesize 16.0K. (log pagesize: 16.0K)
 
-        Detailed space description for files:
-        data_type           file_count           used_size          file_table_size     reserved_size       total_size
-        INDEX                       17               0.3 M                    0.3 M            16.5 M           17.0 M
-        HEAP                        28               7.6 M                    0.4 M            26.0 M           34.0 M
-        SYSTEM                       8               0.4 M                    0.1 M             7.5 M            8.0 M
-        TEMP                        10               0.0 M                    0.2 M            49.8 M           50.0 M
-        -                           63               8.2 M                    1.0 M            99.8 M          109.0 M
+        Volid  Purpose    total_size   free_size   data_size  index_size   temp_size  Vol Name
 
-.. _compactdb:
+            0   GENERIC       20.0 M      17.0 M       2.1 M       0.9 M       0.0 M  /home1/cubrid/testdb
+            1      DATA       20.0 M      19.5 M       0.4 M       0.0 M       0.0 M  /home1/cubrid/testdb_x001
+            2     INDEX       20.0 M      19.6 M       0.0 M       0.4 M       0.0 M  /home1/cubrid/testdb_x002
+            3      TEMP       20.0 M      19.6 M       0.0 M       0.0 M       0.3 M  /home1/cubrid/testdb_x003
+            4      TEMP       20.0 M      19.9 M       0.0 M       0.0 M       0.1 M  /home1/cubrid/testdb_x004
+        ----------------------------------------------------------------------------------------------------
+            5                100.0 M      95.6 M       2.5 M       1.2 M       0.4 M
+        Space description for temporary volumes for database 'testdb' with pagesize 16.0K.
 
-compactdb
----------
+        Volid  Purpose    total_size   free_size   data_size  index_size   temp_size  Vol Name
 
-The **cubrid compactdb** utility is used to secure unused space of the database volume. In case the database server is not running (offline), you can perform the job in standalone mode. In case the database server is running, you can perform it in client-server mode.
+        LOB space description file:/home1/cubrid/lob
 
 .. note::
 
-    The **cubrid compactdb** utility secures the space being taken by OIDs of deleted objects and by class changes. When an object is deleted, the space taken by its OID is not immediately freed because there might be other objects that refer to the deleted one. 
+    If you use **-p** and **-s** together, the summarized information of the used space will be separated as data_size, index_size and temp_size.
 
-    Therefore, when you make a table to reuse OIDs, it is recommended to use a REUSE_OID option as below.
-    
-    .. code-block:: sql
-    
-        CREATE TABLE tbl REUSE_OID
-        (
-            id INT PRIMARY KEY, 
-            b VARCHAR
-        );
-    
-    However, a table with a REUSE_OID option cannot be referred by the other table. That is, this table cannot be used as a type of the other table.
-    
-    .. code-block:: sql
-    
-        CREATE TABLE reuse_tbl (a INT PRIMARY KEY) REUSE_OID;
-        CREATE TABLE tbl_1 ( a reuse_tbl);
-    
     ::
-    
-        ERROR: The class 'reuse_tbl' is marked as REUSE_OID and is non-referable. Non-referable classes can't be the domain of an attribute and their instances' OIDs cannot be returned.
- 
-    To see details of REUSE_OID, please refer to :ref:`reuse-oid`.
+
+        $ cubrid spacedb -s -p testdb
+        Summarized space description for database 'testdb' with pagesize 16.0K. (log pagesize: 16.0K)
+
+        Purpose     total_size   used_size   free_size   data_size  index_size   temp_size  volume_count
+        -------------------------------------------------------------------------------------------------
+              DATA      20.0 M       0.5 M      19.5 M       0.4 M       0.0 M       0.0 M          1
+             INDEX      20.0 M       0.4 M      19.6 M       0.0 M       0.4 M       0.0 M          1
+           GENERIC      20.0 M       3.0 M      17.0 M       2.1 M       0.9 M       0.0 M          1
+              TEMP      40.0 M       0.5 M      39.5 M       0.0 M       0.0 M       0.4 M          2
+         TEMP TEMP       0.0 M       0.0 M       0.0 M       0.0 M       0.0 M       0.0 M          0
+        -------------------------------------------------------------------------------------------------
+             TOTAL     100.0 M       4.4 M      95.6 M       2.5 M       1.2 M       0.4 M          5
+
+.. _compactdb:
+
+Compacting Used Space
+---------------------
+
+The **cubrid compactdb** utility is used to secure unused space of the database volume. In case the database server is not running (offline), you can perform the job in standalone mode. In case the database server is running, you can perform it in client-server mode.
+
+The **cubrid compactdb** utility secures the space being taken by OIDs of deleted objects and by class changes. When an object is deleted, the space taken by its OID is not immediately freed because there might be other objects that refer to the deleted one. 
 
 Reference to the object deleted during compacting is displayed as **NULL**, which means this can be reused by OIDs. ::
 
@@ -839,10 +994,13 @@ The following options can be used in client/server mode only.
 
     You can specify a value of instance lock timeout with this option. The default value is 10 (seconds), the minimum value is 1, and the maximum value is 10. The less option value is specified, the more operation speeds up. However, the number of tables that can be processed becomes smaller, and vice versa. 
 
+Updating Statistics and Checking Query Plan
+===========================================
+
 .. _optimizedb:
 
-optimizedb
-----------
+Updating Statistics
+-------------------
 
 Updates statistical information such as the number of objects, the number of pages to access, and the distribution of attribute values. ::
 
@@ -870,8 +1028,8 @@ The following example shows how to update the query statistics information of al
 
 .. _plandump:
 
-plandump
---------
+Checking the Query Plan Cache
+-----------------------------
 
 The **cubrid plandump** utility is used to display information on the query plans stored (cached) on the server. ::
 
@@ -905,8 +1063,8 @@ The following shows [options] available with the **cubrid plandump** utility.
 
 .. _statdump:
 
-statdump
---------
+Dumping Statistics Information of Server
+----------------------------------------
 
 **cubrid statdump** utility checks statistics information processed by the CUBRID database server. The statistics information mainly consists of the following: File I/O, Page buffer, Logs, Transactions, Concurrency/Lock, Index, and Network request.
 
@@ -918,7 +1076,7 @@ You can also use CSQL's session commands to check the statistics information onl
 
 *   **cubrid**: An integrated utility for the CUBRID service and database management.
 
-*   **statdump**: A command that dumps the statistics information on the database server execution.
+*   **installdb**: A command that dumps the statistics information on the database server execution.
 
 *   *database_name*: The name of database which has the statistics data to be dumped.
 
@@ -946,51 +1104,33 @@ The following shows [options] available with the **cubrid statdump** utility.
     
         cubrid statdump -c demodb
 
-    The following outputs the values per every 5 seconds. 
-    
-    ::
+    The following outputs the values per every 5 seconds. ::
 
-        $ cubrid statdump -i 5 -c testdb
+        cubrid statdump -i 5 testdb
          
-
-        Thu January 07 16:46:05 GTB Standard Time 2016
-
+        Thu March 07 23:10:08 KST 2014
+         
          *** SERVER EXECUTION STATISTICS ***
         Num_file_creates              =          0
         Num_file_removes              =          0
         Num_file_ioreads              =          0
-        Num_file_iowrites             =         10
-        Num_file_iosynches            =         10
-        The timer values for file_iosync_all are:
-        Num_file_iosync_all           =          0
-        Total_time_file_iosync_all    =          0
-        Max_time_file_iosync_all      =          0
-        Avg_time_file_iosync_all      =          0
+        Num_file_iowrites             =          0
+        Num_file_iosynches            =          0
         Num_file_page_allocs          =          0
         Num_file_page_deallocs        =          0
         Num_data_page_fetches         =          0
         Num_data_page_dirties         =          0
         Num_data_page_ioreads         =          0
         Num_data_page_iowrites        =          0
-        Num_data_page_flushed         =          0
-        Num_data_page_private_quota   =        327
-        Num_data_page_private_count   =        898
-        Num_data_page_fixed           =          1
-        Num_data_page_dirty           =          3
-        Num_data_page_lru1            =        857
-        Num_data_page_lru2            =        873
-        Num_data_page_lru3            =        898
-        Num_data_page_victim_candidate =        898
-        Num_log_page_fetches          =          0
+        Num_data_page_victims         =          0
+        Num_data_page_iowrites_for_replacement =          0
         Num_log_page_ioreads          =          0
-        Num_log_page_iowrites         =         20
-        Num_log_append_records        =         20
+        Num_log_page_iowrites         =          0
+        Num_log_append_records        =          0
         Num_log_archives              =          0
         Num_log_start_checkpoints     =          0
         Num_log_end_checkpoints       =          0
         Num_log_wals                  =          0
-        Num_log_page_iowrites_for_replacement =          0
-        Num_log_page_replacements     =          0
         Num_page_locks_acquired       =          0
         Num_object_locks_acquired     =          0
         Num_page_locks_converted      =          0
@@ -999,7 +1139,6 @@ The following shows [options] available with the **cubrid statdump** utility.
         Num_object_locks_re-requested =          0
         Num_page_locks_waits          =          0
         Num_object_locks_waits        =          0
-        Num_object_locks_time_waited_usec =          0
         Num_tran_commits              =          0
         Num_tran_rollbacks            =          0
         Num_tran_savepoints           =          0
@@ -1012,11 +1151,9 @@ The following shows [options] available with the **cubrid statdump** utility.
         Num_btree_covered             =          0
         Num_btree_noncovered          =          0
         Num_btree_resumes             =          0
-        Num_btree_multirange_optimization =          0
+        Num_btree_multirange_optimization =      0
         Num_btree_splits              =          0
         Num_btree_merges              =          0
-        Num_btree_get_stats           =          0
-        Num_heap_stats_sync_bestspace =          0
         Num_query_selects             =          0
         Num_query_inserts             =          0
         Num_query_deletes             =          0
@@ -1032,14 +1169,14 @@ The following shows [options] available with the **cubrid statdump** utility.
         Num_query_holdable_cursors    =          0
         Num_sort_io_pages             =          0
         Num_sort_data_pages           =          0
-        Num_network_requests          =          4
+        Num_network_requests          =          1
         Num_adaptive_flush_pages      =          0
-        Num_adaptive_flush_log_pages  =         10
-        Num_adaptive_flush_max_pages  =      25600
+        Num_adaptive_flush_log_pages  =          0
+        Num_adaptive_flush_max_pages  =        900
         Num_prior_lsa_list_size       =          0
         Num_prior_lsa_list_maxed      =          0
-        Num_prior_lsa_list_removed    =         10
-        Num_heap_stats_bestspace_entries =        441
+        Num_prior_lsa_list_removed    =          0
+        Num_heap_stats_bestspace_entries =          0
         Num_heap_stats_bestspace_maxed =          0
         Time_ha_replication_delay     =          0
         Num_plan_cache_add            =          0
@@ -1049,1054 +1186,169 @@ The following shows [options] available with the **cubrid statdump** utility.
         Num_plan_cache_full           =          0
         Num_plan_cache_delete         =          0
         Num_plan_cache_invalid_xasl_id =          0
-        Num_plan_cache_entries        =          2
-        Num_vacuum_log_pages_vacuumed =          0
-        Num_vacuum_log_pages_to_vacuum =          0
-        Num_vacuum_prefetch_requests_log_pages =          0
-        Num_vacuum_prefetch_hits_log_pages =          0
-        Num_heap_home_inserts         =          0
-        Num_heap_big_inserts          =          0
-        Num_heap_assign_inserts       =          0
-        Num_heap_home_deletes         =          0
-        Num_heap_home_mvcc_deletes    =          0
-        Num_heap_home_to_rel_deletes  =          0
-        Num_heap_home_to_big_deletes  =          0
-        Num_heap_rel_deletes          =          0
-        Num_heap_rel_mvcc_deletes     =          0
-        Num_heap_rel_to_home_deletes  =          0
-        Num_heap_rel_to_big_deletes   =          0
-        Num_heap_rel_to_rel_deletes   =          0
-        Num_heap_big_deletes          =          0
-        Num_heap_big_mvcc_deletes     =          0
-        Num_heap_home_updates         =          0
-        Num_heap_home_to_rel_updates  =          0
-        Num_heap_home_to_big_updates  =          0
-        Num_heap_rel_updates          =          0
-        Num_heap_rel_to_home_updates  =          0
-        Num_heap_rel_to_rel_updates   =          0
-        Num_heap_rel_to_big_updates   =          0
-        Num_heap_big_updates          =          0
-        Num_heap_home_vacuums         =          0
-        Num_heap_big_vacuums          =          0
-        Num_heap_rel_vacuums          =          0
-        Num_heap_insid_vacuums        =          0
-        Num_heap_remove_vacuums       =          0
-        The timer values for heap_insert_prepare are:
-        Num_heap_insert_prepare  =          0
-        Total_time_heap_insert_prepare =          0
-        Max_time_heap_insert_prepare =          0
-        Avg_time_heap_insert_prepare =          0
-        The timer values for heap_insert_execute are:
-        Num_heap_insert_execute  =          0
-        Total_time_heap_insert_execute =          0
-        Max_time_heap_insert_execute =          0
-        Avg_time_heap_insert_execute =          0
-        The timer values for heap_insert_log are:
-        Num_heap_insert_log      =          0
-        Total_time_heap_insert_log =          0
-        Max_time_heap_insert_log =          0
-        Avg_time_heap_insert_log =          0
-        The timer values for heap_delete_prepare are:
-        Num_heap_delete_prepare  =          0
-        Total_time_heap_delete_prepare =          0
-        Max_time_heap_delete_prepare =          0
-        Avg_time_heap_delete_prepare =          0
-        The timer values for heap_delete_execute are:
-        Num_heap_delete_execute  =          0
-        Total_time_heap_delete_execute =          0
-        Max_time_heap_delete_execute =          0
-        Avg_time_heap_delete_execute =          0
-        The timer values for heap_delete_log are:
-        Num_heap_delete_log      =          0
-        Total_time_heap_delete_log =          0
-        Max_time_heap_delete_log =          0
-        Avg_time_heap_delete_log =          0
-        The timer values for heap_update_prepare are:
-        Num_heap_update_prepare  =          0
-        Total_time_heap_update_prepare =          0
-        Max_time_heap_update_prepare =          0
-        Avg_time_heap_update_prepare =          0
-        The timer values for heap_update_execute are:
-        Num_heap_update_execute  =          0
-        Total_time_heap_update_execute =          0
-        Max_time_heap_update_execute =          0
-        Avg_time_heap_update_execute =          0
-        The timer values for heap_update_log are:
-        Num_heap_update_log      =          0
-        Total_time_heap_update_log =          0
-        Max_time_heap_update_log =          0
-        Avg_time_heap_update_log =          0
-        The timer values for heap_vacuum_prepare are:
-        Num_heap_vacuum_prepare  =          0
-        Total_time_heap_vacuum_prepare =          0
-        Max_time_heap_vacuum_prepare =          0
-        Avg_time_heap_vacuum_prepare =          0
-        The timer values for heap_vacuum_execute are:
-        Num_heap_vacuum_execute  =          0
-        Total_time_heap_vacuum_execute =          0
-        Max_time_heap_vacuum_execute =          0
-        Avg_time_heap_vacuum_execute =          0
-        The timer values for heap_vacuum_log are:
-        Num_heap_vacuum_log      =          0
-        Total_time_heap_vacuum_log =          0
-        Max_time_heap_vacuum_log =          0
-        Avg_time_heap_vacuum_log =          0
-        The timer values for bt_fix_ovf_oids are:
-        Num_bt_fix_ovf_oids           =          0
-        Total_time_bt_fix_ovf_oids    =          0
-        Max_time_bt_fix_ovf_oids      =          0
-        Avg_time_bt_fix_ovf_oids      =          0
-        The timer values for bt_unique_rlocks are:
-        Num_bt_unique_rlocks          =          0
-        Total_time_bt_unique_rlocks   =          0
-        Max_time_bt_unique_rlocks     =          0
-        Avg_time_bt_unique_rlocks     =          0
-        The timer values for bt_unique_wlocks are:
-        Num_bt_unique_wlocks          =          0
-        Total_time_bt_unique_wlocks   =          0
-        Max_time_bt_unique_wlocks     =          0
-        Avg_time_bt_unique_wlocks     =          0
-        The timer values for bt_leaf are:
-        Num_bt_leaf                   =          0
-        Total_time_bt_leaf            =          0
-        Max_time_bt_leaf              =          0
-        Avg_time_bt_leaf              =          0
-        The timer values for bt_traverse are:
-        Num_bt_traverse               =          0
-        Total_time_bt_traverse        =          0
-        Max_time_bt_traverse          =          0
-        Avg_time_bt_traverse          =          0
-        The timer values for bt_find_unique are:
-        Num_bt_find_unique            =          0
-        Total_time_bt_find_unique     =          0
-        Max_time_bt_find_unique       =          0
-        Avg_time_bt_find_unique       =          0
-        The timer values for bt_find_unique_traverse are:
-        Num_bt_find_unique_traverse   =          0
-        Total_time_bt_find_unique_traverse =          0
-        Max_time_bt_find_unique_traverse =          0
-        Avg_time_bt_find_unique_traverse =          0
-        The timer values for bt_range_search are:
-        Num_bt_range_search           =          0
-        Total_time_bt_range_search    =          0
-        Max_time_bt_range_search      =          0
-        Avg_time_bt_range_search      =          0
-        The timer values for bt_range_search_traverse are:
-        Num_bt_range_search_traverse  =          0
-        Total_time_bt_range_search_traverse =          0
-        Max_time_bt_range_search_traverse =          0
-        Avg_time_bt_range_search_traverse =          0
-        The timer values for bt_insert are:
-        Num_bt_insert                 =          0
-        Total_time_bt_insert          =          0
-        Max_time_bt_insert            =          0
-        Avg_time_bt_insert            =          0
-        The timer values for bt_insert_traverse are:
-        Num_bt_insert_traverse        =          0
-        Total_time_bt_insert_traverse =          0
-        Max_time_bt_insert_traverse   =          0
-        Avg_time_bt_insert_traverse   =          0
-        The timer values for bt_delete_obj are:
-        Num_bt_delete_obj             =          0
-        Total_time_bt_delete_obj      =          0
-        Max_time_bt_delete_obj        =          0
-        Avg_time_bt_delete_obj        =          0
-        The timer values for bt_delete_obj_traverse are:
-        Num_bt_delete_obj_traverse    =          0
-        Total_time_bt_delete_obj_traverse =          0
-        Max_time_bt_delete_obj_traverse =          0
-        Avg_time_bt_delete_obj_traverse =          0
-        The timer values for bt_mvcc_delete are:
-        Num_bt_mvcc_delete            =          0
-        Total_time_bt_mvcc_delete     =          0
-        Max_time_bt_mvcc_delete       =          0
-        Avg_time_bt_mvcc_delete       =          0
-        The timer values for bt_mvcc_delete_traverse are:
-        Num_bt_mvcc_delete_traverse   =          0
-        Total_time_bt_mvcc_delete_traverse =          0
-        Max_time_bt_mvcc_delete_traverse =          0
-        Avg_time_bt_mvcc_delete_traverse =          0
-        The timer values for bt_mark_delete are:
-        Num_bt_mark_delete            =          0
-        Total_time_bt_mark_delete     =          0
-        Max_time_bt_mark_delete       =          0
-        Avg_time_bt_mark_delete       =          0
-        The timer values for bt_mark_delete_traverse are:
-        Num_bt_mark_delete_traverse   =          0
-        Total_time_bt_mark_delete_traverse =          0
-        Max_time_bt_mark_delete_traverse =          0
-        Avg_time_bt_mark_delete_traverse =          0
-        The timer values for bt_undo_insert are:
-        Num_bt_undo_insert            =          0
-        Total_time_bt_undo_insert     =          0
-        Max_time_bt_undo_insert       =          0
-        Avg_time_bt_undo_insert       =          0
-        The timer values for bt_undo_insert_traverse are:
-        Num_bt_undo_insert_traverse   =          0
-        Total_time_bt_undo_insert_traverse =          0
-        Max_time_bt_undo_insert_traverse =          0
-        Avg_time_bt_undo_insert_traverse =          0
-        The timer values for bt_undo_delete are:
-        Num_bt_undo_delete            =          0
-        Total_time_bt_undo_delete     =          0
-        Max_time_bt_undo_delete       =          0
-        Avg_time_bt_undo_delete       =          0
-        The timer values for bt_undo_delete_traverse are:
-        Num_bt_undo_delete_traverse   =          0
-        Total_time_bt_undo_delete_traverse =          0
-        Max_time_bt_undo_delete_traverse =          0
-        Avg_time_bt_undo_delete_traverse =          0
-        The timer values for bt_undo_mvcc_delete are:
-        Num_bt_undo_mvcc_delete       =          0
-        Total_time_bt_undo_mvcc_delete =          0
-        Max_time_bt_undo_mvcc_delete  =          0
-        Avg_time_bt_undo_mvcc_delete  =          0
-        The timer values for bt_undo_mvcc_delete_traverse are:
-        Num_bt_undo_mvcc_delete_traverse =          0
-        Total_time_bt_undo_mvcc_delete_traverse =          0
-        Max_time_bt_undo_mvcc_delete_traverse =          0
-        Avg_time_bt_undo_mvcc_delete_traverse =          0
-        The timer values for bt_vacuum are:
-        Num_bt_vacuum                 =          0
-        Total_time_bt_vacuum          =          0
-        Max_time_bt_vacuum            =          0
-        Avg_time_bt_vacuum            =          0
-        The timer values for bt_vacuum_traverse are:
-        Num_bt_vacuum_traverse        =          0
-        Total_time_bt_vacuum_traverse =          0
-        Max_time_bt_vacuum_traverse   =          0
-        Avg_time_bt_vacuum_traverse   =          0
-        The timer values for bt_vacuum_insid are:
-        Num_bt_vacuum_insid           =          0
-        Total_time_bt_vacuum_insid    =          0
-        Max_time_bt_vacuum_insid      =          0
-        Avg_time_bt_vacuum_insid      =          0
-        The timer values for bt_vacuum_insid_traverse are:
-        Num_bt_vacuum_insid_traverse  =          0
-        Total_time_bt_vacuum_insid_traverse =          0
-        Max_time_bt_vacuum_insid_traverse =          0
-        Avg_time_bt_vacuum_insid_traverse =          0
-        The timer values for vacuum_master are:
-        Num_vacuum_master             =          0
-        Total_time_vacuum_master      =          0
-        Max_time_vacuum_master        =          0
-        Avg_time_vacuum_master        =          0
-        The timer values for vacuum_job are:
-        Num_vacuum_job                =          0
-        Total_time_vacuum_job         =          0
-        Max_time_vacuum_job           =          0
-        Avg_time_vacuum_job           =          0
-        The timer values for vacuum_worker_process_log are:
-        Num_vacuum_worker_process_log =          0
-        Total_time_vacuum_worker_process_log =          0
-        Max_time_vacuum_worker_process_log =          0
-        Avg_time_vacuum_worker_process_log =          0
-        The timer values for vacuum_worker_execute are:
-        Num_vacuum_worker_execute     =          0
-        Total_time_vacuum_worker_execute =          0
-        Max_time_vacuum_worker_execute =          0
-        Avg_time_vacuum_worker_execute =          0
-        Time_get_snapshot_acquire_time =          0
-        Count_get_snapshot_retry      =          0
-        Time_tran_complete_time       =          0
-        Time_get_oldest_mvcc_acquire_time =       1024
-        Count_get_oldest_mvcc_retry   =          0
+        Num_plan_cache_query_string_hash_entries =          0
+        Num_plan_cache_xasl_id_hash_entries =          0
+        Num_plan_cache_class_oid_hash_entries =          0
+        
+         *** OTHER STATISTICS ***
         Data_page_buffer_hit_ratio    =       0.00
-        Log_page_buffer_hit_ratio     =       0.00
-        Vacuum_data_page_buffer_hit_ratio =       0.00
-        Vacuum_page_efficiency_ratio  =       0.00
-        Vacuum_page_fetch_ratio       =       0.00
-        Data_page_fix_lock_acquire_time_msec =       0.00
-        Data_page_fix_hold_acquire_time_msec =       0.00
-        Data_page_fix_acquire_time_msec =       0.00
-        Data_page_allocate_time_ratio =       0.00
-        Data_page_total_promote_success =       0.00
-        Data_page_total_promote_fail  =       0.00
-        Data_page_total_promote_time_msec =       0.00
-        Num_unfix_void_to_private_top =          0
-        Num_unfix_void_to_private_mid =          0
-        Num_unfix_void_to_shared_mid  =          0
-        Num_unfix_lru1_private_to_shared_mid =          0
-        Num_unfix_lru2_private_to_shared_mid =          0
-        Num_unfix_lru3_private_to_shared_mid =          0
-        Num_unfix_lru2_private_keep   =          0
-        Num_unfix_lru2_shared_keep    =          0
-        Num_unfix_lru2_private_to_top =          0
-        Num_unfix_lru2_shared_to_top  =          0
-        Num_unfix_lru3_private_to_top =          0
-        Num_unfix_lru3_shared_to_top  =          0
-        Num_unfix_lru1_private_keep   =          0
-        Num_unfix_lru1_shared_keep    =          0
-        Num_unfix_void_to_private_mid_vacuum =          0
-        Num_unfix_lru1_any_keep_vacuum =          0
-        Num_unfix_lru2_any_keep_vacuum =          0
-        Num_unfix_lru3_any_keep_vacuum =          0
-        Num_unfix_void_aout_found     =          0
-        Num_unfix_void_aout_not_found =          0
-        Num_unfix_void_aout_found_vacuum =          0
-        Num_unfix_void_aout_not_found_vacuum =          0
-        Num_data_page_hash_anchor_waits =          0
-        Time_data_page_hash_anchor_wait =          0
-        The timer values for flush_collect are:
-        Num_flush_collect             =          0
-        Total_time_flush_collect      =          0
-        Max_time_flush_collect        =          0
-        Avg_time_flush_collect        =          0
-        The timer values for flush_flush are:
-        Num_flush_flush               =          0
-        Total_time_flush_flush        =          0
-        Max_time_flush_flush          =          0
-        Avg_time_flush_flush          =          0
-        The timer values for flush_sleep are:
-        Num_flush_sleep               =          4
-        Total_time_flush_sleep        =    8000949
-        Max_time_flush_sleep          =    2000244
-        Avg_time_flush_sleep          =    2000237
-        The timer values for flush_collect_per_page are:
-        Num_flush_collect_per_page    =          0
-        Total_time_flush_collect_per_page =          0
-        Max_time_flush_collect_per_page =          0
-        Avg_time_flush_collect_per_page =          0
-        The timer values for flush_flush_per_page are:
-        Num_flush_flush_per_page      =          0
-        Total_time_flush_flush_per_page =          0
-        Max_time_flush_flush_per_page =          0
-        Avg_time_flush_flush_per_page =          0
-        Num_data_page_writes          =          0
-        Num_data_page_dirty_to_post_flush =          0
-        Num_data_page_skipped_flush   =          0
-        Num_data_page_skipped_flush_need_wal =          0
-        Num_data_page_skipped_flush_already_flushed =          0
-        Num_data_page_skipped_flush_fixed_or_hot =          0
-        The timer values for compensate_flush are:
-        Num_compensate_flush          =          0
-        Total_time_compensate_flush   =          0
-        Max_time_compensate_flush     =          0
-        Avg_time_compensate_flush     =          0
-        The timer values for alloc_bcb are:
-        Num_alloc_bcb                 =          0
-        Total_time_alloc_bcb          =          0
-        Max_time_alloc_bcb            =          0
-        Avg_time_alloc_bcb            =          0
-        The timer values for alloc_bcb_search_victim are:
-        Num_alloc_bcb_search_victim   =          0
-        Total_time_alloc_bcb_search_victim =          0
-        Max_time_alloc_bcb_search_victim =          0
-        Avg_time_alloc_bcb_search_victim =          0
-        The timer values for alloc_bcb_cond_wait_high_prio are:
-        Num_alloc_bcb_cond_wait_high_prio =          0
-        Total_time_alloc_bcb_cond_wait_high_prio =          0
-        Max_time_alloc_bcb_cond_wait_high_prio =          0
-        Avg_time_alloc_bcb_cond_wait_high_prio =          0
-        The timer values for alloc_bcb_cond_wait_low_prio are:
-        Num_alloc_bcb_cond_wait_low_prio =          0
-        Total_time_alloc_bcb_cond_wait_low_prio =          0
-        Max_time_alloc_bcb_cond_wait_low_prio =          0
-        Avg_time_alloc_bcb_cond_wait_low_prio =          0
-        Num_alloc_bcb_prioritize_vacuum =          0
-        Num_victim_use_invalid_bcb    =          0
-        Num_victim_assign_direct_vacuum_void =          0
-        Num_victim_assign_direct_vacuum_lru =          0
-        Num_victim_assign_direct_flush =          0
-        Num_victim_assign_direct_panic =          0
-        Num_victim_assign_direct_adjust_lru =          0
-        Num_victim_assign_direct_adjust_lru_to_vacuum =          0
-        Num_victim_assign_direct_search_for_flush =          0
-        Num_victim_shared_lru_success =          0
-        Num_victim_own_private_lru_success =          0
-        Num_victim_other_private_lru_success =          0
-        Num_victim_shared_lru_fail    =          0
-        Num_victim_own_private_lru_fail =          0
-        Num_victim_other_private_lru_fail =          0
-        Num_victim_all_lru_fail       =          0
-        Num_victim_get_from_lru       =          0
-        Num_victim_get_from_lru_was_empty =          0
-        Num_victim_get_from_lru_fail  =          0
-        Num_victim_get_from_lru_bad_hint =          0
-        Num_lfcq_prv_get_total_calls  =          0
-        Num_lfcq_prv_get_empty        =          0
-        Num_lfcq_prv_get_big          =          0
-        Num_lfcq_shr_get_total_calls  =          0
-        Num_lfcq_shr_get_empty        =          0
-        Num_alloc_bcb_wait_threads_high_priority =          0
-        Num_alloc_bcb_wait_threads_low_priority =          0
-        Num_flushed_bcbs_wait_for_direct_victim =          0
-        Num_lfcq_big_private_lists    =          0
-        Num_lfcq_private_lists        =          5
-        Num_lfcq_shared_lists         =          0
-        Num_data_page_avoid_dealloc   =          0
-        Num_data_page_avoid_victim    =          0
-        Num_data_page_fix_ext:
-        Num_data_page_promote_ext:
-        Num_data_page_promote_time_ext:
-        Num_data_page_unfix_ext:
-        Time_data_page_lock_acquire_time:
-        Time_data_page_hold_acquire_time:
-        Time_data_page_fix_acquire_time:
-        Num_mvcc_snapshot_ext:
-        Time_obj_lock_acquire_time:
 
-    The following are the explanation about the above statistical information. You can find the statistic category (database module), the name, the stat type and a brief description for each statistic.
-    
-    There are several types of statistic, based on how they are collected:
-    
-    *  Accumulator: The stat values are incremented whenever the tracked action happens.
-    *  Counter/timer: The stat tracks both the number and the duration of an action. Also biggest and average duration are tracked.
-    *  Snapshot: The stat is peeked from database.
-    *  Complex: The stat tracks multiple values for an action, separated by various attributes.
+    The following are the explanation about the above statistical information.
 
-    Most statistics are accumulators (they are incremented when an action happens). Other statistics can be counter/timers (they track both number of actions and their duration), some are peeked from database (snapshot) and some are computed based on other values. Lastly, there are several complex statistics which track detailed information on some operations.
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Category         | Item                                     | Description                                                                            |
+    +==================+==========================================+========================================================================================+
+    | File I/O         | Num_file_removes                         | The number of files removed                                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_file_creates                         | The number of files created                                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_file_ioreads                         | The number of files read                                                               |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_file_iowrites                        | The number of files stored                                                             |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_file_iosynches                       | The number of file synchronization                                                     |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Page buffer      | Num_data_page_fetches                    | The number of pages fetched                                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_data_page_dirties                    | The number of duty pages                                                               |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_data_page_ioreads                    | The number of pages read from disk                                                     |
+    |                  |                                          | (more means less efficient, it correlates with lower hit ratio)                        |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_data_page_iowrites                   | The number of pages write from disk (more means less efficient)                        |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_data_page_victims                    | The number of times the flushing thread is wake up                                     |
+    |                  |                                          | (NOT the number of victims or flushed pages)                                           |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_data_page_iowrites_for_replacement   | The number of the written data pages specified as victim                               |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_adaptive_flush_pages                 | The number of data pages flushed from the data buffer to the disk                      |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_adaptive_flush_log_pages             | The number of log pages flushed from the log buffer to the disk                        |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_adaptive_flush_max_pages             | The maximum number of pages allowed to flush from data and the log buffer              |
+    |                  |                                          | to the disk                                                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_sort_io_pages                        | The number of pages fetched on the disk during sorting(more means less efficient)      |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_sort_data_pages                      | The number of pages found on the page buffer during sorting(more means more efficient) |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Logs             | Num_log_page_ioreads                     | The number of log pages read                                                           |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_log_page_iowrites                    | The number of log pages stored                                                         |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_log_append_records                   | The number of log records appended                                                     |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_log_archives                         | The number of logs archived                                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_log_start_checkpoints                | The number of started checkpoints                                                      |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_log_end_checkpoints                  | The number of ended checkpoints                                                        |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_log_wals                             | Not used                                                                               |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Transactions     | Num_tran_commits                         | The number of commits                                                                  |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_tran_rollbacks                       | The number of rollbacks                                                                |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_tran_savepoints                      | The number of savepoints                                                               |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_tran_start_topops                    | The number of top operations started                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_tran_end_topops                      | The number of top operations stopped                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_tran_interrupts                      | The number of interruptions                                                            |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Concurrency/lock | Num_page_locks_acquired                  | The number of locked pages acquired                                                    |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_object_locks_acquired                | The number of locked objects acquired                                                  |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_page_locks_converted                 | The number of locked pages converted                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_object_locks_converted               | The number of locked objects converted                                                 |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_page_locks_re-requested              | The number of locked pages requested                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_object_locks_re-requested            | The number of locked objects requested                                                 |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_page_locks_waits                     | The number of locked pages waited                                                      |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_object_locks_waits                   | The number of locked objects waited                                                    |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Index            | Num_btree_inserts                        | The number of nodes inserted                                                           |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_deletes                        | The number of nodes deleted                                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_updates                        | The number of nodes updated                                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_covered                        | The number of cases in which an index includes all data upon query execution           |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_noncovered                     | The number of cases in which an index includes some or no data upon query execution    |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_resumes                        | The exceeding number of index scan specified in index_scan_oid_buffer_pages            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_multirange_optimization        | The number of executions on multi-range optimization for the WHERE ... IN ...          |
+    |                  |                                          | LIMIT condition query statement                                                        |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_splits                         | The number of B-tree split-operations                                                  |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_btree_merges                         | The number of B-tree merge-operations                                                  |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Query            | Num_query_selects                        | The number of SELECT query execution                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_inserts                        | The number of INSERT query execution                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_deletes                        | The number of DELETE query execution                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_updates                        | The number of UPDATE query execution                                                   |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_sscans                         | The number of sequential scans (full scan)                                             |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_iscans                         | The number of index scans                                                              |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_lscans                         | The number of LIST scans                                                               |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_setscans                       | The number of SET scans                                                                |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_methscans                      | The number of METHOD scans                                                             |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_nljoins                        | The number of nested loop joins                                                        |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_mjoins                         | The number of parallel joins                                                           |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_query_objfetches                     | The number of fetch objects                                                            |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Network request  | Num_network_requests                     | The number of network requested                                                        |
+    |                  |                                          |                                                                                        |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Query plan cache | Num_plan_cache_add                       | The number of newly added cache entry                                                  |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_lookup                    | The number of lookup try with a special key                                            |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_hit                       | The number of the hit entries in the query string hash table                           |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_miss                      | The number of the missed entries in the query string hash table                        |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_full                      | The number of the victim retrieval by the full plan cache                              |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_delete                    | The number of victimized cache entries                                                 |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_invalid_xasl_id           | The number of missed entries in the xasl_id hash table.                                |
+    |                  |                                          | The number of errors occurred when some entries are requested in the client            |
+    |                  |                                          | during those entries are victimized in the server                                      |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_query_string_hash_entries | The current entry number of the query string hash table                                |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_xasl_id_hash_entries      | The current entry number of xasl id hash table                                         |
+    |                  +------------------------------------------+----------------------------------------------------------------------------------------+
+    |                  | Num_plan_cache_class_oid_hash_entries    | The current entry number of class oid hash table                                       |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | Buffer hit rate  | Data_page_buffer_hit_ratio               | Hit Ratio of page buffers                                                              |
+    |                  |                                          | (Num_data_page_fetches - Num_data_page_ioreads)*100 / Num_data_page_fetches            |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
+    | HA               | Time_ha_replication_delay                | Replication latency time (sec.)                                                        |
+    +------------------+------------------------------------------+----------------------------------------------------------------------------------------+
 
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Category         | Item                                     | Stat type      |  Description                                                          |
-    +==================+==========================================+================+=======================================================================+
-    | File I/O         | Num_file_removes                         | Accumulator    | The number of files removed                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_file_creates                         | Accumulator    | The number of files created                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_file_ioreads                         | Accumulator    | The number of files read                                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_file_iowrites                        | Accumulator    | The number of files stored                                            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_file_iosynches                       | Accumulator    | The number of file synchronization                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..file_iosync_all                        | Counter/timer  | The number and duration of sync all files                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_file_page_allocs                     | Accumulator    | The number of page allocations                                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_file_page_deallocs                   | Accumulator    | The number of page deallocations                                      |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Page buffer      | Num_data_page_fetches                    | Accumulator    | The number of fetched pages                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_dirties                    | Accumulator    | The number of dirty pages                                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_ioreads                    | Accumulator    | | The number of pages read from disk                                  |
-    |                  |                                          |                | | (more means less efficient, it correlates with lower hit ratio)     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_iowrites                   | Accumulator    | The number of pages write to disk (more means less efficient)         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_private_quota              | Snapshot       | The target number of pages for private LRU lists                      |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_private_count              | Snapshot       | The actual number of pages for private LRU lists                      |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_fixed                      | Snapshot       | The number of fixed pages in data buffer                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_dirty                      | Snapshot       | The number of dirty pages in data buffer                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_lru1                       | Snapshot       | The number of pages in LRU1 zone in data buffer                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_lru2                       | Snapshot       | The number of pages in LRU2 zone in data buffer                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_lru3                       | Snapshot       | The number of pages in LRU3 zone in data buffer                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_victim_candidate           | Snapshot       | | The number of victim candidate pages in data buffer                 |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Logs             | Num_log_page_fetches                     | Accumulator    | The number of fetched log pages                                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_page_ioreads                     | Accumulator    | The number of log pages read                                          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_page_iowrites                    | Accumulator    | The number of log pages stored                                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_append_records                   | Accumulator    | The number of log records appended                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_archives                         | Accumulator    | The number of logs archived                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_start_checkpoints                | Accumulator    | The number of started checkpoints                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_end_checkpoints                  | Accumulator    | The number of ended checkpoints                                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_wals                             | Accumulator    | The number of log flushes requested to write a data page.             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_page_iowrites_for_replacement    | Accumulator    | | The number of log data pages written to disk due to replacements    |
-    |                  |                                          |                | | (should be zero)                                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_log_page_replacements                | Accumulator    | The number of log data pages discarded due to replacements            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_prior_lsa_list_size                  | Accumulator    | | Current size of the prior LSA(Log Sequence Address) list.           |
-    |                  |                                          |                | | CUBRID write the order of writing into the prior LSA list, before   |
-    |                  |                                          |                | | writing operation from the log buffer to the disk; this list is     |
-    |                  |                                          |                | | used to raise up the concurrency by reducing the waiting time of    |
-    |                  |                                          |                | | the transaction from writing to disk                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_prior_lsa_list_maxed                 | Accumulator    | | The count of the prior LSA list being reached at the maximum size.  |
-    |                  |                                          |                | | The maximum size of the prior LSA list is log_buffer_size * 2.      |
-    |                  |                                          |                | | If this value is big, we can assume that log writing jobs happen a  |
-    |                  |                                          |                | | lot at the same time                                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_prior_lsa_list_removed               | Accumulator    | | The count of LSA being moved from prior LSA list into log buffer.   |
-    |                  |                                          |                | | We can assume that the commits have happened at the similar count   |
-    |                  |                                          |                | | with this value                                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Log_page_buffer_hit_ratio                | Computed       | | Hit ratio of log page buffers                                       |
-    |                  |                                          |                | | (Num_log_page_fetches - Num_log_page_fetch_ioreads)*100             |
-    |                  |                                          |                | | / Num_log_page_fetches                                              |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Concurrency/lock | Num_page_locks_acquired                  | Accumulator    | The number of locked pages acquired                                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_object_locks_acquired                | Accumulator    | The number of locked objects acquired                                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_page_locks_converted                 | Accumulator    | The number of locked pages converted                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_object_locks_converted               | Accumulator    | The number of locked objects converted                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_page_locks_re-requested              | Accumulator    | The number of locked pages requested                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_object_locks_re-requested            | Accumulator    | The number of locked objects requested                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_page_locks_waits                     | Accumulator    | The number of locked pages waited                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_object_locks_waits                   | Accumulator    | The number of locked objects waited                                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_object_locks_time_waited_usec        | Accumulator    | The time in microseconds spent on waiting for all object locks        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Time_obj_lock_acquire_time               | Complex        | Time consumer for locking objects classified by lock mode             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Transactions     | Num_tran_commits                         | Accumulator    | The number of commits                                                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_tran_rollbacks                       | Accumulator    | The number of rollbacks                                               |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_tran_savepoints                      | Accumulator    | The number of savepoints                                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_tran_start_topops                    | Accumulator    | The number of top operations started                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_tran_end_topops                      | Accumulator    | The number of top operations stopped                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_tran_interrupts                      | Accumulator    | The number of interruptions                                           |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Index            | Num_btree_inserts                        | Accumulator    | The number of nodes inserted                                          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_deletes                        | Accumulator    | The number of nodes deleted                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_updates                        | Accumulator    | The number of nodes updated                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_covered                        | Accumulator    | | The number of cases in which an index includes all data upon query  |
-    |                  |                                          |                | | execution                                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_noncovered                     | Accumulator    | | The number of cases in which an index includes some or no data upon |
-    |                  |                                          |                | | query execution                                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_resumes                        | Accumulator    | | The exceeding number of index scan specified due to too many        |
-    |                  |                                          |                | | results                                                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_multirange_optimization        | Accumulator    | | The number of executions on multi-range optimization for the        |
-    |                  |                                          |                | | WHERE ... IN ... LIMIT condition query statement                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_splits                         | Accumulator    | The number of B-tree split-operations                                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_merges                         | Accumulator    | The number of B-tree merge-operations                                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_btree_get_stats                      | Accumulator    | The number of B-tree get stat calls                                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_leaf                                | Counter/timer  | The number and duration of all operations in index leaves             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_find_unique                         | Counter/timer  | The number and duration of B-tree 'find-unique' operations            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..btrange_search                         | Counter/timer  | The number and duration of B-tree 'range-search' operations           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_insert_obj                          | Counter/timer  | The number and duration of B-tree 'insert object' operations          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_delete_obj                          | Counter/timer  | The number and duration of B-tree 'physical delete object' operations |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_mvcc_delete                         | Counter/timer  | The number and duration of B-tree 'mvcc delete' operations            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_mark_delete                         | Counter/timer  | The number and duration of B-tree mark delete operations              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_undo_insert                         | Counter/timer  | The number and duration of B-tree 'undo insert' operations            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_undo_delete                         | Counter/timer  | The number and duration of B-tree 'undo physical delete' operations   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_undo_mvcc_delete                    | Counter/timer  | The number and duration of B-tree 'undo mvcc delete' operations       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_vacuum                              | Counter/timer  | The number and duration of B-tree vacuum deleted object operations    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_vacuum_insid                        | Counter/timer  | The number and duration of vacuum operations on B-tree 'insert id'    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_fix_ovf_oids                        | Counter/timer  | The number and duration of B-tree overflow page fixes                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_unique_rlocks                       | Counter/timer  | The number and duration of blocked read locks on unique indexes       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_unique_wlocks                       | Counter/timer  | The number and duration of blocked write locks on unique indexes      |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_traverse                            | Counter/timer  | The number and duration of B-tree traverse                            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_find_unique_traverse                | Counter/timer  | The number and duration of B-tree traverse for 'find unique'          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_range_search_traverse               | Counter/timer  | The number and duration of B-tree traverse for 'range search'         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_insert_traverse                     | Counter/timer  | The number and duration of B-tree traverse for 'insert'               |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_delete_traverse                     | Counter/timer  | The number and duration of B-tree traverse for 'physical delete'      |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_mvcc_delete_traverse                | Counter/timer  | The number and duration of B-tree traverse for 'mvcc delete'          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_mark_delete_traverse                | Counter/timer  | The number and duration of B-tree traverse for 'mark delete'          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_undo_insert_traverse                | Counter/timer  | The number and duration of B-tree traverse for 'undo physical insert' |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_undo_delete_traverse                | Counter/timer  | The number and duration of B-tree traverse for 'undo physical delete' |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_undo_mvcc_delete_traverse           | Counter/timer  | The number and duration of B-tree traverse for 'undo delete'          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_vacuum_traverse                     | Counter/timer  | The number and duration of B-tree traverse for vacuum deleted object  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..bt_vacuum_insid_traverse               | Counter/timer  | The number and duration of B-tree traverse for vacuum 'insert id'     |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Query            | Num_query_selects                        | Accumulator    | The number of SELECT query execution                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_inserts                        | Accumulator    | The number of INSERT query execution                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_deletes                        | Accumulator    | The number of DELETE query execution                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_updates                        | Accumulator    | The number of UPDATE query execution                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_sscans                         | Accumulator    | The number of sequential scans (full scan)                            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_iscans                         | Accumulator    | The number of index scans                                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_lscans                         | Accumulator    | The number of LIST scans                                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_setscans                       | Accumulator    | The number of SET scans                                               |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_methscans                      | Accumulator    | The number of METHOD scans                                            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_nljoins                        | Accumulator    | The number of nested loop joins                                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_mjoins                         | Accumulator    | The number of parallel joins                                          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_objfetches                     | Accumulator    | The number of fetch objects                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_query_holdable_cursors               | Snapshot       | The number of holdable cursors in the current server.                 |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Sort             | Num_sort_io_pages                        | Accumulator    | | The number of pages fetched on the disk during sorting              |
-    |                  |                                          |                | | (more means less efficient)                                         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_sort_data_pages                      | Accumulator    | | The number of pages found on the page buffer during sorting         |
-    |                  |                                          |                | | (more means less efficient)                                         |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Network request  | Num_network_requests                     | Accumulator    | The number of network requested                                       |
-    |                  |                                          |                |                                                                       |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Heap             | Num_heap_stats_bestspace_entries         | Accumulator    | The number of best pages which are saved on the "best page" list      |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_stats_bestspace_maxed           | Accumulator    | The maximum number of pages which can be saved on the "best page" list|
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_stats_sync_bestspace            | Accumulator    | | The updated number of the "best page" list.                         |
-    |                  |                                          |                |                                                                       |
-    |                  |                                          |                | | "Best pages" means that the data pages of which the free space is   |
-    |                  |                                          |                | | more than 30% in the environment of multiple INSERTs and DELETEs.   |
-    |                  |                                          |                | | Only some information of these pages are saved as the "best page"   |
-    |                  |                                          |                | | list. In the "best page" list, the information of a million pages is|
-    |                  |                                          |                | | saved at once. This list is searched when INSERTing a record, and   |
-    |                  |                                          |                | | then this list is updated when there are no free space to store this|
-    |                  |                                          |                | | record on the pages. If there are still no free space to store this |
-    |                  |                                          |                | | record even this list is updated for several times, this recored is |
-    |                  |                                          |                | | stored into a new page.                                             |
-    |                  |                                          |                |                                                                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_inserts                    | Accumulator    | The number of inserts in heap HOME type records                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_big_inserts                     | Accumulator    | The number of inserts in heap BIG type records                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_assign_inserts                  | Accumulator    | The number of inserts in heap ASSIGN type records                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_deletes                    | Accumulator    | The number of deletes from heap HOME type records in non-MVCC mode    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_mvcc_deletes               | Accumulator    | The number of deletes from heap HOME type records in MVCC mode        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_to_rel_deletes             | Accumulator    | | The number of deletes from heap HOME to RELOCATION type records in  |
-    |                  |                                          |                | | MVCC mode                                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_to_big_deletes             | Accumulator    | The number of deletes from heap HOME to BIG type records in MVCC mode |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_deletes                     | Accumulator    | | The number of deletes from heap RELOCATION type records in non-MVCC |
-    |                  |                                          |                | | mode                                                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_mvcc_deletes                | Accumulator    | The number of deletes from heap RELOCATION type records in MVCC mode  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_to_home_deletes             | Accumulator    | | The number of deletes from heap RELOCATION to HOME type records in  |
-    |                  |                                          |                | | MVCC mode                                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_to_big_deletes              | Accumulator    | | The number of deletes from heap RELOCATION to BIG type records in   |
-    |                  |                                          |                | | MVCC mode                                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_to_rel_deletes              | Accumulator    | | The number of deletes from heap RELOCATION to RELOCATION type       |
-    |                  |                                          |                | | records in MVCC mode                                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_big_deletes                     | Accumulator    | The number of deletes from heap BIG type records in non-MVCC mode     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_big_mvcc_deletes                | Accumulator    | The number of deletes from heap BIG type records in MVCC mode         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_updates                    | Accumulator    | | The number of updates in place of heap HOME type records in         |
-    |                  |                                          |                | | non-MVCC mode(*)                                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_to_rel_updates             | Accumulator    | | The number of updates of heap HOME to RELOCATION type records in    |
-    |                  |                                          |                | | non-MVCC mode(*)                                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_to_big_updates             | Accumulator    | | The number of updates of heap HOME to BIG type records in non-MVCC  |
-    |                  |                                          |                | | mode(*)                                                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_updates                     | Accumulator    | | The number of updates of heap RELOCATION type records in non-MVCC   |
-    |                  |                                          |                | | mode(*)                                                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_to_home_updates             | Accumulator    | | The number of updates of heap RELOCATION to HOME type records in    |
-    |                  |                                          |                | | non-MVCC mode(*)                                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_to_rel_updates              | Accumulator    | | The number of updates of heap RELOCATION to RELOCATION type records |
-    |                  |                                          |                | | in non-MVCC mode(*)                                                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_to_big_updates              | Accumulator    | | The number of updates of heap RELOCATION to BIG type records in     |
-    |                  |                                          |                | | non-MVCC mode(*)                                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_big_updates                     | Accumulator    | The number of updates of heap BIG type records in non-MVCC mode(*)    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_home_vacuums                    | Accumulator    | The number of vacuumed heap HOME type records                         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_big_vacuums                     | Accumulator    | The number of vacuumed heap BIG type records                          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_rel_vacuums                     | Accumulator    | The number of vacuumed heap RELOCATION type records                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_insid_vacuums                   | Accumulator    | The number of vacuumed heap newly inserted records                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_heap_remove_vacuums                  | Accumulator    | The number of vacuum operations that remove heap records              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_insert_prepare                    | Counter/timer  | The number and duration of preparing heap insert operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_insert_execute                    | Counter/timer  | The number and duration of executing heap insert operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_insert_log                        | Counter/timer  | The number and duration of logging heap insert operation              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_delete_prepare                    | Counter/timer  | The number and duration of preparing heap delete operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_delete_execute                    | Counter/timer  | The number and duration of executing heap delete operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_delete_log                        | Counter/timer  | The number and duration of logging heap delete operation              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_update_prepare                    | Counter/timer  | The number and duration of preparing heap update operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_update_execute                    | Counter/timer  | The number and duration of executing heap update operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_update_log                        | Counter/timer  | The number and duration of logging heap update operation              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_vacuum_prepare                    | Counter/timer  | The number and duration of preparing heap vacuum operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_vacuum_execute                    | Counter/timer  | The number and duration of executing heap vacuum operation            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..heap_vacuum_log                        | Counter/timer  | The number and duration of logging heap vacuum operation              |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Query plan cache | Num_plan_cache_add                       | Accumulator    | The number of entries added to query cache                            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_plan_cache_lookup                    | Accumulator    | The number of lookups in query cache                                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_plan_cache_hit                       | Accumulator    | The number of hits in query cache                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_plan_cache_miss                      | Accumulator    | The number of misses in query cache                                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_plan_cache_full                      | Accumulator    | The number of times query cache becomes full                          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_plan_cache_delete                    | Accumulator    | The number of entries deleted from query cache                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_plan_cache_invalid_xasl_id           | Accumulator    | The number of failed attempts of retrieving entries by XASL ID.       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_plan_cache_entries                   | Snapshot       | The current number of entires in query cache                          |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | HA               | Time_ha_replication_delay                | Accumulator    | Replication latency time (sec.)                                       |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Vacuuming        | Num_vacuum_log_pages_vacuumed            | Accumulator    | The number of log data pages processed by vacuum workers.             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_vacuum_log_pages_to_vacuum           | Accumulator    | | The number of log data pages to be vacuumed by vacuum workers.      |
-    |                  |                                          |                | | (if value is much bigger than Num_vacuum_log_pages_vacuumed,        |
-    |                  |                                          |                | | it means vacuum system lags behind)                                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_vacuum_prefetch_requests_log_pages   | Accumulator    | The number of requests to prefetch buffer for log pages from vacuum   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_vacuum_prefetch_hits_log_pages       | Accumulator    | The number of hits to prefetch buffer for log pages from vacuum       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..vacuum_master                          | Counter/timer  | The number and duration of vacuum master iterations.                  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..vacuum_job                             | Counter/timer  | The number and duration of vacuum jobs                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..vacuum_worker_process_log              | Counter/timer  | The number and duration of process log tasks                          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..vacuum_worker_execute                  | Counter/timer  | The number and duration of execute vacuum tasks                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Vacuum_data_page_buffer_hit_ratio        | Computed       | Hit ratio of vacuuming data page buffers                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Vacuum_page_efficiency_ratio             | Computed       | | Ratio between number of page unfix of vacuum with dirty flag and    |
-    |                  |                                          |                | | total number of page unfix of vacuum. Ideally, the vacuum process   |
-    |                  |                                          |                | | performsonly write operations since it cleans up all unused records.|
-    |                  |                                          |                | | Even with an optimized vacuum process, 100% efficiency is not       |
-    |                  |                                          |                | | possible.                                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Vacuum_page_fetch_ratio                  | Computed       | Ratio (percentage) of page unfix from vacuum module versus total.     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_avoid_dealloc              | Snapshot       | The number of data pages that cannot be deallocated by vacuum         |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Page buffer fix  | Data_page_fix_lock_acquire_time_msec     | Computed       | Time waiting for other transaction to load page from disk             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Data_page_fix_hold_acquire_time_msec     | Computed       | Time to obtain page latch                                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Data_page_fix_acquire_time_msec          | Computed       | Total time to fix page                                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Data_page_allocate_time_ratio            | Computed       | | Ratio of time necessary for page loading from disk versus the total |
-    |                  |                                          |                | | time of fixing a page                                               |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Data_page_total_promote_success          | Computed       | Number of successful page latch promotions from shared to exclusive   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Data_page_total_promote_fail             | Computed       | Number of failed page latch promotions                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Data_page_total_promote_time_msec        | Computed       | Time for promoting page latches                                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_hash_anchor_waits          | Accumulator    | Number of waits on page buffer hash bucket                            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Time_data_page_hash_anchor_wait          | Accumulator    | Total wait time on page buffer hash bucket                            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_fix_ext                    | Complex        | | Number of data page fixes classified by:                            |
-    |                  |                                          |                | | - module (system, worker, vacuum)                                   |
-    |                  |                                          |                | | - page type                                                         |
-    |                  |                                          |                | | - page fetch/found mode                                             |
-    |                  |                                          |                | | - page latch mode                                                   |
-    |                  |                                          |                | | - page latch condition                                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Time_data_page_lock_acquire_time         | Complex        | | Time consumed waiting for other thread to load data page from disk: |
-    |                  |                                          |                | | - module (system, worker, vacuum)                                   |
-    |                  |                                          |                | | - page type                                                         |
-    |                  |                                          |                | | - page fetch/found mode                                             |
-    |                  |                                          |                | | - page latch mode                                                   |
-    |                  |                                          |                | | - page latch condition                                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Time_data_page_hold_acquire_time         | Complex        | | Time consumed waiting for data page latch:                          |
-    |                  |                                          |                | | - module (system, worker, vacuum)                                   |
-    |                  |                                          |                | | - page type                                                         |
-    |                  |                                          |                | | - page fetch/found mode                                             |
-    |                  |                                          |                | | - page latch mode                                                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Time_data_page_fix_acquire_time          | Complex        | | Time consumed fixing data page:                                     |
-    |                  |                                          |                | | - module (system, worker, vacuum)                                   |
-    |                  |                                          |                | | - page type                                                         |
-    |                  |                                          |                | | - page fetch/found mode                                             |
-    |                  |                                          |                | | - page latch mode                                                   |
-    |                  |                                          |                | | - page latch condition                                              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_promote_ext                | Complex        | | Number of data page promotions classified by:                       |
-    |                  |                                          |                | | - module (system, worker, vacuum)                                   |
-    |                  |                                          |                | | - page type                                                         |
-    |                  |                                          |                | | - promote latch condition                                           |
-    |                  |                                          |                | | - holder latch mode                                                 |
-    |                  |                                          |                | | - successful/failed promotion                                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_promote_time_ext           | Complex        | | Time consumed for data page promotions classified by:               |
-    |                  |                                          |                | | - module (system, worker, vacuum)                                   |
-    |                  |                                          |                | | - page type                                                         |
-    |                  |                                          |                | | - promote latch condition                                           |
-    |                  |                                          |                | | - holder latch mode                                                 |
-    |                  |                                          |                | | - successful/failed promotion                                       |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Page buffer      | Num_unfix_void_to_private_top            | Accumulator    | Unfix newly loaded data page and add to top of private LRU list       |
-    | | unfix          +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_void_to_private_mid            | Accumulator    | Unfix newly loaded data page and add to middle of private LRU list    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_void_to_shared_mid             | Accumulator    | Unfix newly loaded data page and add to middle of shared LRU list     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru1_private_to_shared_mid     | Accumulator    | Unfix data page and move from zone 1 of private list to shared middle |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru2_private_to_shared_mid     | Accumulator    | Unfix data page and move from zone 2 of private list to shared middle |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru3_private_to_shared_mid     | Accumulator    | Unfix data page and move from zone 3 of private list to shared middle |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru2_private_keep              | Accumulator    | Unfix data page and keep it in zone 2 of private list                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru2_shared_keep               | Accumulator    | Unfix data page and keep it in zone 2 of shared  list                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru2_private_to_top            | Accumulator    | Unfix data page and boost it from zone 2 of private list to its top   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru2_shared_to_top             | Accumulator    | Unfix data page and boost it from zone 2 of shared list to its top    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru3_private_to_top            | Accumulator    | Unfix data page and boost it from zone 3 of private list to its top   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru3_shared_to_top             | Accumulator    | Unfix data page and boost it from zone 3 of shared list to its top    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru1_private_keep              | Accumulator    | Unfix data page and keep it in zone 1 of private list                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru2_shared_keep               | Accumulator    | Unfix data page and keep it in zone 2 of shared  list                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_void_to_private_mid_vacuum     | Accumulator    | | Unfix newly loaded data page and add to middle of private LRU list  |
-    |                  |                                          |                | | (vacuum thread)                                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru1_any_keep_vacuum           | Accumulator    | | Unfix data page and keep it in zone 1 of private/shared list        |
-    |                  |                                          |                | | (vacuum thread)                                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru2_any_keep_vacuum           | Accumulator    | | Unfix data page and keep it in zone 2 of private/shared list        |
-    |                  |                                          |                | | (vacuum thread)                                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_lru3_any_keep_vacuum           | Accumulator    | | Unfix data page and keep it in zone 3 of private/shared list        |
-    |                  |                                          |                | | (vacuum thread)                                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_void_aout_found                | Accumulator    | Newly loaded data page was found in AOUT list                         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_void_aout_not_found            | Accumulator    | Newly loaded data page was not found in AOUT list                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_void_aout_found_vacuum         | Accumulator    | Newly loaded data page was found in AOUT list (vacuum thread)         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_unfix_void_aout_not_found_vacuum     | Accumulator    | Newly loaded data page was not found in AOUT list (vacuum thread)     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_unfix_ext                  | Complex        | | Number of data page unfixes classified by:                          |
-    |                  |                                          |                | | - module (system, worker, vacuum)                                   |
-    |                  |                                          |                | | - page type                                                         |
-    |                  |                                          |                | | - dirty or not                                                      |
-    |                  |                                          |                | | - dirtied by holder or not                                          |
-    |                  |                                          |                | | - holder latch mode                                                 |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Page buffer I/O  | Data_page_buffer_hit_ratio               | Computed       | | Hit ratio of data page buffers                                      |
-    |                  |                                          |                | | (Num_data_page_fetches - Num_data_page_ioreads)*100                 |
-    |                  |                                          |                | | / Num_data_page_fetches                                             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_adaptive_flush_pages                 | Accumulator    | The number of data pages requested from adaptive flush controller.    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_adaptive_flush_log_pages             | Accumulator    | The number of log data pages requested from adaptive flush controller |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_adaptive_flush_max_pages             | Accumulator    | The total number of page tokens assigned by adaptive flush controller |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..compensate_flush                       | Counter/timer  | | The number and duration of flush compensations force by adaptive    |
-    |                  |                                          |                | | flush controller                                                    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..flush_collect                          | Counter/timer  | The number and duration of flush thread collecting BCB sets           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..flush_flush                            | Counter/timer  | The number and duration of flush thread flushing BCB sets             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..flush_sleep                            | Counter/timer  | The number and duration of flush thread pauses                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..flush_collect_per_page                 | Counter/timer  | The number and duration of flush thread collecting one BCB            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..flush_flush_per_page                   | Counter/timer  | The number and duration of flush thread flushing one BCB              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_writes                     | Accumulator    | The total number of data pages flushed to disk                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_dirty_to_post_flush        | Accumulator    | Number of flushed pages sent to post-flush thread for processing      |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_skipped_flush              | Accumulator    | The total number of BCB's that flush thread skipped                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_skipped_flush_need_wal     | Accumulator    | | The number of BCB's that flush thread skipped because it required   |
-    |                  |                                          |                | | log data pages be flushed first                                     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | | Num_data_page_skipped\                 | Accumulator    | | The number of BCB's that flush thread skipped because they have     |
-    |                  | | \_flush_already_flushed                |                | | been flushed already                                                |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_skipped_flush_fixed_or_hot | Accumulator    | | The number of BCB's that flush thread skipped because they are fixed|
-    |                  |                                          |                | | or have been fixed since collected.                                 |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | | Page buffer    | ..alloc_bcb                              | Counter/timer  | | The number and duration of BCB allocation to store new data page.   |
-    | | victimization  |                                          |                | | When a database is just started, the page buffer has available      |
-    |                  |                                          |                | | BCB's ready to be picked. However, once page buffer becomes full    |
-    |                  |                                          |                | | all BCB's are in use, one must be victimized. The time tracked here |
-    |                  |                                          |                | | includes BCB victimization and loading from disk.                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..alloc_bcb_search_victim                | Counter/timer  | The number and duration of searches through all LRU lists for victims |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..alloc_bcb_cond_wait_high_prio          | Counter/timer  | The number and duration of direct victim waits in high-priority queue |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | ..alloc_bcb_cond_wait_low_prio           | Counter/timer  | The number and duration of direct victim waits in low-priority queue  |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_alloc_bcb_prioritize_vacuum          | Accumulator    | The number of vacuum direct victim waits in high-priority queue       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_alloc_bcb_wait_threads_high_priority | Snapshot       | The current number of direct victim waiters in high-priority queue    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_alloc_bcb_wait_threads_low_priority  | Snapshot       | The current number of direct victim waiters in low-priority queue     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_flushed_bcbs_wait_for_direct_victim  | Snapshot       | | The current number of BCB's waiting for post-flush thread to process|
-    |                  |                                          |                | | them and assign directly.                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_use_invalid_bcb               | Accumulator    | The number of BCB's allocated from invalid list                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_data_page_avoid_victim               | Accumulator    | | The number of BCB's that cannot be victimized because they are      |
-    |                  |                                          |                | | in process of being flushed to disk                                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_assign_direct_vacuum_void     | Accumulator    | The number of direct victims assigned from void zone by vacuum worker |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_assign_direct_vacuum_lru      | Accumulator    | The number of direct victims assigned from LRU zone 3 by vacuum worker|
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_assign_direct_flush           | Accumulator    | The number of direct victims assigned by flush thread                 |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_assign_direct_panic           | Accumulator    | | The number of direct victims assigned by panicked LRU searches.     |
-    |                  |                                          |                | | If there are a lot of waiters for victims, threads that found other |
-    |                  |                                          |                | | victims while searching LRU list, will also try to assign more      |
-    |                  |                                          |                | | directly.                                                           |
-    |                  |                                          |                | | Page buffer maintenance thread assignments are also counted here    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_assign_direct_adjust_lru      | Accumulator    | The number of direct victims assigned when BCB falls to LRU zone 3    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | | Num_victim_assign_direct_adjust_lru\   | Accumulator    | | The number of BCB's falling to LRU zone 3 **not** assigned as direct|
-    |                  | | \_to_vacuum                            |                | | victims because a vacuum thread is expected to access it            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | | Num_victim_assign_direct_search\       | Accumulator    | | The number of direct victims assigned by flush thread while         |
-    |                  | | \_for_flush                            |                | | collecting BCB sets for flush                                       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_shared_lru_success            | Accumulator    | The number of successful victim searches in shared LRU lists          |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_own_private_lru_success       | Accumulator    | The number of successful victim searches in own private LRU lists     |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_other_private_lru_success     | Accumulator    | The number of successful victim searches in other private LRU lists   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_shared_lru_fail               | Accumulator    | The number of failed victim searches in shared LRU lists              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_own_private_lru_fail          | Accumulator    | The number of failed victim searches in own private LRU lists         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_other_private_lru_fail        | Accumulator    | The number of failed victim searches in other private LRU lists       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_all_lru_fail                  | Accumulator    | | The number of unlucky streaks to find victims in the sequence:      |
-    |                  |                                          |                | | 1. Own private LRU list (if over quota)                             |
-    |                  |                                          |                | | 2. Other private LRU list (if own private is over quota)            |
-    |                  |                                          |                | | 3. Shared LRU list                                                  |
-    |                  |                                          |                | | (this is simplified explanation, see *pgbuf_get_victim* function)   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_get_from_lru                  | Accumulator    | The total number of victim searches in any LRU list                   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_get_from_lru_was_empty        | Accumulator    | | The number of victim searches in any LRU list that stop             |
-    |                  |                                          |                | | immediately because candidate count is zero                         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_get_from_lru_fail             | Accumulator    | | The number of failed victim searches in any LRU list although the   |
-    |                  |                                          |                | | candidate count was not zero                                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_victim_get_from_lru_bad_hint         | Accumulator    | | The number of failed victim searches in any LRU list because victim |
-    |                  |                                          |                | | was wrong                                                           |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_prv_get_total_calls             | Accumulator    | The number of victim searches in non-zero candidate private LRUs queue|
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_prv_get_empty                   | Accumulator    | The number of times non-zero candidate private LRUs queue was empty   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_prv_get_big                     | Accumulator    | | The number of victim searches in only very big non-zero candidate   | 
-    |                  |                                          |                | | private LRUs queue (in this context, very big means way over quota) |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_shr_get_total_calls             | Accumulator    | The number of victim searches in non-zero candidate shared LRUs queue |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_shr_get_empty                   | Accumulator    | The number of times non-zero candidate shared LRUs queue was empty    |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_big_private_lists               | Snapshot       | The current number of very big non-zero candidate private LRU lists   |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_private_lists                   | Snapshot       | The current number of non-zero candidate private LRU lists            |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_lfcq_shared_lists                    | Snapshot       | The current number of non-zero candidate shared LRU lists             |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | MVCC snapshot    | Time_get_snapshot_acquire_time:          | Accumulator    | Total time consumed by all transactions to get a snapshot             |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Count_get_snapshot_retry:                | Accumulator    | The number of retries to acquire MVCC snapshot                        |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Time_tran_complete_time:                 | Accumulator    | Time spent to invalidate snapshot and MVCCID on commit/rollback       |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Time_get_oldest_mvcc_acquire_time:       | Accumulator    | Time spend to acquire "global oldest MVCC ID"                         |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Count_get_oldest_mvcc_retry:             | Accumulator    | The number of retries to acquire "global oldest MVCC ID"              |
-    |                  +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    |                  | Num_mvcc_snapshot_ext                    | Complex        | | Number of data page fixes classified by:                            |
-    |                  |                                          |                | | - snapshot type                                                     |
-    |                  |                                          |                | | - insert/delete MVCCID's status                                     |
-    |                  |                                          |                | | - visible/invisible                                                 |
-    +------------------+------------------------------------------+----------------+-----------------------------------------------------------------------+
-
-.. Note::  
-
-    (*) : These statistics measure the non-MVCC operations or MVCC operations which are performed in-place (decided internally)
-
-    
 .. option:: -o, --output-file=FILE
 
     **-o** options is used to store statistics information of server processing for the database to a specified file.  ::
@@ -2106,10 +1358,7 @@ The following shows [options] available with the **cubrid statdump** utility.
 .. option:: -c, --cumulative
 
     You can display the accumulated operation statistics information of the target database server by using the **-c** option. 
-    
-    Num_data_page_fix_ext, Num_data_page_unfix_ext, Time_data_page_hold_acquire_time, Time_data_page_fix_acquire_time information can be output only when this option is specified; however, these informations will be omitted because they are for CUBRID Engine developers.
-
-    By combining this with the **-i** option, you can check the operation statistics information at a specified interval.  ::
+    By combining this with the -i option, you can check the operation statistics information at a specified interval.  ::
 
         cubrid statdump -i 5 -c testdb
 
@@ -2123,108 +1372,28 @@ The following shows [options] available with the **cubrid statdump** utility.
     
         cubrid statdump -s data testdb
 
-         *** SERVER EXECUTION STATISTICS ***
-        Num_data_page_fetches         =          0
+        *** SERVER EXECUTION STATISTICS ***
+        Num_data_page_fetches         =        135
         Num_data_page_dirties         =          0
         Num_data_page_ioreads         =          0
         Num_data_page_iowrites        =          0
-        Num_data_page_flushed         =          0
-        Num_data_page_private_quota   =        327
-        Num_data_page_private_count   =        898
-        Num_data_page_fixed           =          1
-        Num_data_page_dirty           =          3
-        Num_data_page_lru1            =        857
-        Num_data_page_lru2            =        873
-        Num_data_page_lru3            =        898
-        Num_data_page_victim_candidate =        898
-        Num_sort_data_pages           =          0
-        Vacuum_data_page_buffer_hit_ratio =       0.00
-        Num_data_page_hash_anchor_waits =          0
-        Time_data_page_hash_anchor_wait =          0
-        Num_data_page_writes          =          0
-        Num_data_page_dirty_to_post_flush =          0
-        Num_data_page_skipped_flush   =          0
-        Num_data_page_skipped_flush_need_wal =          0
-        Num_data_page_skipped_flush_already_flushed =          0
-        Num_data_page_skipped_flush_fixed_or_hot =          0
-        Num_data_page_avoid_dealloc   =          0
-        Num_data_page_avoid_victim    =          0
-        Num_data_page_fix_ext:
-        Num_data_page_promote_ext:
-        Num_data_page_promote_time_ext:
-        Num_data_page_unfix_ext:
-        Time_data_page_lock_acquire_time:
-        Time_data_page_hold_acquire_time:
-        Time_data_page_fix_acquire_time:
-
+        Num_data_page_victims         =          0
+        Num_data_page_iowrites_for_replacement =          0
+         
+         *** OTHER STATISTICS ***
+        Data_page_buffer_hit_ratio    =     100.00
 
 .. note::
 
-    Each status information consists of 64-bit INTEGER data and the corresponding statistics information can be lost if the accumulated value exceeds the limit (highly unlikely though).
-    
-.. note::
+    Each status information consists of 64-bit INTEGER data and the corresponding statistics information can be lost if the accumulated value exceeds the limit.
 
-    Some sets of performance statistics are activated/deactivated by **extended_statistics_activation** system parameter. Each set is represented by a value power of two. To be activated, it needs to be present in the base-2 representation of the system parameter. This is the lists of sets that can be manipulated:
-
-    
-      ========= ===================================== =========== ====================================================================
-      Value     Name                                  Active      Description
-                                                      Default                
-      ========= ===================================== =========== ====================================================================
-      **1**     **Detailed b-tree pages**             Yes         | Classifies b-tree pages into 3 categories: root, non-leaf and leaf
-                                                                  | Affected statistics:
-                                                                  | - Num_data_page_fix_ext
-                                                                  | - Time_data_page_lock_acquire_time
-                                                                  | - Time_data_page_hold_acquire_time
-                                                                  | - Time_data_page_fix_acquire_time
-                                                                  | - Num_data_page_promote_ext
-                                                                  | - Num_data_page_promote_time_ext
-                                                                  | - Num_data_page_unfix_ext
-      **2**     **MVCC Snapshot**                     Yes         | Activates statistics collection for MVCC snapshot:
-                                                                  | - Num_mvcc_snapshot_ext
-      **4**     **Time locks**                        Yes         | Activate statistics collection for timing lock waits:
-                                                                  | - Num_object_locks_time_waited_usec
-      **8**     **Hash anchor waits**                 Yes         | Activate statistics collection for hash anchor waits:
-                                                                  | - Num_data_page_hash_anchor_waits
-                                                                  | - Time_data_page_hash_anchor_wait
-      **16**    **Extended victimization**            No          | Activate statistics collection for extended page buffer I/O and
-                                                                  | victimization module:
-                                                                  | - Num_data_page_writes
-                                                                  | - flush_collect_per_page
-                                                                  | - flush_flush_per_page
-                                                                  | - Num_data_page_skipped_flush_already_flushed
-                                                                  | - Num_data_page_skipped_flush_need_wal
-                                                                  | - Num_data_page_skipped_flush_fixed_or_hot
-                                                                  | - Num_data_page_dirty_to_post_flush
-                                                                  | - Num_alloc_bcb_prioritize_vacuum
-                                                                  | - Num_victim_assign_direct_vacuum_void
-                                                                  | - Num_victim_assign_direct_vacuum_lru
-                                                                  | - Num_victim_assign_direct_flush
-                                                                  | - Num_victim_assign_direct_panic
-                                                                  | - Num_victim_assign_direct_adjust_lru
-                                                                  | - Num_victim_assign_direct_adjust_lru_to_vacuum
-                                                                  | - Num_victim_assign_direct_search_for_flush
-                                                                  | - Num_victim_shared_lru_success
-                                                                  | - Num_victim_own_private_lru_success
-                                                                  | - Num_victim_other_private_lru_success
-                                                                  | - Num_victim_shared_lru_fail
-                                                                  | - Num_victim_own_private_lru_fail
-                                                                  | - Num_victim_other_private_lru_fail
-                                                                  | - Num_victim_get_from_lru
-                                                                  | - Num_victim_get_from_lru_was_empty
-                                                                  | - Num_victim_get_from_lru_fail
-                                                                  | - Num_victim_get_from_lru_bad_hint
-                                                                  | - Num_lfcq_prv_get_total_calls
-                                                                  | - Num_lfcq_prv_get_empty
-                                                                  | - Num_lfcq_prv_get_big
-                                                                  | - Num_lfcq_shr_get_total_calls
-                                                                  | - Num_lfcq_shr_get_empty
-      ========= ===================================== =========== ====================================================================
+Checking Lock, Checking Transaction, Killing Transaction
+========================================================
 
 .. _lockdb:
 
-lockdb
-------
+Checking Lock Status
+--------------------
 
 The **cubrid lockdb** utility is used to check the information on the lock being used by the current transaction in the database. ::
 
@@ -2240,7 +1409,7 @@ The following example shows how to display lock information of the *testdb* data
 
     cubrid lockdb testdb
 
-The following shows [options] available with the **cubrid lockdb** utility.
+The following shows [options] available with the **cubrid statdump** utility.
     
 .. program:: lockdb
 
@@ -2281,10 +1450,10 @@ The second section of the output of **cubrid lockdb** includes information on al
 ::
 
     Transaction (index 1, csql, dba@cubriddb|12854)
-    Isolation COMMITTED READ
-    Timeout_period : Infinite wait
+    Isolation READ COMMITTED CLASSES AND READ UNCOMMITTED INSTANCES
+    Timeout_period -1
 
-Here, the transaction index is 1, the program name is csql, the user ID is dba, the host name is cubriddb, the client process identifier is 12854, the isolation level is COMMITTED READ and the lock timeout is unlimited.
+Here, the transaction index is 1, the program name is csql, the user ID is dba, the host name is cubriddb, the client process identifier is 12854, the isolation level is READ COMMITTED CLASSES AND READ UNCOMMITTED INSTANCES, and the lock timeout is unlimited.
 
 A client for which transaction index is 0 is the internal system transaction. It can obtain the lock at a specific time, such as the processing of a checkpoint by a database. In most cases, however, this transaction will not obtain any locks.
 
@@ -2299,60 +1468,57 @@ The third section of the output of the **cubrid lockdb** includes the contents o
     Object lock Table:
         Current number of objects which are locked = 2001
 
-**cubrid lockdb** outputs the OID, object type and table name of each object that obtained lock. In addition, it outputs the number of transactions that hold lock for the object (*Num holders*), the number of transactions (*Num blocked-holders*) that hold lock but are blocked since it could not convert the lock to the upper lock (e.g., conversion from **SCH_S_LOCK** to **SCH_M_LOCK**), and the number of different transactions that are waiting for the lock of the object (*Num waiters*). It also outputs the list of client transactions that hold lock, blocked client transactions and waiting client transactions. For rows, but not class, MVCC information is also shown.
+**cubrid lockdb** outputs the OID, object type and table name of each object that obtained lock. In addition, it outputs the number of transactions that hold lock for the object (Num holders), the number of transactions (Num blocked-holders) that hold lock but are blocked since it could not convert the lock to the upper lock (e.g., conversion from U_LOCK to X_LOCK), and the number of different transactions that are waiting for the lock of the object (Num waiters). It also outputs the list of client transactions that hold lock, blocked client transactions and waiting client transactions.
 
-The example below shows an object in which the object type is a class, that will be blocked because the class OID( 0| 62| 5 ) that has **IX_LOCK** for transaction 1 and **SCH_S_LOCK** for transaction 2 cannot be converted into **SCH_M_LOCK**. It also shows that transaction 3 is blocked because transaction 2 is waiting for **SCH_M_LOCK** even when transaction 3 is only waiting for **SCH_S_LOCK**.
-
-::
-
-    OID = 0| 62| 5
-    Object type: Class = athlete.
-    Num holders = 1, Num blocked-holders= 1, Num waiters = 1
-    LOCK HOLDERS :
-        Tran_index = 1, Granted_mode = IX_LOCK, Count = 1, Nsubgranules = 1
-    BLOCKED LOCK HOLDERS :
-        Tran_index = 2, Granted_mode = SCH_S_LOCK, Count = 1, Nsubgranules = 0
-        Blocked_mode = SCH_M_LOCK
-                        Start_waiting_at = Wed Feb 3 14:44:31 2016
-                        Wait_for_secs = -1
-    LOCK WAITERS :
-        Tran_index = 3, Blocked_mode = SCH_S_LOCK
-                        Start_waiting_at = Wed Feb 3 14:45:14 2016
-                        Wait_for_secs = -1
-                        
-The next example shows an instance of class, object OID( 2| 50| 1 ), that was inserted by transaction 1 which holds **X_LOCK** on the object. The class has a unique index and the key of inserted instance is about to be modified by transaction 2, which is blocked until transaction 1 is completed.
+The example below shows an object in which the object type is an instance of a class, or record that will be blocked, because the OID( 2| 50| 1) object that has S_LOCK for transaction 1 and S_LOCK for transaction 2 cannot be converted into X_LOCK. It also shows that transaction 3 is blocked because transaction 2 is waiting for X_LOCK even when transaction 3 is waiting for S_LOCK.
 
 ::
 
     OID = 2| 50| 1
-    Object type: instance of class ( 0| 62| 5) = athlete.
-    MVCC info: insert ID = 6, delete ID = missing.
+    Object type: instance of class ( 0| 62| 5) = athlete
     Num holders = 1, Num blocked-holders= 1, Num waiters = 1
     LOCK HOLDERS :
-        Tran_index =   1, Granted_mode =   X_LOCK, Count =   1
+        Tran_index = 2, Granted_mode = S_LOCK, Count = 1
+    BLOCKED LOCK HOLDERS :
+        Tran_index = 1, Granted_mode = U_LOCK, Count = 3
+        Blocked_mode = X_LOCK
+                        Start_waiting_at = Fri May 3 14:44:31 2002
+                        Wait_for_secs = -1
     LOCK WAITERS :
-        Tran_index =   2, Blocked_mode = X_LOCK
-                          Start_waiting_at = Wed Feb 3 14:45:14 2016
-                          Wait_for_secs = -1
+        Tran_index = 3, Blocked_mode = S_LOCK
+                        Start_waiting_at = Fri May 3 14:45:14 2002
+                        Wait_for_secs = -1
 
-*Granted_mode* refers to the mode of the obtained lock, and *Blocked_mode* refers to the mode of the blocked lock. *Starting_waiting_at refers* to the time at which the lock was requested, and *Wait_for_secs* refers to the waiting time of the lock. The value of *Wait_for_secs* is determined by **lock_timeout**, a system parameter.
+It outputs the lock information on the index of the table when the object type is the Index key of class (index key).
 
-When the object type is a class (table), *Nsubgranules* is displayed, which is the sum of the record locks and the key locks obtained by a specific transaction in the table.
+::
+
+    OID = -662|   572|-32512
+    Object type: Index key of class ( 0|   319|  10) = athlete.
+    Index name: pk_athlete_code
+    Total mode of holders =   NX_LOCK, Total mode of waiters = NULL_LOCK.
+    Num holders=  1, Num blocked-holders=  0, Num waiters=  0
+    LOCK HOLDERS:
+        Tran_index =   1, Granted_mode =  NX_LOCK, Count =   1
+
+Granted_mode refers to the mode of the obtained lock, and Blocked_mode refers to the mode of the blocked lock. Starting_waiting_at refers to the time at which the lock was requested, and Wait_for_secs refers to the waiting time of the lock. The value of Wait_for_secs is determined by lock_timeout, a system parameter.
+
+When the object type is a class (table), Nsubgranules is displayed, which is the sum of the record locks and the key locks obtained by a specific transaction in the table.
 
 ::
 
     OID = 0| 62| 5
-    Object type: Class = athlete.
+    Object type: Class = athlete
     Num holders = 2, Num blocked-holders= 0, Num waiters= 0
     LOCK HOLDERS:
-    Tran_index = 3, Granted_mode = IX_LOCK, Count = 2, Nsubgranules = 0
+    Tran_index = 3, Granted_mode = IS_LOCK, Count = 2, Nsubgranules = 0
     Tran_index = 1, Granted_mode = IX_LOCK, Count = 3, Nsubgranules = 1
-    Tran_index = 2, Granted_mode = IX_LOCK, Count = 2, Nsubgranules = 1
+    Tran_index = 2, Granted_mode = IS_LOCK, Count = 2, Nsubgranules = 1
     
 .. _tranlist:
 
-tranlist
---------
+Checking Transaction
+--------------------
 
 The **cubrid tranlist** is used to check the transaction information of the target database. Only DBA or DBA group can use this utility. ::
 
@@ -2484,8 +1650,8 @@ The following shows [options] available with the **cubrid tranlist** utility.
 
 .. _killtran:
 
-killtran
---------
+Killing Transactions
+--------------------
 
 The **cubrid killtran** is used to check transactions or abort specific transaction. Only a DBA can execute this utility. ::
 
@@ -2574,10 +1740,13 @@ The following shows [options] available with the **cubrid killtran** utility.
 
         cubrid killtran -f -i 1 demodb
 
+Diagnosing database and dumping parameter
+=========================================
+
 .. _checkdb:
 
-checkdb
--------
+Checking Database Consistency
+-----------------------------
 
 The **cubrid checkdb** utility is used to check the consistency of a database. You can use **cubrid checkdb** to identify data structures that are different from indexes by checking the internal physical consistency of the data and log volumes. If the **cubrid checkdb** utility reveals any inconsistencies, you must try automatic repair by using the --**repair** option.
 
@@ -2646,39 +1815,10 @@ The following shows [options] available with the **cubrid checkdb** utility.
          
              t10
 
-.. option:: --check-file-tracker 
-
-    Check about all pages of all files in file-trackers.
-
-.. option:: --check-heap 
-
-    Check about all heap-files. 
-
-.. option:: --check-catalog 
-
-    Check the consistency about catalog information.
-
-.. option:: --check-btree 
-
-    Check the validity about all B-tree indexes.
-
-.. option:: --check-class-name 
-
-    Check the identical between the hash table of a class name and the class information(oid) brought from a heap file. 
-
-.. option:: --check-btree-entries 
-
-    Check the consistency of all B-tree entries.
-
-.. option:: -I, --index-name=INDEX_NAME
-
-    Check if the index specified with this option about checking table. If you use this option, there is no heap validation check.
-    Only one table and one index are permitted when you use this option; if you don't input a table name or input two tables, an error occurs.
-
 .. _diagdb:
 
-diagdb
-------
+Dumping Internal Database Information
+-------------------------------------
 
 You can check various pieces of internal information on the database with the **cubrid diagdb** utility. Information provided by **cubrid diagdb** is helpful in diagnosing the current status of the database or figuring out a problem. ::
 
@@ -2725,21 +1865,11 @@ The following shows [options] available with the **cubrid diagdb** utility.
     +------+--------------------------------------+
     | 9    | Displays heap information.           |
     +------+--------------------------------------+
-    
-.. option:: -o, --output-file=FILE
-
-    The **-o** option is used to store information of the parameters used in the server/client process of the database into a specified file. The file is created in the current directory. If the **-o** option is not specified, the message is displayed on a console screen. ::
-    
-        cubrid diagdb -d8 -o logdump_output demodb
-
-.. option:: --emergency
-
-    Use **--emergency** option to suppress recovery. **This option is meant ONLY for debugging, if there are recovery issues. It is recommended to backup your database before using this option.**
 
 .. _paramdump:
 
-paramdump
----------
+Dumping Parameters Used in Server/Client
+----------------------------------------
 
 The **cubrid paramdump** utility outputs parameter information used in the server/client process. ::
 
@@ -2779,8 +1909,8 @@ The following shows [options] available with the **cubrid paramdump** utility.
 
         cubrid paramdump -C demodb
 
-HA Commands
------------
+Changing HA Mode, Copying/Applying Logs
+=======================================
 
 **cubrid changemode** utility prints or changes the HA mode.
 
@@ -2790,28 +1920,13 @@ For more details, see :ref:`cubrid-service-util`.
 
 .. _locale-command:
 
-Locale Commands
----------------
+Compiling/Dumping Locale
+========================
 
 **cubrid genlocale** utility compiles the locale information to use. This utility is executed in the **make_locale.sh** script ( **.bat** for Windows).
 
-**cubrid dumplocale** utility dumps the compiled binary locale (CUBRID locale library) file as a human-readable format on the console. It is better to save the output as a file by output redirection.
+**cubrid dumplocale** utility dumps the compiled binary locale file as a human-readable format on the console. It is better to save the output as a file by output redirection.
 
 **cubrid synccolldb** utility checks if the collations between database and locale library are consistent or not, and synchronize them.
 
 For more detailed usage, see :ref:`locale-setting`.
-
-
-Timezone Commands
------------------
-
-**cubrid gen_tz** utility has two modes:
-
--   **new** mode when it compiles the IANA timezone data stored in the tzdata folder into a C source code file.
-    This file is then converted into a .so shared library for Linux or .dll library for Windows using the **make_tz.sh** (Linux) / **make_tz.bat** (Windows) scripts.
--   **extend** mode is similar to new but is used when you want to update your timezone data to a different version and ensure backward compatibility
-    with the old data. It is always used with a database name argument. In some situations, when it is impossible to ensure backward compatibility
-    just by merging the two versions of timezone data, an update of the data in the tables of the database is done.
-    It is executed using **make_tz.sh -g extend** for Linux and **make_tz.bat /extend** for Windows.
-    
-**cubrid dump_tz** utility dumps the compiled CUBRID timezone library file as a human-readable format on the console. It is better to save the output as a file by output redirection.

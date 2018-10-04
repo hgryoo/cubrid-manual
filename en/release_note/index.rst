@@ -5,7 +5,10 @@ Release Notes
 .. toctree::
     :maxdepth: 2
     
-    release_note_latest_ver.rst
+    r93.rst
+    r92.rst
+    r91.rst
+    r90.rst
 
 General Information
 ===================
@@ -13,13 +16,17 @@ General Information
 Revision history
 ----------------
 
-+----------------+---------------------------------------------------+
-| Revision Date  | Description                                       |
-+================+===================================================+
-| Feb. 2018      | CUBRID 10.1 patch 1 Release (10.1.1.7691-47d2437) |
-+----------------+---------------------------------------------------+
-| July 2017      | CUBRID 10.1 Release (10.1.0.7663-1ca0ab8)         |
-+----------------+---------------------------------------------------+
++----------------+--------------------------------------+
+| Revision Date  | Description                          |
++================+======================================+
+| May. 2014      | CUBRID 9.3 Release (9.3.0.0206)      |
++----------------+--------------------------------------+
+| Sep. 2013      | CUBRID 9.2 Release (9.2.0.0155)      |
++----------------+--------------------------------------+
+| Mar. 2013      | CUBRID 9.1 Release (9.1.0.0212)      |
++----------------+--------------------------------------+
+| Oct. 2012      | CUBRID 9.0 Beta Release (9.0.0.0478) |
++----------------+--------------------------------------+
 
 Bug Reports and User Feedback
 -----------------------------
@@ -29,11 +36,11 @@ CUBRID welcomes your active participation in bug reporting and looks forward to 
 +---------------+-----------------------------------------------------------------------+
 | Document      | Description                                                           |
 +===============+=======================================================================+
-| Bug Report    | CUBRID Issue Tracker: http://jira.cubrid.org/browse                   |
+| Bug Report    | CUBRID Bug Bash: http://jira.cubrid.org                               |
 +---------------+-----------------------------------------------------------------------+
-| User Feedback | CUBRID Open Source Project: https://github.com/CUBRID/cubrid          |
+| User Feedback | CUBRID Open Source Project: http://www.cubrid.org/forum               |
 |               |                                                                       |
-|               | CUBRID Website: http://www.cubrid.org                                 |
+|               | CUBRID Website: http://www.cubrid.org/                                |
 +---------------+-----------------------------------------------------------------------+
 
 License
@@ -46,11 +53,11 @@ Additional Information
 
 Regarding CUBRID upgrade and migration, see :doc:`/upgrade`.
 
-.. FIXME: Regarding CUBRID Tool, see http://www.cubrid.org/wiki_tools\ .
+Regarding CUBRID Tool, see http://www.cubrid.org/wiki_tools\ .
 
-.. FIXME: Regarding CUBRID Drivers, see http://www.cubrid.org/wiki_apis\ . 
+Regarding CUBRID Drivers, see http://www.cubrid.org/wiki_apis\ . 
 
-Regarding the recent CUBRID sources, visit https://github.com/CUBRID/cubrid and https://github.com/CUBRID\ .
+Regarding the recent CUBRID sources, see http://svn.cubrid.org/\ .
 
 Note on Drivers
 ---------------

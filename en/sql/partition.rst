@@ -1,10 +1,22 @@
-
-:meta-keywords: cubrid partition, partitioning key, range partition, hash partition, list partition, partition pruning
-:meta-description: Partitioning is a method by which a table is divided into multiple independent physical units called partitions. In CUBRID, each partition is a table implemented as a subclass of the partitioned table.
-
 ************
 Partitioning
 ************
+
+Partitioning is a method by which a table is divided into multiple independent physical units called partitions. In CUBRID, each partition is a table implemented as a subclass of the partitioned table. Each partition holds a subset of the partitioned table data defined by a :ref:`partitioning-key` and a partitioning method. Users can access data stored in partitions by executing statements on the partitioned table. This means that users can partition tables without modifying statements or code that is used to access these tables (benefiting from the advantages of partitioning almost without modifying the user application).
+
+Partitioning can enhance manageability, performance and availability. Some advantages of partitioning a table are:
+
+*   Improved management of large capacity tables
+*   Improved performance by narrowing the range of access when retrieving data
+*   Improved performance and decreased physical loads by distributing disk I/O
+*   Decreased possibility of data corruption and improved availability by partitioning a table into multiple chunks
+*   Optimized storage cost
+
+Partitioned data is auto-managed by CUBRID. :doc:`INSERT<query/insert>` and :doc:`UPDATE<query/update>` statements executed on partitioned tables perform an additional step during execution to identify the partition in which a tuple must be placed. During UPDATE statement execution, CUBRID identifies situations in which the modified tuple should be moved to another partition and performs this operation keeping the partitioning definition consistent. Inserting tuples for which there is no valid partition will return an error.
+
+When executing :doc:`SELECT<query/select>` statements, CUBRID applies a procedure called :ref:`partition-pruning` to narrow the search space to only those partitions for which the search predicates will produce results. Pruning (eliminating) most of the partitions during a SELECT statement greatly improves performance.
+
+Table partitioning is most effective when applied to large tables. Exactly what a "large" table means is dependent on the user application and on the way in which the table is used in queries. Which is the best partitioning method (:ref:`range<range-partitioning>`, :ref:`list<list-partitioning>` or :ref:`hash<hash-partitioning>`) for a table, also depends on how the table is used in queries and how data will be distributed between partitions. Even though partitioned tables can be used just like normal tables, there are some :ref:`partitioning-notes` which should be taken into consideration.
 
 .. _partitioning-key:
 
@@ -52,8 +64,6 @@ The following restrictions apply to the partitioning key:
     *   :c:macro:`USER` 
     *   :ref:`PRIOR <prior-operator>` 
     *   :func:`WIDTH_BUCKET`
-*	The partitioning key needs to be present in the key of each unique index (including primary keys). For more information on this aspect, please see :ref:`here<index-partitions>`.
-*	The partitioning expression's length must not exceed 1024 bytes.
 
 .. _range-partitioning:
 
@@ -68,22 +78,21 @@ Tables can be partitioned by range by using the **PARTITION BY RANGE** clause in
        ...
     )
     PARTITION BY RANGE ( <partitioning_key> ) (
-        PARTITION partition_name VALUES LESS THAN ( <range_value> ) [COMMENT 'comment_string'] ,
-        PARTITION partition_name VALUES LESS THAN ( <range_value> ) [COMMENT 'comment_string'] ,
+        PARTITION partition_name VALUES LESS THAN ( <range_value> ),
+        PARTITION partition_name VALUES LESS THAN ( <range_value> ),
         ... 
     )
     
     ALTER TABLE table_name 
     PARTITION BY RANGE ( <partitioning_key> ) (
-        PARTITION partition_name VALUES LESS THAN ( <range_value> ) [COMMENT 'comment_string'] ,
-        PARTITION partition_name VALUES LESS THAN ( <range_value> ) [COMMENT 'comment_string'] ,
+        PARTITION partition_name VALUES LESS THAN ( <range_value> ),
+        PARTITION partition_name VALUES LESS THAN ( <range_value> ),
         ... 
     )
 
-*   *partitioning_key* : specifies the :ref:`partitioning-key`.
-*   *partition_name* : specifies the partition name.
-*   *range_value* : specifies the upper limit of the partitioning key value. All tuples for which the evaluation of partitioning key is less than (but not equal to) the *range_value* will be stored in this partition. 
-*   *comment_string*: specifies a comment for each partition.
+*   *partitioning_key* : Specifies the :ref:`partitioning-key`.
+*   *partition_name* : Specifies the partition name.
+*   *range_value* : Specifies the upper limit of the partitioning key value. All tuples for which the evaluation of partitioning key is less than (but not equal to) the *range_value* will be stored in this partition. 
 
 The following example shows how to create the *participant2* table which holds countries participating at the Olympics and partition this table into partitions holding participants before year 2000(*before_2000* partition) and participants before year 2008(*before_2008* partition):
 
@@ -102,8 +111,8 @@ The following example shows how to create the *participant2* table which holds c
         PARTITION before_2000 VALUES LESS THAN (2000),
         PARTITION before_2008 VALUES LESS THAN (2008)
     );
-
-When creating partitions, CUBRID sorts the user supplied range values from smallest to largest and creates the non-overlapping intervals from the sorted list. In the above example, the created range intervals are [-inf, 2000) and [2000, 2008). The identifier **MAXVALUE** can be used to specify an infinite upper limit for a partition. 
+     
+When creating partitions, CUBRID sorts the user supplied range values from smallest to largest and creates the non-overlapping intervals from the sorted list. In the above example, the created range intervals are [-inf, 2000) and [2000, 2008).The identifier **MAXVALUE** can be used to specify an infinite upper limit for a partition. 
 
 .. code-block:: sql
 
@@ -113,20 +122,6 @@ When creating partitions, CUBRID sorts the user supplied range values from small
     );
 
 When inserting a tuple into a range-partitioned table, CUBRID identifies the range to which the tuple belongs by evaluating the partitioning key. If the partitioning key value is **NULL**, the data is stored in the partition with the smallest specified range value. If there is no range which would accept the partitioning key value, CUBRID returns an error. CUBRID also returns an error when updating a tuple if the new value of the partitioning key does not belong to any of the defined ranges.
-
-The below is an example to add a comment for each partition.
-
-.. code-block:: sql
-
-    CREATE TABLE tbl (a int, b int) PARTITION BY RANGE(a) (
-        PARTITION less_1000 VALUES LESS THAN (1000) COMMENT 'less 1000 comment', 
-        PARTITION less_2000 VALUES LESS THAN (2000) COMMENT 'less 2000 comment'
-    );
-
-    ALTER TABLE tbl PARTITION BY RANGE(a) (
-        PARTITION less_1000 VALUES LESS THAN (1000) COMMENT 'new partition comment');
-
-To see a partition comment, refer to :ref:`show-partition-comment`.
 
 .. _hash-partitioning:
 
@@ -177,22 +172,21 @@ Tables can be partitioned by list by using the **PARTITION BY LIST** clause in *
       ...
     )
     PARTITION BY LIST ( <partitioning_key> ) (
-      PARTITION partition_name VALUES IN ( <values_list> ) [COMMENT 'comment_string'],
-      PARTITION partition_name VALUES IN ( <values_list> ) [COMMENT 'comment_string'],
+      PARTITION partition_name VALUES IN ( <values_list> ),
+      PARTITION partition_name VALUES IN ( <values_list> ),
       ... 
     )
     
     ALTER TABLE table_name
     PARTITION BY LIST ( <partitioning_key> ) (
-      PARTITION partition_name VALUES IN ( <values_list> ) [COMMENT 'comment_string'],
-      PARTITION partition_name VALUES IN ( <values_list> ) [COMMENT 'comment_string'],
+      PARTITION partition_name VALUES IN ( <values_list> ),
+      PARTITION partition_name VALUES IN ( <values_list> ),
       ... 
     )
 
-*   *partitioning_key*: specifies the :ref:`partitioning-key`.
-*   *partition_name*: specifies the partition name.
-*   *value_list*: specifies the list of values for the partitioning key.
-*   *comment_string*: specifies a comment for each partition.
+*   *partitioning_key* : Specifies the :ref:`partitioning-key`.
+*   *partition_name* : Specifies the partition name.
+*   *value_list* : Specifies the list of values for the partitioning key.
 
 The following example shows how to create the *athlete2* table with athlete names and sport events, and define list partitions based on event values.
 
@@ -217,41 +211,6 @@ When inserting a tuple into a list-partitioned table, the value of the partition
         PARTITION event2 VALUES IN ('Judo', 'Taekwondo', 'Boxing'),
         PARTITION event3 VALUES IN ('Football', 'Basketball', 'Baseball', NULL)
     );
-
-The below is examples of adding comments for each partition.
-
-.. code-block:: sql
-
-    CREATE TABLE athlete2 (name VARCHAR (40), event VARCHAR (30))
-    PARTITION BY LIST (event) (
-        PARTITION event1 VALUES IN ('Swimming', 'Athletics') COMMENT 'G1',
-        PARTITION event2 VALUES IN ('Judo', 'Taekwondo', 'Boxing') COMMENT 'G2',
-        PARTITION event3 VALUES IN ('Football', 'Basketball', 'Baseball') COMMENT 'G3');
-
-    CREATE TABLE athlete3 (name VARCHAR (40), event VARCHAR (30));
-    ALTER TABLE athlete3 PARTITION BY LIST (event) (
-        PARTITION event1 VALUES IN ('Handball', 'Volleyball', 'Tennis') COMMENT 'G1');
-
-
-.. _show-partition-comment:
-
-COMMENT of Partition
---------------------
-
-A partition's comment can be written only for the range partition and the list partition. You cannot write the comment about the hash partition. The partition comment can be shown by running this syntax.
-
-.. code-block:: sql
-
-    SHOW CREATE TABLE table_name;
-    SELECT class_name, partition_name, COMMENT FROM db_partition WHERE class_name ='table_name';
-
-Or you can use CSQL interpreter by running ;sc command.
-
-.. code-block:: sql
-
-    $ csql -u dba demodb
-    
-    csql> ;sc tbl
 
 .. _partition-pruning:
 
@@ -543,9 +502,7 @@ The following example creates a partitioned table, inserts some tuples into it a
     
     INSERT INTO t VALUES(1), (2), (3), (4), (5), (6);
     
-Schema and data of table *t* are shown below.
-
-.. code-block:: sql
+Schema and data of table *t* are shown below::
 
     csql> ;schema t
     === <Help: Schema of a Class> ===
@@ -574,9 +531,7 @@ The following statement promotes partitions *p0* and *p2*:
 
     ALTER TABLE t PROMOTE PARTITION p0, p2;
 
-After promotion, table *t* has only one partition (*p1*) and contains the following data.
-
-.. code-block:: sql
+After promotion, table *t* has only one partition (*p1*) and contains the following data::
 
     csql> ;schema t
     === <Help: Schema of a Class> ===
@@ -595,39 +550,37 @@ After promotion, table *t* has only one partition (*p1*) and contains the follow
                 3
                 4         
 
-.. _index-partitions:
-
 Indexes on Partitioned Tables
 =============================
 
-All indexes created on a partitioning table are local indexes. With local indexes, data for each partition is stored in a separate(local) index. This increases concurrency on a partitioned table's indexes, since transactions access data from different partitions also do different, local, indexes.
+Indexes created on a partitioning table are either local or global indexes. Global Index store data from all partitions while, with local indexes, data for each partition is stored in a separate(local) index. When creating an index on a partitioned table, CUBRID decides whether that index will be local or global applying the following rules:
 
-In order to ensure local unique indexes, the following restriction must be satisfied when creating unique indexes on partitions:
+*   Primary keys are always global indexes.
+*   Foreign keys are always local indexes.
+*   All non-unique indexes are local.
+*   A unique index is local only if the partitioning key is part of the index definition.
 
-*  The partitioning key must be part of the primary key's and the all the unique indexes' definition.
-
-If this is not satisfied, CUBRID will return an error:
+The following examples show how CUBRID decides between local and global indexes:
 
 .. code-block:: sql
     
-	csql> CREATE TABLE t(i INT , j INT) PARTITION BY HASH (i) PARTITIONS 4;
-	Execute OK. (0.142929 sec) Committed.
+    CREATE TABLE t(i INTEGER, j INTEGER k INTEGER)
+    PARTITION BY HASH(i) PARTITIONS 5;
+    
+    -- pk_t_i is global because it is a primary key
+    ALTER TABLE t ADD CONSTRAINT pk_t_i PRIMARY KEY(i);
+    
+    -- i_t_j and i_t_j_k are local indexes
+    CREATE INDEX i_t_j ON t(j);
+    CREATE INDEX i_t_j_k ON t(j, k);
+    
+    -- u_t_i_j is a local index because the partitioning key (i) is part of the index definition
+    CREATE UNIQUE INDEX u_t_i_j ON t(i, j);
+    
+    -- u_t_j_k is a global index because the partitioning key (i) is not part of the index definition
+    CREATE UNIQUE INDEX u_t_j_k ON t(j, k);
 
-	1 command(s) successfully processed.
-	csql> ALTER TABLE t ADD PRIMARY KEY (i);
-	Execute OK. (0.123776 sec) Committed.
-
-	1 command(s) successfully processed.
-	csql> CREATE UNIQUE INDEX idx2 ON t(j);
-
-	In the command from line 1,
-
-	ERROR: Partition key attributes must be present in the index key.
-
-
-	0 command(s) successfully processed.
-
-It is important to understand the benefits of local indexes. In a global index scan, for each partition that was not pruned a separate index scan would have been performed. This leads to poorer performance than scanning local indexes because data from other partitions is fetched from disk and then discarded (it belongs to another partition than the one being scanned at the moment). **INSERT** statements also show better performance on local indexes since these indexes are smaller.
+It is important to define local indexes wherever possible. CUBRID does not optimize index scans to be able to scan several partitions together using a global index. Instead, in a global index scan, for each partition that was not pruned a separate index scan is performed. This leads to poorer performance than scanning local indexes because data from other partitions is fetched from disk and then discarded (it belongs to another partition than the one being scanned at the moment). **INSERT** statements also show better performance on local indexes since these indexes are smaller.
 
 .. _partitioning-notes:
 

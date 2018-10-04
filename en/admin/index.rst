@@ -1,22 +1,16 @@
+*********************
+Administrator's Guide
+*********************
 
-:meta-keywords: cubrid administrator, cubrid dba, cubrid tools, cubrid utilities, cubrid services, cubrid processes, cubrid config, cubrid troubleshoot
-:meta-description: This manual chapter covers everything needed by database administrators how to use cubrid utilities, how to monitor cubrid systems, how to troubleshoot and how to fix problems.
+The "Administrator's Guide" provides the database administrators (**DBA**) with details on how to operate the CUBRID system. 
 
-*****************
-CUBRID Management
-*****************
+*   It includes instructions on how to use the **cubrid** utility, which starts and stops various processes of the CUBRID server, the broker and manager server.
 
-This chapter describes how the database administrators (**DBA**) operates the CUBRID system.
+*   It includes instructions on the following: database management tasks (creating and deleting databases, adding volume, etc.), migration tasks (moving database to a different location or making changes so that it fits the system's version), and making back-ups and rollbacks of the database in case of failures.
 
-*   It includes instructions on how to use the **cubrid** utility, which starts and stops various processes of the CUBRID server, the broker and manager server. See :doc:`/admin/control`.
-
-*   It includes instructions on the following: database management tasks (creating and deleting databases, adding volume, etc.), migration tasks (moving database to a different location or making changes so that it fits the system's version), and making back-ups and rollbacks of the database in case of failures. See :doc:`/admin/admin_utils`.
-
-*   It includes instructions on the system configuration. See :doc:`/admin/config`.
-
-*   It includes how to use SystemTap, which can monitors and traces the operating processes dynamically. See :doc:`/admin/systemtap`.
+*   It includes instructions on the system configuration.
    
-*   It includes instructions on troubleshooting. See :doc:`/admin/troubleshoot`.
+*   It includes instructions on troubleshooting.
 
 The **cubrid** utilities provide features that can be used to comprehensively manage the CUBRID service. The CUBRID utilities are divided into the service management utility, which is used to manage the CUBRID service process, and the database management utility, which is used to manage the database.
 
@@ -24,23 +18,23 @@ The service management utilities are as follows:
 
 *   Service utility : Operates and manages the master process.
 
-    *   :ref:`cubrid service <control-cubrid-services>`
+    *   cubrid service
 
 *   Server utility : Operates and manages the server process.
 
-    *   :ref:`cubrid server <control-cubrid-server>`
+    *   cubrid server
 
 *   Broker utility : Operates and manages the broker process and application server (CAS) process.
 
-    *   :ref:`cubrid broker <broker>`
+    *   cubrid broker
 
 *   Manager utility : Operates and manages the manager server process.
 
-    *   :ref:`cubrid manager <cubrid-manager-server>`
+    *   cubrid manager
 
 *   HA utility : Operates and manages the HA-related processes.
 
-    *   :ref:`cubrid heartbeat <cubrid-heartbeat>`
+    *   cubrid heartbeat
 
 See :ref:`control-cubrid-processes` for details.
 
@@ -48,62 +42,62 @@ The database management utilities are as follows:
 
 *   Creating database, adding volume, and deleting database
 
-    *   :ref:`cubrid createdb <createdb>`
-    *   :ref:`cubrid addvoldb <addvoldb>`
-    *   :ref:`cubrid deletedb <deletedb>`
+    *   cubrid createdb
+    *   cubrid addvoldb
+    *   cubrid deletedb
 
 *   Renaming database, altering host, copying/moving database, and registering database
 
-    *   :ref:`cubrid renamedb <renamedb>`
-    *   :ref:`cubrid alterdbhost <alterdbhost>`
-    *   :ref:`cubrid copydb <copydb>`
-    *   :ref:`cubrid installdb <installdb>`
+    *   cubrid renamedb
+    *   cubrid alterdbhost
+    *   cubrid copydb
+    *   cubrid installdb
 
 *   Backing up database
 
-    *   :ref:`cubrid backupdb <backupdb>`
+    *   cubrid backupdb
 
 *   Restoring database
 
-    *   :ref:`cubrid restoredb <restoredb>`
+    *   cubrid restoredb
 
 *   Unloading and Loading database
 
-    *   :ref:`cubrid unloaddb <unloaddb>`
-    *   :ref:`cubrid loaddb <loaddb>`
+    *   cubrid unloaddb
+    *   cubrid loaddb
     
 *   Checking and compacting database space
 
-    *   :ref:`cubrid spacedb <spacedb>`
-    *   :ref:`cubrid compactdb <compactdb>`
+    *   cubrid spacedb
+    *   cubrid compactdb
 
 *   Updating statistics and checking query plan
 
-    *   :ref:`cubrid plandump <plandump>`
-    *   :ref:`cubrid optimizedb <optimizedb>`
-    *   :ref:`cubrid statdump <statdump>`
+    *   cubrid plandump
+    *   cubrid optimizedb
+    *   cubrid statdump
 
 *   Checking database lock, checking transaction and killing transaction
 
-    *   :ref:`cubrid lockdb <lockdb>`
-    *   :ref:`cubrid tranlist <tranlist>`
-    *   :ref:`cubrid killtran <killtran>`
+    *   cubrid lockdb
+    *   cubrid tranlist
+    *   cubrid killtran
 
 *   Diagnosing database and dumping parameter
 
-    *   :ref:`cubrid checkdb <checkdb>`
-    *   :ref:`cubrid diagdb <diagdb>`
-    *   :ref:`cubrid paramdump <paramdump>`
+    *   cubrid checkdb
+    *   cubrid diagdb
+    *   cubrid paramdump
 
 *   Changing HA mode, replicating/applying logs 
 
-    *   :ref:`cubrid changemode <cubrid-changemode>`
-    *   :ref:`cubrid applyinfo <cubrid-applyinfo>`
+    *   cubrid changemode
+    *   cubrid applyinfo
 
 *   Compiling/Outputting locale
 
-    *   :ref:`cubrid genlocale <locale-command>`
-    *   :ref:`cubrid dumplocale <dumplocale>`
+    *   cubrid genlocale
+    *   cubrid dumplocale
 
 See :ref:`cubrid-utilities` for details.
 
@@ -119,8 +113,6 @@ See :ref:`cubrid-utilities` for details.
     :maxdepth: 3
 
     control.rst
-    db_manage.rst
     admin_utils.rst
     config.rst
-    systemtap.rst
     troubleshoot.rst

@@ -1,14 +1,6 @@
-
-:meta-keywords: cubrid seteq, cubrid setneq, cubrid superset, cubrid superseteq, cubrid subset, cubrid subseteq
-:meta-description: Containment operators are used to check the containment relationship by performing comparison operation on operands of the collection data type.
-
-:tocdepth: 3
-
 *********************
 Containment Operators
 *********************
-
-.. contents::
 
 Containment operators are used to check the containment relationship by performing comparison operation on operands of the collection data type. Collection data types or subqueries can be specified as operands. The operation returns **TRUE** or **FALSE** if there is a containment relationship between the two operands of identical/different/subset/proper subset.
 

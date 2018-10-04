@@ -1,13 +1,6 @@
-
-:meta-keywords: cubrid date, cubrid time, cubrid datetime, datetime functions, datetime operators
-
-:tocdepth: 3
-
 *********************************
 Date/Time Functions and Operators
 *********************************
-
-.. contents::
 
 ADDDATE, DATE_ADD
 =================
@@ -84,7 +77,9 @@ ADDDATE, DATE_ADD
      
 ::
 
-    03/30/2010  12:00:00.000 AM 03/31/2010               03/31/2010
+       SYS_DATE    date_add( SYS_DATE , INTERVAL 24 HOUR)   adddate( SYS_DATE , 1)
+    ==============================================================================
+      03/30/2010  12:00:00.000 AM 03/31/2010               03/31/2010
      
 .. code-block:: sql
 
@@ -93,7 +88,9 @@ ADDDATE, DATE_ADD
      
 ::
 
-     03/30/2010  12:00:00.000 AM 03/29/2010               03/29/2010
+      SYS_DATE    date_add( SYS_DATE , INTERVAL -24 HOUR)   adddate( SYS_DATE , -1)
+    ==============================================================================
+      03/30/2010  12:00:00.000 AM 03/29/2010               03/29/2010
      
 .. code-block:: sql
 
@@ -102,7 +99,9 @@ ADDDATE, DATE_ADD
      
 ::
 
-    06:18:24.149 PM 06/28/2010     06:19:44.149 PM 06/28/2010                            
+      SYS_DATETIME                   date_add( SYS_DATETIME , INTERVAL '1:20' HOUR_SECOND)
+    =======================================================================================
+      06:18:24.149 PM 06/28/2010     06:19:44.149 PM 06/28/2010                            
      
 .. code-block:: sql
 
@@ -118,14 +117,16 @@ ADDDATE, DATE_ADD
      
 ::
 
-    '12:00:00.000 AM 00/00/0000'
+     adddate('0001-01-01 00:00:00', -1)
+    ======================
+     '12:00:00.000 AM 00/00/0000'
 
 ADDTIME
 =======
 
 .. function:: ADDTIME(expr1, expr2)
 
-    The **ADDTIME** function adds or subtracts a value of specific time. The first argument is **DATE**, **DATETIME**, **TIMESTAMP**, or **TIME** type and the second argument is **TIME**, **DATETIME**, or **TIMESTAMP** type. Time should be included in the second argument, and the date of the second argument is ignored. The return type for each argument type is follows:
+    The **ADDTIME** function adds or subtracts a value of specific time. The first argument is **DATE**, **DATETIME**, **TIMESTAMP**, or **TIME** type and the second argument is **TIME**, **DATETIME**, or **TIMESTAMP** type. Time should be include in the second argument, and the date of the second argument is ignored. The return type for each argument type is follows:
 
     +-------------------------+------------------------------------------+-----------------+----------------------------------------------------------+
     | First Argument Type     | Second Argument Type                     | Return Type     | Note                                                     |
@@ -148,7 +149,9 @@ ADDTIME
     
 ::
 
-    01:01:01.000 AM 01/01/2008
+     addtime(datetime '2007-12-31 23:59:59', time '1:1:2')
+    ========================================================
+     01:01:01.000 AM 01/01/2008
      
 .. code-block:: sql
 
@@ -156,9 +159,9 @@ ADDTIME
     
 ::
 
+     addtime(time '01:00:00', time '02:00:01')
+    ============================================
     03:00:01 AM
-
-
 
 ADD_MONTHS
 ==========
@@ -177,6 +180,8 @@ ADD_MONTHS
     
 ::
 
+      add_months(date '2008-12-25', 5)   add_months(date '2008-12-25', -5)
+    =======================================================================
       05/25/2009                         07/25/2008
      
      
@@ -186,6 +191,8 @@ ADD_MONTHS
     
 ::
 
+      add_months(date '2008-12-31', 5.5)   add_months(date '2008-12-31', -5.5)
+    ===========================================================================
       06/30/2009                           06/30/2008
      
 .. code-block:: sql
@@ -194,277 +201,154 @@ ADD_MONTHS
 
 ::
 
+      add_months( cast( SYS_DATETIME  as date), 5)   add_months( cast( SYS_TIMESTAMP  as date), 5)
+    ================================================================================
       07/03/2010                                     07/03/2010
 
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT ADD_MONTHS (datetimeltz'2001-10-11 10:11:12', 1);
-
-::
-
-    11/11/2001
-
-.. code-block:: sql
-
-    SELECT ADD_MONTHS (datetimetz'2001-10-11 10:11:12 Europe/Paris', 1);
-
-::
-
-    11/11/2001
-
-.. code-block:: sql
-
-    SELECT ADD_MONTHS (timestampltz'2001-10-11 10:11:12', 1);
-
-::
-
-    11/11/2001
-
-.. code-block:: sql
-
-    SELECT ADD_MONTHS (timestamptz'2001-10-11 10:11:12 Europe/Paris', 1);
-
-::
-
-    11/11/2001
-
-CURDATE, CURRENT_DATE
-=====================
+CURDATE, CURRENT_DATE, SYS_DATE, SYSDATE
+========================================
 
 .. function:: CURDATE ()
 .. function:: CURRENT_DATE ()
 .. c:macro:: CURRENT_DATE
+.. c:macro:: SYS_DATE
+.. c:macro:: SYSDATE
 
-    **CURDATE** (), **CURRENT_DATE** and **CURRENT_DATE** () are used interchangeably and they return the current date of session as the **DATE** type (*MM*/*DD*/*YYYY* or *YYYY*-*MM*-*DD*). The unit is day.
-    When the time zone of the current session is same as that of server, these functions are same as :c:macro:`SYS_DATE`, :c:macro:`SYSDATE`. Please refer :c:macro:`SYS_DATE`, :c:macro:`SYSDATE` and the following examples to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions.
-    
+    **CURDATE** (), **CURRENT_DATE**, **CURRENT_DATE** (), **SYS_DATE** and **SYSDATE** are used interchangeably and they return the current date as the **DATE** type (*MM*/*DD*/*YYYY* or *YYYY*-*MM*-*DD*). The unit is day.
+
     If input every argument value of year, month, and day is 0, the return value is determined by the **return_null_on_function_errors** system parameter; if it is set to yes, then **NULL** is returned; if it is set to no, an error is returned. The default value is **no**.
 
     :rtype: DATE
     
 .. code-block:: sql
 
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current date in DATE type
-    
+    --it returns the current date in DATE type
     SELECT CURDATE(), CURRENT_DATE(), CURRENT_DATE, SYS_DATE, SYSDATE;
+     
+::
 
-       CURRENT_DATE    CURRENT_DATE    CURRENT_DATE    SYS_DATE    SYS_DATE 
-    ========================================================================
-      02/05/2016      02/05/2016      02/05/2016      02/05/2016  02/05/2016
-
+      SYS_DATE    SYS_DATE    SYS_DATE    SYS_DATE    SYS_DATE
+    ============================================================
+      04/01/2010  04/01/2010  04/01/2010  04/01/2010  04/01/2010
+     
 .. code-block:: sql
 
-    -- it returns the date 60 days added to the current date
-    
+    --it returns the date 60 days added to the current date
     SELECT CURDATE()+60;
+     
+::
 
-       CURRENT_DATE +60
-    ===================
-      04/05/2016    
+       SYS_DATE +60
+    ===============
+       05/31/2010
 
-
-.. code-block:: sql
-
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
-    
-    SET TIME ZONE 'America/Los_Angeles';
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that CURDATE() and SYS_DATE returns different results
-    
-    SELECT CURDATE(), CURRENT_DATE(), CURRENT_DATE, SYS_DATE, SYSDATE;
-
-       CURRENT_DATE    CURRENT_DATE    CURRENT_DATE    SYS_DATE    SYS_DATE 
-    ========================================================================
-      02/04/2016      02/04/2016      02/04/2016      02/05/2016  02/05/2016
-
-.. warning::
-    
-    As 10.0, **CURDATE** (), **CURRENT_DATE**, **CURRENT_DATE** () are different from **SYS_DATE** and **SYSDATE**. They are synonym for 9.x and lower. 
-    
-CURRENT_DATETIME, NOW
-=====================
+CURRENT_DATETIME, NOW, SYS_DATETIME, SYSDATETIME
+================================================
 
 .. function:: CURRENT_DATETIME ()
 .. c:macro:: CURRENT_DATETIME
 .. function:: NOW ()
+.. c:macro:: SYS_DATETIME
+.. c:macro:: SYSDATETIME
 
-    **CURRENT_DATETIME**, **CURRENT_DATETIME** () and **NOW** () are used interchangeably, and they return the current date and time of session in **DATETIME** type. The unit is millisecond.
-    When the time zone of the current session is same as that of server, these functions are same as :c:macro:`SYS_DATETIME`, :c:macro:`SYSDATETIME`. Please also refer :c:macro:`SYS_DATETIME`, :c:macro:`SYSDATETIME` to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions.
-    
+    **CURRENT_DATETIME**, **CURRENT_DATETIME** (), **NOW** (), **SYS_DATETIME** and **SYSDATETIME** are used interchangeably, and they return the current date and time in **DATETIME** type. The unit is millisecond.
+
     :rtype: DATETIME
     
 .. code-block:: sql
 
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current date and time in DATETIME type
-
-    SELECT NOW(), SYS_DATETIME;                                                                                                                                                
-
-       CURRENT_DATETIME               SYS_DATETIME                
-    ==============================================================
-      04:05:09.292 PM 02/05/2016     04:05:09.292 PM 02/05/2016   
-
-.. code-block:: sql
-
-    -- it returns the timestamp value 1 hour added to the current sys_datetime value
-    
-    SELECT TO_CHAR(SYSDATETIME+3600*1000, 'YYYY-MM-DD HH24:MI');
-
-       to_char( SYS_DATETIME +3600*1000, 'YYYY-MM-DD HH24:MI')
-    ======================
-      '2016-02-05 17:05'  
-
-.. code-block:: sql
-
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
-    
-    set time zone 'America/Los_Angeles';
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that NOW() and SYS_DATETIME return different results
-    
+    --it returns the current date and time in DATETIME type
     SELECT NOW(), SYS_DATETIME;
+     
+::
 
-       CURRENT_DATETIME               SYS_DATETIME                
+      SYS_DATETIME                   SYS_DATETIME
     ==============================================================
-      11:08:57.041 PM 02/04/2016     04:08:57.041 PM 02/05/2016   
-  
-.. warning::
+      04:08:09.829 PM 02/04/2010     04:08:09.829 PM 02/04/2010
+     
+.. code-block:: sql
 
-    As 10.0, **CURRENT_DATETIME** (), **NOW** () are different from **SYS_DATEIME**, **SYSDATETIME**. They are synonym for 9.x and lower. 
+    --it returns the timestamp value 1 hour added to the current sys_datetime value
+    SELECT TO_CHAR(SYSDATETIME+3600*1000, 'YYYY-MM-DD HH:MI');
     
-CURTIME, CURRENT_TIME
-=====================
+::
+
+      to_char( SYS_DATETIME +3600*1000, 'YYYY-MM-DD HH:MI', 'en_US')
+    ======================
+      '2010-02-04 04:08'
+
+CURTIME, CURRENT_TIME, SYS_TIME, SYSTIME
+========================================
 
 .. function:: CURTIME ()
 .. c:macro:: CURRENT_TIME
 .. function:: CURRENT_TIME ()
+.. c:macro:: SYS_TIME
+.. c:macro:: SYSTIME
 
-    **CURTIME** (), **CURRENT_TIME** and **CURRENT_TIME** () are used interchangeably and they return the current time of session as **TIME** type (*HH*:*MI*:*SS*). The unit is second.
-    When the time zone of the current session is same as that of server, these functions are same as :c:macro:`SYS_TIME`, :c:macro:`SYSTIME`. Please also refer :c:macro:`SYS_TIME`, :c:macro:`SYSTIME` to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions.
-    
+    **CURTIME** (), **CURRENT_TIME**, **CURRENT_TIME** (), **SYS_TIME** and **SYSTIME** are used interchangeably and they return the current time as **TIME** type (*HH*:*MI*:*SS*). The unit is second.
+
     :rtype: TIME
     
 .. code-block:: sql
 
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current time in TIME type
-    
+    --it returns the current time in TIME type
     SELECT CURTIME(), CURRENT_TIME(), CURRENT_TIME, SYS_TIME, SYSTIME;
+    
+::
 
-       CURRENT_TIME    CURRENT_TIME    CURRENT_TIME    SYS_TIME     SYS_TIME  
-    ==========================================================================
-      04:22:54 PM     04:22:54 PM     04:22:54 PM     04:22:54 PM  04:22:54 PM
-
-
+      SYS_TIME     SYS_TIME     SYS_TIME     SYS_TIME     SYS_TIME
+    =================================================================
+      04:37:34 PM  04:37:34 PM  04:37:34 PM  04:37:34 PM  04:37:34 PM
+     
 .. code-block:: sql
 
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
+    --it returns the time value 1 hour added to the current sys_time
+    SELECT CURTIME()+3600;
     
-    SET TIME ZONE 'AMERICA/LOS_ANGELES';
+::
 
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
+       SYS_TIME +3600
+    =================
+       05:37:34 PM
 
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that CURTIME() and SYS_TIME return different results
-    
-    SELECT CURTIME(), CURRENT_TIME(), CURRENT_TIME, SYS_TIME, SYSTIME;
-
-       CURRENT_TIME    CURRENT_TIME    CURRENT_TIME    SYS_TIME     SYS_TIME  
-    ==========================================================================
-      11:23:16 PM     11:23:16 PM     11:23:16 PM     04:23:16 PM  04:23:16 PM
-
-.. warning::
-
-    As 10.0, **CURTIME** (), **CURRENT_TIME** () are different from **SYS_TIME**, **SYSTIME**.  They are synonym for 9.x and lower. 
-
-CURRENT_TIMESTAMP, LOCALTIME, LOCALTIMESTAMP
-============================================
+CURRENT_TIMESTAMP, SYS_TIMESTAMP, SYSTIMESTAMP, LOCALTIME, LOCALTIMESTAMP
+=========================================================================
 
 .. c:macro:: CURRENT_TIMESTAMP
 .. function:: CURRENT_TIMESTAMP ()
+.. c:macro:: SYS_TIMESTAMP
+.. c:macro:: SYSTIMESTAMP
 .. c:macro:: LOCALTIME
 .. function:: LOCALTIME ()
 .. c:macro:: LOCALTIMESTAMP
 .. function:: LOCALTIMESTAMP ()
 
-    **CURRENT_TIMESTAMP**, **CURRENT_TIMESTAMP** (), **LOCALTIME**, **LOCALTIME** (), **LOCALTIMESTAMP** and **LOCALTIMESTAMP** () are used interchangeably and they return the current date and time of session as **TIMESTAMP** type. The unit is second.
-    When the time zone of the current session is same as that of server, these functions are same as :c:macro:`SYS_TIMESTAMP`, :c:macro:`SYSTIMESTAMP`.  Please also refer :c:macro:`SYS_TIMESTAMP`, :c:macro:`SYSTIMESTAMP` to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions.
-    
+    **CURRENT_TIMESTAMP**, **CURRENT_TIMESTAMP** (), **SYS_TIMESTAMP**, **SYSTIMESTAMP**, **LOCALTIME**, **LOCALTIME** (), **LOCALTIMESTAMP** and **LOCALTIMESTAMP** () are used interchangeably and they return the current date and time as **TIMESTAMP** type. The unit is second.
+
     :rtype: TIMESTAMP
     
 .. code-block:: sql
 
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current date and time in TIMESTAMP type of session and server timezones.
-    
+    --it returns the current date and time in TIMESTAMP type
     SELECT LOCALTIME, SYS_TIMESTAMP;
+    
+::
 
-       CURRENT_TIMESTAMP          SYS_TIMESTAMP           
-    ======================================================
-      04:34:16 PM 02/05/2016     04:34:16 PM 02/05/2016   
-
+      SYS_TIMESTAMP              SYS_TIMESTAMP
+    ==============================================================================
+      07:00:48 PM 04/01/2010     07:00:48 PM 04/01/2010
+     
 .. code-block:: sql
- 
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
+
+    --it returns the timestamp value 1 hour added to the current sys_timestamp value
+    SELECT CURRENT_TIMESTAMP()+3600;
     
-    SET TIME ZONE 'America/Los_Angeles';
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();                                                                                                                                    
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that LOCALTIME() and SYS_TIMESTAMP return different results
+::
     
-    SELECT LOCALTIME, SYS_TIMESTAMP;                                                                                                                                           
-
-       CURRENT_TIMESTAMP          SYS_TIMESTAMP           
-    ======================================================
-      11:34:37 PM 02/04/2016     04:34:37 PM 02/05/2016   
-
-.. warning::
-
-    As 10.0, **CURRENT_TIMESTAMP**, **CURRENT_TIMESTAMP** (), **LOCALTIME**, **LOCALTIME** (), **LOCALTIMESTAMP** and **LOCALTIMESTAMP** () are different from **SYS_TIMESTAMP** (), **SYSTIMESTAMP**.  They are synonym for 9.x and lower. 
-
+      SYS_TIMESTAMP +3600
+    ===========================
+      08:02:42 PM 04/01/2010
 
 DATE
 ====
@@ -484,7 +368,9 @@ DATE
     
 ::
 
-    '02/27/2010'
+    date('2010-02-27 15:10:23')
+    ==============================
+      '02/27/2010'
      
 .. code-block:: sql
 
@@ -492,7 +378,9 @@ DATE
     
 ::
 
-    '04/01/2010'
+     date( SYS_DATETIME )
+    ======================
+      '04/01/2010'
      
 .. code-block:: sql
 
@@ -500,7 +388,9 @@ DATE
     
 ::
 
-   '00/00/0000'
+     date('0000-00-00 00:00:00')
+    ===============================
+     '00/00/0000'
 
 DATEDIFF
 ========
@@ -520,7 +410,9 @@ DATEDIFF
     
 ::
 
-    -2
+     datediff('2010-2-28 23:59:59', '2010-03-02')
+    ===============================================
+                                                 -2
      
 .. code-block:: sql
 
@@ -529,16 +421,6 @@ DATEDIFF
 ::
     
     ERROR: Conversion error in date format.
-
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT IF(DATEDIFF('2002-03-03 12:00:00 AM','1990-01-01 11:59:59 PM') = DATEDIFF(timestampltz'2002-03-03 12:00:00 AM',timestampltz'1990-01-01 11:59:59 PM'),'ok','nok');
-
-::
-
-    'ok'
 
 DATE_SUB, SUBDATE
 =================
@@ -564,6 +446,8 @@ DATE_SUB, SUBDATE
     
 ::
 
+       SYS_DATE    date_sub( SYS_DATE , INTERVAL 24 HOUR)   subdate( SYS_DATE , 1)
+    ==============================================================================
       03/30/2010  12:00:00.000 AM 03/29/2010               03/29/2010
      
 .. code-block:: sql
@@ -573,6 +457,8 @@ DATE_SUB, SUBDATE
     
 ::
 
+       SYS_DATE    date_sub( SYS_DATE , INTERVAL -24 HOUR)   subdate( SYS_DATE , -1)
+    ==============================================================================
       03/30/2010  12:00:00.000 AM 03/31/2010               03/31/2010
      
 .. code-block:: sql
@@ -589,6 +475,8 @@ DATE_SUB, SUBDATE
     
 ::
 
+     subdate('0001-01-01 00:00:00', 10)
+    ==============================
      '12:00:00.000 AM 00/00/0000'
 
 DAY, DAYOFMONTH
@@ -610,7 +498,9 @@ DAY, DAYOFMONTH
     
 ::
 
-    9
+       dayofmonth('2010-09-09')
+    ===========================
+                              9
      
 .. code-block:: sql
 
@@ -618,7 +508,9 @@ DAY, DAYOFMONTH
     
 ::
 
-    9
+       day('2010-09-09 19:49:29')
+    =============================
+                                9
      
 .. code-block:: sql
 
@@ -626,7 +518,9 @@ DAY, DAYOFMONTH
     
 ::
 
-    0
+       dayofmonth('0000-00-00 00:00:00')
+    ====================================
+                                       0
 
 DAYOFWEEK
 =========
@@ -646,7 +540,9 @@ DAYOFWEEK
     
 ::
 
-    5
+       dayofweek('2010-09-09')
+    ==========================
+                             5
      
 .. code-block:: sql
 
@@ -654,7 +550,9 @@ DAYOFWEEK
     
 ::
 
-    5
+     dayofweek('2010-09-09 19:49:29')
+    =================================
+                                    5
      
 .. code-block:: sql
 
@@ -682,7 +580,9 @@ DAYOFYEAR
     
 ::
 
-    252
+       dayofyear('2010-09-09')
+    ==========================
+                           252
      
 .. code-block:: sql
 
@@ -690,7 +590,9 @@ DAYOFYEAR
     
 ::
 
-    252
+     dayofyear('2010-09-09 19:49:29')
+    =================================
+                                 252
      
 .. code-block:: sql
 
@@ -719,7 +621,9 @@ EXTRACT
     
 ::
 
-    12
+      extract(month  from datetime '2008-12-25 10:30:20.123')
+    =========================================================
+                                                           12
      
 .. code-block:: sql
 
@@ -727,7 +631,9 @@ EXTRACT
     
 ::
 
-    10
+     extract(hour  from datetime '2008-12-25 10:30:20.123')
+    =========================================================
+                                                           10
      
 .. code-block:: sql
 
@@ -735,7 +641,9 @@ EXTRACT
     
 ::
 
-    123
+     extract(millisecond  from datetime '2008-12-25 10:30:20.123')
+    =========================================================
+                                                          123
      
 .. code-block:: sql
 
@@ -743,41 +651,9 @@ EXTRACT
     
 ::
 
-    0
-
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT EXTRACT (MONTH FROM datetimetz'10/15/1986 5:45:15.135 am Europe/Bucharest');
-
-::
-
-    10
-    
-.. code-block:: sql
-
-    SELECT EXTRACT (MONTH FROM datetimeltz'10/15/1986 5:45:15.135 am Europe/Bucharest');
-
-::
-
-    10
-
-.. code-block:: sql
-
-    SELECT EXTRACT (MONTH FROM timestampltz'10/15/1986 5:45:15 am Europe/Bucharest');
-
-::
-
-    10
-
-.. code-block:: sql
-
-    SELECT EXTRACT (MONTH FROM timestamptz'10/15/1986 5:45:15 am Europe/Bucharest');
-
-::
-
-    10
+     extract(month from '0000-00-00 00:00:00')
+    ==========================================
+                                             0
 
 FROM_DAYS
 =========
@@ -799,7 +675,9 @@ FROM_DAYS
     
 ::
 
-    01/01/1970
+       from_days(719528)
+    ====================
+      01/01/1970
      
 .. code-block:: sql
 
@@ -807,7 +685,9 @@ FROM_DAYS
     
 ::
 
-    01/03/0001
+      from_days('366')
+    =================
+      01/03/0001
      
 .. code-block:: sql
 
@@ -815,7 +695,9 @@ FROM_DAYS
     
 ::
 
-    12/31/9999
+       from_days(3652424)
+    =====================
+      12/31/9999
      
 .. code-block:: sql
 
@@ -823,41 +705,9 @@ FROM_DAYS
     
 ::
 
-    00/00/0000
-
-FROM_TZ
-=======
-      
-.. function:: FROM_TZ(datetime, timezone_string)
-
-    Converts date/time type without timezone as date/time type with timezone by adding timezone to DATETIME typed value. Input value's type is DATETIME, and the result value's type is DATETIMETZ.
-
-    :param datetime: DATETIME
-    :param timezone_string: String representing a timezone name or and offset '+05:00', 'Asia/Seoul'.
-    :rtype: DATETIMETZ
-    
-.. code-block:: sql
-
-    SELECT FROM_TZ(datetime '10/10/2014 00:00:00 AM', 'Europe/Vienna');
-
-::
-
-    12:00:00.000 AM 10/10/2014 Europe/Vienna CEST
-
-.. code-block:: sql
-
-    SELECT FROM_TZ(datetime '10/10/2014 23:59:59 PM', '+03:25:25');
-
-::
-
-    11:59:59.000 PM 10/10/2014 +03:25:25
-
-
-For timezone related description, see :ref:`timezone-type`.
-
-.. seealso::
-
-    :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE`, :func:`NEW_TIME`, :func:`TZ_OFFSET`
+       from_days(0)
+    ===============
+        00/00/0000
 
 FROM_UNIXTIME
 =============
@@ -882,7 +732,9 @@ FROM_UNIXTIME
     
 ::
 
-    01:31:30 AM 02/14/2009
+       from_unixtime(1234567890)
+    ============================
+      01:31:30 AM 02/14/2009
      
 .. code-block:: sql
 
@@ -890,7 +742,9 @@ FROM_UNIXTIME
     
 ::
 
-    04:46:40 AM 09/09/2001
+       from_unixtime('1000000000')
+    ==============================
+      04:46:40 AM 09/09/2001
      
 .. code-block:: sql
 
@@ -898,7 +752,9 @@ FROM_UNIXTIME
     
 ::
 
-    'February 2009 Saturday'
+       from_unixtime(1234567890, '%M %Y %W')
+    ======================
+      'February 2009 Saturday'
      
 .. code-block:: sql
 
@@ -906,7 +762,9 @@ FROM_UNIXTIME
     
 ::
 
-    'February 2009 Saturday'
+       from_unixtime('1234567890', '%M %Y %W')
+    ======================
+      'February 2009 Saturday'
      
 .. code-block:: sql
 
@@ -914,7 +772,9 @@ FROM_UNIXTIME
     
 ::
 
-    12:00:00 AM 00/00/0000
+       from_unixtime(0)
+    ===========================
+       12:00:00 AM 00/00/0000
 
 HOUR
 ====
@@ -932,7 +792,9 @@ HOUR
     
 ::
 
-    12
+       hour('12:34:56')
+    ======================
+                     12
      
 .. code-block:: sql
 
@@ -940,7 +802,9 @@ HOUR
     
 ::
 
-    12
+       hour('2010-01-01 12:34:56')
+    ======================
+                     12
      
 .. code-block:: sql
 
@@ -948,7 +812,9 @@ HOUR
     
 ::
 
-    12
+       time(datetime '2010-01-01 12:34:56')
+    ======================
+                     12
 
 LAST_DAY
 ========
@@ -969,7 +835,9 @@ LAST_DAY
     
 ::
 
-    02/28/1980                    02/28/2010
+      last_day(date '1980-02-01')   last_day(date '2010-02-01')
+    ============================================================
+      02/28/1980                    02/28/2010
      
 .. code-block:: sql
 
@@ -978,7 +846,9 @@ LAST_DAY
     
 ::
 
-    02/28/2010                                 02/28/2010
+     last_day( cast( SYS_TIMESTAMP  as date))   last_day( cast( SYS_DATETIME  as date))
+    ================================================================================
+      02/28/2010                                 02/28/2010
      
 .. code-block:: sql
 
@@ -1006,8 +876,10 @@ MAKEDATE
     SELECT MAKEDATE(2010,277);
 
 ::
-
-    10/04/2010
+    
+       makedate(2010, 277)
+    ======================
+      10/04/2010
      
 .. code-block:: sql
 
@@ -1015,7 +887,9 @@ MAKEDATE
     
 ::
     
-    10/04/2010
+       makedate(10, 277)
+    ====================
+      10/04/2010
      
 .. code-block:: sql
 
@@ -1023,7 +897,9 @@ MAKEDATE
     
 ::
     
-    10/04/1970
+       makedate(70, 277)
+    ====================
+      10/04/1970
      
 .. code-block:: sql
 
@@ -1031,7 +907,9 @@ MAKEDATE
     
 ::
     
-    12/31/9999
+       makedate(100, 3615902)
+    =========================
+      12/31/9999
      
 .. code-block:: sql
 
@@ -1039,7 +917,9 @@ MAKEDATE
     
 ::
     
-    12/31/9999
+       makedate(9999, 365)
+    ======================
+      12/31/9999
      
 .. code-block:: sql
 
@@ -1056,9 +936,9 @@ MAKETIME
 
     The **MAKETIME** function returns the hour from specified argument in the AM/PM format. You can specify the **INTEGER** types corresponding hours, minutes and seconds as arguments; the value is returned in **DATETIME**.
 
-    :param hour: An integer representing the hours in the range of 0 to 23
-    :param min: An integer representing the minutes in the range of 0 to 59
-    :param sec: An integer representing the minutes in the range of 0 to 59
+    :param hour: Integers representing the hours in the range of 0 to 23
+    :param min: Integers representing the minutes in the range of 0 to 59
+    :param sec: Integers representing the minutes in the range of 0 to 59
     :rtype: DATETIME
 
 .. code-block:: sql
@@ -1066,16 +946,20 @@ MAKETIME
     SELECT MAKETIME(13,34,4);
     
 ::
-
-    01:34:04 PM
+    
+       maketime(13, 34, 4)
+    ======================
+      01:34:04 PM
      
 .. code-block:: sql
 
     SELECT MAKETIME('1','34','4');
     
 ::
-
-    01:34:04 AM
+    
+       maketime('1', '34', '4')
+    ===========================
+      01:34:04 AM
      
 .. code-block:: sql
 
@@ -1101,7 +985,9 @@ MINUTE
     
 ::
 
-    34
+       minute('12:34:56')
+    =====================
+                       34
      
 .. code-block:: sql
 
@@ -1109,7 +995,9 @@ MINUTE
     
 ::
 
-    34
+       minute('2010-01-01 12:34:56')
+    ================================
+                                  34
      
 .. code-block:: sql
 
@@ -1117,7 +1005,9 @@ MINUTE
     
 ::
 
-    34
+       minute('2010-01-01 12:34:56.7890')
+    =====================================
+                                       34
 
 MONTH
 =====
@@ -1137,7 +1027,9 @@ MONTH
     
 ::
 
-    1
+       month('2010-01-02')
+    ======================
+                         1
      
 .. code-block:: sql
 
@@ -1145,7 +1037,9 @@ MONTH
     
 ::
 
-    1
+       month('2010-01-02 12:34:56')
+    ===============================
+                                  1
      
 .. code-block:: sql
 
@@ -1153,7 +1047,9 @@ MONTH
     
 ::
 
-    1
+       month('2010-01-02 12:34:56.7890')
+    ====================================
+                                       1
      
 .. code-block:: sql
 
@@ -1161,7 +1057,9 @@ MONTH
     
 ::
 
-    0
+       month('0000-00-00')
+    ======================
+                         0
 
 MONTHS_BETWEEN
 ==============
@@ -1170,7 +1068,7 @@ MONTHS_BETWEEN
 
     The **MONTHS_BETWEEN** function returns the difference between the given **DATE** value. The return value is **DOUBLE** type. An integer value is returned if the two dates specified as arguments are identical or are the last day of the given month; otherwise, a value obtained by dividing the day difference by 31 is returned.
 
-    :param date_argument: Specifies an expression of **DATE** type. **TIMESTAMP** or **DATETIME** value also can be used. If the value is **NULL**, **NULL** is returned.
+    :param date_argument: Specifies an expression of **DATE** type. To specify a **TIMESTAMP** or **DATETIME** value, explicit casting to **DATE** is required. If the value is **NULL**, **NULL** is returned.
     :rtype: DOUBLE
 
 .. code-block:: sql
@@ -1180,7 +1078,9 @@ MONTHS_BETWEEN
     
 ::
 
-    -1.800000000000000e+001
+     months_between(date '2008-12-31', date '2010-6-30')
+    ======================================================
+                                   -1.800000000000000e+001
      
 .. code-block:: sql
 
@@ -1189,7 +1089,9 @@ MONTHS_BETWEEN
     
 ::
 
-    1.800000000000000e+001
+     months_between(date '2010-6-30', date '2008-12-31')
+    ======================================================
+                                    1.800000000000000e+001
      
 .. code-block:: sql
 
@@ -1198,7 +1100,9 @@ MONTHS_BETWEEN
     
 ::
 
-    1.332258064516129e+001
+     months_between( cast( SYS_TIMESTAMP  as date), date '2008-12-25')
+    ====================================================================
+                                                  1.332258064516129e+001
      
 .. code-block:: sql
 
@@ -1207,53 +1111,9 @@ MONTHS_BETWEEN
     
 ::
 
-    1.332258064516129e+001
-
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT MONTHS_BETWEEN(datetimetz'2001-10-11 10:11:12 +02:00', datetimetz'2001-05-11 10:11:12 +03:00');
-
-::
-
-    5.000000000000000e+00
-
-NEW_TIME
-========
-      
-.. function:: NEW_TIME(src_datetime, src_timezone, dst_timezone)
-
-    Moves a date value from a timezone to the other timezone. The type of *src_datetime* is DATETIME or TIME, and the return value's type is the same with the *src_datetime*\'s value.
-    
-    :param src_datetime: input value of DATETIME or TIME
-    :param src_timezone: a region name of a source timezone
-    :param dst_timezion: a region name of a target timezone
-    :rtype: the same type with a *src_datetime*\s type
-
-.. code-block:: sql
-
-    SELECT NEW_TIME(datetime '10/10/2014 10:10:10 AM', 'Europe/Vienna', 'Europe/Bucharest');
-
-::
-
-    11:10:10.000 AM 10/10/2014
-
-TIME type only accept an offset timezone as an input argument; a region name is not allowed.
-
-.. code-block:: sql
-
-    SELECT NEW_TIME(time '10:10:10 PM', '+03:00', '+10:00');
-
-::
-
-    05:10:10 AM
-
-To see the timezone related description, see :ref:`timezone-type`.
-
-.. seealso:: 
-
-    :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE`, :func:`FROM_TZ`, :func:`TZ_OFFSET`
+     months_between( cast( SYS_DATETIME  as date), date '2008-12-25')
+    ===================================================================
+                                                 1.332258064516129e+001
 
 QUARTER
 =======
@@ -1268,10 +1128,12 @@ QUARTER
 .. code-block:: sql
 
     SELECT QUARTER('2010-05-05');
-
+    
 ::
 
-    2
+       quarter('2010-05-05')
+    ========================
+                           2
      
 .. code-block:: sql
 
@@ -1279,7 +1141,9 @@ QUARTER
     
 ::
 
-    2
+      quarter('2010-05-05 12:34:56')
+    ===============================
+                                  2
      
 .. code-block:: sql
 
@@ -1287,25 +1151,9 @@ QUARTER
     
 ::
 
-    2
-
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT QUARTER('2008-04-01 01:02:03 Asia/Seoul');
-
-::
-
-    2
-
-.. code-block:: sql
-
-    SELECT QUARTER(datetimetz'2003-12-31 01:02:03.1234 Europe/Paris');
-
-::
-
-    4
+      quarter('2010-05-05 12:34:56.7890')
+    ==================================
+                                  2
 
 .. _round-date:
 
@@ -1505,234 +1353,6 @@ SECOND
     =====================================
                                        56
 
-SYS_DATE, SYSDATE
-=================
-
-.. c:macro:: SYS_DATE
-.. c:macro:: SYSDATE
-
-    **SYS_DATE** and **SYSDATE** are used interchangeably and they return the current date of server as the **DATE** type (*MM*/*DD*/*YYYY* or *YYYY*-*MM*-*DD*). The unit is day.  
-    When the time zone of the current session is same as that of server, these functions are same as :func:`CURDATE`, :func:`CURRENT_DATE` and :c:macro:`CURRENT_DATE`. Please also refer :func:`CURDATE`, :func:`CURRENT_DATE` to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions. 
-
-    If input every argument value of year, month, and day is 0, the return value is determined by the **return_null_on_function_errors** system parameter; if it is set to yes, then **NULL** is returned; if it is set to no, an error is returned. The default value is **no**.
-
-    :rtype: DATE
-    
-.. code-block:: sql
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current date in DATE type
-    
-    SELECT CURDATE(), CURRENT_DATE(), CURRENT_DATE, SYS_DATE, SYSDATE;
-
-       CURRENT_DATE    CURRENT_DATE    CURRENT_DATE    SYS_DATE    SYS_DATE 
-    ========================================================================
-      02/05/2016      02/05/2016      02/05/2016      02/05/2016  02/05/2016
-
-.. code-block:: sql
-
-    -- it returns the date 60 days added to the current date
-    
-    SELECT CURDATE()+60;
-
-       CURRENT_DATE +60
-    ===================
-      04/05/2016    
-
-
-.. code-block:: sql
-
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
-    
-    SET TIME ZONE 'America/Los_Angeles';
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that CURDATE() and SYS_DATE returns different results
-    
-    SELECT CURDATE(), CURRENT_DATE(), CURRENT_DATE, SYS_DATE, SYSDATE;
-
-       CURRENT_DATE    CURRENT_DATE    CURRENT_DATE    SYS_DATE    SYS_DATE 
-    ========================================================================
-      02/04/2016      02/04/2016      02/04/2016      02/05/2016  02/05/2016
-
-.. warning::
-    
-    As 10.0, **SYS_DATE** and **SYSDATE** are different from **CURDATE** (), **CURRENT_DATE**, **CURRENT_DATE** (). They are synonym for 9.x and lower. 
-
-SYS_DATETIME, SYSDATETIME
-=========================
-
-.. c:macro:: SYS_DATETIME
-.. c:macro:: SYSDATETIME
-
-    **SYS_DATETIME** and **SYSDATETIME** are used interchangeably, and they return the current date and time of server in **DATETIME** type. The unit is millisecond.
-    When the time zone of the current session is same as that of server, these functions are same as :func:`CURRENT_DATETIME`, :c:macro:`CURRENT_DATETIME`, :func:`NOW`. Please also refer :func:`CURRENT_DATETIME`, :func:`NOW` to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions.
-
-    :rtype: DATETIME
-    
-.. code-block:: sql
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current date and time in DATETIME type
-
-    SELECT NOW(), SYS_DATETIME;                                                                                                                                                
-
-       CURRENT_DATETIME               SYS_DATETIME                
-    ==============================================================
-      04:05:09.292 PM 02/05/2016     04:05:09.292 PM 02/05/2016   
-
-.. code-block:: sql
-
-    -- it returns the timestamp value 1 hour added to the current sys_datetime value
-    
-    SELECT TO_CHAR(SYSDATETIME+3600*1000, 'YYYY-MM-DD HH24:MI');
-
-       to_char( SYS_DATETIME +3600*1000, 'YYYY-MM-DD HH24:MI')
-    ======================
-      '2016-02-05 17:05'  
-
-.. code-block:: sql
-
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
-    
-    SET TIME ZONE 'America/Los_Angeles';
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that NOW() and SYS_DATETIME return different results
-    
-    SELECT NOW(), SYS_DATETIME;
-
-       CURRENT_DATETIME               SYS_DATETIME                
-    ==============================================================
-      11:08:57.041 PM 02/04/2016     04:08:57.041 PM 02/05/2016   
-  
-.. warning::
-
-    As 10.0, **SYS_DATEIME**, **SYSDATETIME** are different from **CURRENT_DATETIME** (), **NOW** (). They are synonym for 9.x and lower. 
-    
-SYS_TIME, SYSTIME
-=================
-
-.. c:macro:: SYS_TIME
-.. c:macro:: SYSTIME
-
-    **SYS_TIME** and **SYSTIME** are used interchangeably and they return the current time of server as **TIME** type (*HH*:*MI*:*SS*). The unit is second.
-    When the time zone of the current session is same as that of server, these functions are same as :func:`CURTIME`, :c:macro:`CURRENT_TIME`, :func:`CURRENT_TIME`. Please also refer :func:`CURTIME`, :func:`CURRENT_TIME` to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions.
-    
-    :rtype: TIME
-    
-.. code-block:: sql
-
-    select dbtimezone(), sessiontimezone();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current time in TIME type
-    
-    SELECT CURTIME(), CURRENT_TIME(), CURRENT_TIME, SYS_TIME, SYSTIME;
-
-       CURRENT_TIME    CURRENT_TIME    CURRENT_TIME    SYS_TIME     SYS_TIME  
-    ==========================================================================
-      04:22:54 PM     04:22:54 PM     04:22:54 PM     04:22:54 PM  04:22:54 PM
-
-
-.. code-block:: sql
-
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
-    
-    SET TIME ZONE 'America/Los_Angeles';
-
-    select dbtimezone(), sessiontimezone();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that CURTIME() and SYS_TIME return different results
-    
-    SELECT CURTIME(), CURRENT_TIME(), CURRENT_TIME, SYS_TIME, SYSTIME;
-
-       CURRENT_TIME    CURRENT_TIME    CURRENT_TIME    SYS_TIME     SYS_TIME  
-    ==========================================================================
-      11:23:16 PM     11:23:16 PM     11:23:16 PM     04:23:16 PM  04:23:16 PM
-
-.. warning::
-
-    As 10.0, **SYS_TIME**, **SYSTIME** are different from **CURTIME** (), **CURRENT_TIME** ().  They are synonym for 9.x and lower. 
-    
-SYS_TIMESTAMP, SYSTIMESTAMP
-===========================
-
-.. c:macro:: SYS_TIMESTAMP
-.. c:macro:: SYSTIMESTAMP
-
-    **SYS_TIMESTAMP** and **SYSTIMESTAMP** are used interchangeably and they return the current date and time of server as **TIMESTAMP** type. The unit is second.
-    When the time zone of the current session is same as that of server, these functions are same as :c:macro:`CURRENT_TIMESTAMP`, :func:`CURRENT_TIMESTAMP`, :c:macro:`LOCALTIME`, :func:`LOCALTIME`, :c:macro:`LOCALTIMESTAMP`, :func:`LOCALTIMESTAMP`. Please also refer :c:macro:`CURRENT_TIMESTAMP`, :func:`CURRENT_TIMESTAMP`, :c:macro:`LOCALTIME`, :func:`LOCALTIME`, :c:macro:`LOCALTIMESTAMP`, :func:`LOCALTIMESTAMP` to find a difference and :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE` for details of the functions.
-    
-    :rtype: TIMESTAMP
-    
-.. code-block:: sql
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'Asia/Seoul'        
-
-    -- it returns the current date and time in TIMESTAMP type of session and server timezones.
-    
-    SELECT LOCALTIME, SYS_TIMESTAMP;
-
-       CURRENT_TIMESTAMP          SYS_TIMESTAMP           
-    ======================================================
-      04:34:16 PM 02/05/2016     04:34:16 PM 02/05/2016   
-
-.. code-block:: sql
- 
-    -- change session time from 'Asia/Seoul' to 'America/Los_Angeles'
-    
-    SET TIME ZONE 'America/Los_Angeles';
-
-    SELECT DBTIMEZONE(), SESSIONTIMEZONE();                                                                                                                                    
-
-      dbtimezone            sessiontimezone     
-    ============================================
-      'Asia/Seoul'          'America/Los_Angeles'
-
-    -- Note that LOCALTIME() and SYS_TIMESTAMP return different results
-    
-    SELECT LOCALTIME, SYS_TIMESTAMP;                                                                                                                                           
-
-       CURRENT_TIMESTAMP          SYS_TIMESTAMP           
-    ======================================================
-      11:34:37 PM 02/04/2016     04:34:37 PM 02/05/2016   
-
-.. warning::
-
-    As 10.0, **SYS_TIMESTAMP** (), **SYSTIMESTAMP** are different from **CURRENT_TIMESTAMP**, **CURRENT_TIMESTAMP** (), **LOCALTIME**, **LOCALTIME** (), **LOCALTIMESTAMP** and **LOCALTIMESTAMP** ().  They are synonym for 9.x and lower. 
-
 TIME
 ====
 
@@ -1773,40 +1393,6 @@ TIME
     ======================
       '12:34:56'
 
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT TIME(datetimetz'1996-02-03 02:03:04 AM America/Lima PET');
-
-::
-
-    '02:03:04'
-    
-.. code-block:: sql
-
-    SELECT TIME(datetimeltz'1996-02-03 02:03:04 AM America/Lima PET');
-
-::
-
-    '16:03:04'
-
-.. code-block:: sql
-
-    SELECT TIME(datetimeltz'2000-12-31 17:34:23.1234 -05:00');
-
-::
-
-    '07:34:23.123'
-
-.. code-block:: sql
-
-    SELECT TIME(datetimetz'2000-12-31 17:34:23.1234 -05:00');
-
-::
-
-    '17:34:23.123'
-
 TIME_TO_SEC
 ===========
 
@@ -1823,7 +1409,9 @@ TIME_TO_SEC
     
 ::
 
-    82800
+       time_to_sec('23:00:00')
+    ==========================
+                         82800
      
 .. code-block:: sql
 
@@ -1831,7 +1419,9 @@ TIME_TO_SEC
     
 ::
 
-    82800
+       time_to_sec('2010-10-04 23:00:00')
+    =====================================
+                                    82800
      
 .. code-block:: sql
 
@@ -1839,21 +1429,9 @@ TIME_TO_SEC
      
 ::
 
-    82800
-
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT TIME_TO_SEC(datetimeltz'1996-02-03 02:03:04 AM America/Lima PET');
-
-    57784
-
-.. code-block:: sql
-
-    SELECT TIME_TO_SEC(datetimetz'1996-02-03 02:03:04 AM America/Lima PET');
-
-    7384
+       time_to_sec('2010-10-04 23:00:00.1234')
+    ==========================================
+                                         82800
 
 TIMEDIFF
 ========
@@ -1871,7 +1449,9 @@ TIMEDIFF
     
 ::
 
-    05:12:27 AM
+       timediff(time '17:18:19', time '12:05:52')
+    =============================================
+      05:12:27 AM
      
 .. code-block:: sql
 
@@ -1879,7 +1459,9 @@ TIMEDIFF
     
 ::
 
-    05:12:27 AM
+       timediff('17:18:19', '12:05:52')
+    ===================================
+      05:12:27 AM
      
 .. code-block:: sql
 
@@ -1887,17 +1469,9 @@ TIMEDIFF
     
 ::
 
-    03:49:40 AM              
-
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT TIMEDIFF (datetimeltz'2013-10-28 03:11:12 AM Asia/Seoul', datetimeltz'2013-10-27 04:11:12 AM Asia/Seoul');
-
-::
-
-    11:00:00 PM
+       timediff('2010-01-01 06:53:45', '2010-01-01 03:04:05')
+    =========================================================
+      03:49:40 AM              
 
 TIMESTAMP
 =========
@@ -1908,10 +1482,10 @@ TIMESTAMP
 
     If the **DATE** format string ('*YYYY-MM-DD*' or '*MM/DD/YYYY*') or **TIMESTAMP** format string ('*YYYY-MM-DD HH:MI:SS*' or '*HH:MI:SS MM/DD/ YYYY*') is specified as the first argument, the function returns it as **DATETIME**.
 
-    If the **TIME** format string ('*HH:MI:SS*.*FF*') is specified as the second, the function adds it to the first argument and returns the result as a **DATETIME** type. If the second argument is not specified, **12:00:00.000 AM** is specified by default.
+    If the **TIME** format string ('*HH:MI:SS*') is specified as the second, the function adds it to the first argument and returns the result as a **DATETIME** type. If the second argument is not specified, **12:00:00.000 AM** is specified by default.
 
-    :param date: The format strings can be specified as follows: '*YYYY*-*MM*-*DD*', '*MM*/*DD*/*YYYY*', '*YYYY*-*MM*-*DD* *HH*:*MI*:*SS*.*FF*', '*HH*:*MI*:*SS*.*FF* *MM*/*DD*/*YYYY*'.
-    :param time: The format string can be specified as follows: '*HH*:*MI*:*SS*[.*FF*]'.
+    :param date: The format strings can be specified as follows: '*YYYY*-*MM*-*DD*', '*MM*/*DD*/*YYYY*', '*YYYY*-*MM*-*DD* *HH*:*MI*:*SS*', '*HH*:*MI*:*SS* *MM*/*DD*/*YYYY*'.
+    :param time: The format string can be specified as follows: '*HH*:*MI*:*SS*'.
     :rtype: DATETIME
 
 .. code-block:: sql
@@ -1920,7 +1494,9 @@ TIMESTAMP
     
 ::
 
-    12:00:00.000 AM 12/31/2009     12:00:00.000 PM 12/31/2009
+     timestamp('2009-12-31')        timestamp('2009-12-31', '12:00:00')
+    =====================================================================
+      12:00:00.000 AM 12/31/2009     12:00:00.000 PM 12/31/2009
      
 .. code-block:: sql
 
@@ -1928,7 +1504,9 @@ TIMESTAMP
     
 ::
 
-    12:00:00.000 AM 01/01/2011
+     timestamp('2010-12-31 12:00:00', '12:00:00')
+    ===============================================
+      12:00:00.000 AM 01/01/2011
      
 .. code-block:: sql
 
@@ -1936,25 +1514,9 @@ TIMESTAMP
     
 ::
 
-    01:10:30.000 PM 12/25/2008
-
-The following are examples of using timezone type values. For timezone related description, see :ref:`timezone-type`.
-
-.. code-block:: sql
-
-    SELECT TIMESTAMP(datetimetz'2010-12-31 12:00:00 America/New_York', '03:00');
-
-::
-
-    03:00:00.000 PM 12/31/2010
-
-.. code-block:: sql
-
-    SELECT TIMESTAMP(datetimeltz'2010-12-31 12:00:00 America/New_York', '03:00');
-
-::
-
-    05:00:00.000 AM 01/01/2011
+     timestamp('13:10:30 12/25/2008')
+    ===================================
+      01:10:30.000 PM 12/25/2008
 
 TO_DAYS
 =======
@@ -2090,38 +1652,6 @@ TRUNC
             
 In order to round date instead of truncation, please see :ref:`ROUND(date, fmt) <round-date>`.
 
-TZ_OFFSET
-=========
-      
-.. function:: TZ_OFFSET(timezone_string)
-
-    This returns a timezone offset from a timezone offset or timezone region name (e.g. '-05:00', or 'Europe/Vienna').
-    
-    :param timezone_string: timezone offset of timezone region name.
-    :rtype: STRING
-
-.. code-block:: sql
-
-    SELECT TZ_OFFSET('+05:00');
-
-::
-
-      '+05:00'
-
-.. code-block:: sql
-
-    SELECT TZ_OFFSET('Asia/Seoul');
-
-::
-
-    '+09:00'
-
-For timezone related description, see :ref:`timezone-type`.
-
-.. seealso:: 
-
-    :func:`DBTIMEZONE`, :func:`SESSIONTIMEZONE`, :func:`FROM_TZ`, :func:`NEW_TIME`
-
 UNIX_TIMESTAMP
 ==============
 
@@ -2129,11 +1659,9 @@ UNIX_TIMESTAMP
 
     The argument of the **UNIX_TIMESTAMP** function can be omitted. If it is omitted, the function returns the interval between '1970-01-01 00:00:00' UTC and the current system date/time in seconds as **INTEGER** type. If the date argument is specified, the function returns the interval between '1970-01-01 00:00:00' UTC and the specified date/time in seconds. 
 
-    0 is not allowed in the argument value corresponding to year, month, and day; however, if 0 is given in every argument value corresponding to date and time, 0 is returned as an exception.
+    0 is not allowed in the argument value corresponding to year, month, and day; however, if 0 is inputted in every argument value corresponding to date and time, 0 is returned as an exception.
 
-    Argument of DATETIME type is considered in session timezone.
-
-    :param date: **DATE** type, **TIMESTAMP** type, **TIMESTAMPTZ** type, **TIMESTAMPLTZ** type, **DATETIME** type, **DATETIMETZ** type, **DATETIMELTZ** type, **DATE** format string ('*YYYY*-*MM*-*DD*' or '*MM*/*DD*/*YYYY*'), **TIMESTAMP** format string ('*YYYY*-*MM*-*DD* *HH*:*MI*:*SS*', '*HH*:*MI*:*SS* *MM*/*DD*/*YYYY*') or '*YYYYMMDD*' format string can be specified.
+    :param date: **DATE** type, **TIMESTAMP** type, **DATE** format string ('*YYYY*-*MM*-*DD*' or '*MM*/*DD*/*YYYY*'), **TIMESTAMP** format string ('*YYYY*-*MM*-*DD* *HH*:*MI*:*SS*', '*HH*:*MI*:*SS* *MM*/*DD*/*YYYY*') or '*YYYYMMDD*' format string can be specified.
     :rtype: INT
 
 .. code-block:: sql
@@ -2155,16 +1683,6 @@ UNIX_TIMESTAMP
        unix_timestamp('0000-00-00 00:00:00')
     ========================================
                                            0
-                                           
-
-.. code-block:: sql
-
-     -- when used without argument, it returns the exact value at the moment of execution of each occurence
-     SELECT  UNIX_TIMESTAMP(), SLEEP(1), UNIX_TIMESTAMP();
-
-       unix_timestamp()     sleep(1)   unix_timestamp()
-    ===================================================
-             1454661297            0         1454661298                                        
 
 UTC_DATE
 ========

@@ -1,7 +1,3 @@
-
-:meta-keywords: select statement, select from clause, select where clause, group by, having clause, limit clause, join query, subquery, select for update
-:meta-description: The SELECT statement specifies columns that you want to retrieve from a table.
-
 ******
 SELECT
 ******
@@ -33,7 +29,7 @@ The **SELECT** statement specifies columns that you want to retrieve from a tabl
                                     ]
      
     <table_specification> ::=
-        <single_table_spec> [<correlation>] |
+        <single_table_spec> [<correlation>] [WITH (<lock_hint>)] |
         <metaclass_specification> [ <correlation> ] |
         <subquery> <correlation> |
         TABLE ( <expression> ) <correlation>
@@ -46,17 +42,11 @@ The **SELECT** statement specifies columns that you want to retrieve from a tabl
     <metaclass_specification> ::= CLASS <class_name>
      
     <join_table_specification> ::=
-        {
-            [INNER | {LEFT | RIGHT} [OUTER]] JOIN |
-            STRAIGHT_JOIN 
-        } <table_specification> ON <search_condition>
+        [INNER | {LEFT | RIGHT} [OUTER]] JOIN <table_specification> ON <search_condition>
      
-    <join_table_specification2> ::= 
-        { 
-            CROSS JOIN | 
-            NATURAL [ LEFT | RIGHT ] JOIN 
-        } <table_specification>
-    
+    <join_table_specification2> ::= CROSS JOIN <table_specification>
+     
+    <lock_hint> ::= READ UNCOMMITTED
 
 *   *qualifier*: A qualifier. When omitted, it is set to **ALL**.
 
@@ -154,7 +144,7 @@ The **FROM** clause specifies the table in which data is to be retrieved in the 
     <select_expressions> ::= * | <expression_comma_list> | *, <expression_comma_list>
      
     <table_specification> ::=
-        <single_table_spec> [<correlation>] |
+        <single_table_spec> [<correlation>] [WITH (<lock_hint>)] |
         <metaclass_specification> [<correlation>] |
         <subquery> <correlation> |
         TABLE (<expression>) <correlation>
@@ -166,10 +156,13 @@ The **FROM** clause specifies the table in which data is to be retrieved in the 
      
     <metaclass_specification> ::= CLASS <class_name>
      
+    <lock_hint> ::= READ UNCOMMITTED
 
 *   <*select_expressions*>: One or more columns or expressions to query is specified. Use * to query all columns in the table. You can also specify an alias for a column or an expression to be queried by using the AS keyword. This keyword can be used in **GROUP BY**, **HAVING** and **ORDER BY** clauses. The position index of the column is given according to the order in which the column was specified. The starting value is 1.
 
 *   <*table_specification*>: At least one table name is specified after the **FROM** clause. Subqueries and derived tables can also be used in the **FROM** clause. For details on subquery derived tables, see :ref:`subquery-derived-table`.
+
+*   <*lock_hint*>: You can set **READ UNCOMMITTED** for the table isolation level. **READ UNCOMMITTED** is a level where dirty reads are allowed; see :ref:`transaction-isolation-level` for details on the CUBRID transaction isolation level.
 
 .. code-block:: sql
 
@@ -580,15 +573,8 @@ The **LIMIT** clause can be used to limit the number of records displayed. You c
 
     LIMIT {[offset,] row_count | row_count [OFFSET offset]}
 
-    <offset> ::= <limit_expression>
-    <row_count> ::= <limit_expression>
-
-    <limit_expression> ::= <limit_term> | <limit_expression> + <limit_term> | <limit_expression> - <limit_term>
-    <limit_term> ::= <limit_factor> | <limit_term> * <limit_factor> | <limit_term> / <limit_factor>
-    <limit_factor> ::= <unsigned int> | <input_hostvar> | ( <limit_expression> )
-
-*   *offset*: Specifies the offset of the starting row to be displayed. The offset of the starting row of the result set is 0; it can be omitted and the default value is **0**. It can be one of unsigned int, a host variable or a simple expression.
-*   *row_count*: Specifies the number of records to be displayed. It can be one of unsigned integer, a host variable or a simple expression.
+*   *offset*: Specifies the offset value of the starting row to be displayed. The offset value of the starting row of the result set is 0; it can be omitted and the default value is **0**.
+*   *row_count*: Specifies the number of records to be displayed. You can specify an integer greater than 0.
 
 .. code-block:: sql
 
@@ -596,8 +582,6 @@ The **LIMIT** clause can be used to limit the number of records displayed. You c
     PREPARE stmt FROM 'SELECT * FROM sales_tbl LIMIT ?, ?';
     EXECUTE stmt USING 0, 10;
      
-.. code-block:: sql
-
     -- selecting rows with LIMIT clause
     SELECT * 
     FROM sales_tbl
@@ -634,14 +618,6 @@ The **LIMIT** clause can be used to limit the number of records displayed. You c
               201  'Laura'                         2           500
               301  'Max'                           1           300
 
-.. code-block:: sql
-
-    -- LIMIT clause allows simple expressions for both offset and row_count
-    SELECT * 
-    FROM sales_tbl 
-    WHERE sales_amount > 100 
-    LIMIT ? * ?, (? * ?) + ?;
-    
 .. _join-query:
               
 Join Query
@@ -661,22 +637,16 @@ An outer join is divided into a left outer join which outputs all rows of the le
         | { <join_table_specification> | <join_table_specification2> } ...]
 
     <table_specification> ::=
-        <single_table_spec> [<correlation>] |
+        <single_table_spec> [<correlation>] [WITH (<lock_hint>)]|
         <metaclass_specification> [<correlation>] |
         <subquery> <correlation> |
         TABLE (<expression>) <correlation>
         
     <join_table_specification> ::=
-        {
-            [INNER | {LEFT | RIGHT} [OUTER]] JOIN |
-            STRAIGHT_JOIN 
-         } <table_specification> ON <search_condition>
+        [INNER | {LEFT | RIGHT} [OUTER]] JOIN <table_specification> ON <search_condition>
      
     <join_table_specification2> ::=
-		{
-            CROSS JOIN |
-            NATURAL [ LEFT | RIGHT ] JOIN 
-        } <table_specification>
+        CROSS JOIN table_specification
 
 *   <*join_table_specification*>
 
@@ -684,12 +654,9 @@ An outer join is divided into a left outer join which outputs all rows of the le
 
     *   {**LEFT** | **RIGHT**} [**OUTER**] **JOIN**: **LEFT** is used for a left outer join query, and **RIGHT** is for a right outer join query.
 
-    *   **STRAIGHT_JOIN**: (on changing)
-   
 *   <*join_table_specification2*>
 
     *   **CROSS JOIN**: Used for cross join and requires no join conditions.
-    *   **NATURAL** [**LEFT** | **RIGHT**] **JOIN**: Used for natural join and join condition is not used. It operates in the equivalent same way to have a condition between columns equivalent of the same name .
 
 Inner Join
 ----------
@@ -886,93 +853,6 @@ The above two queries output the same results.
 
     144 rows selected. (1.283548 sec) Committed.
 
-
-Natural Join
-------------
-
-When column names to be joined to each table are the same, that is, when you want to grant equivalent conditions between each column with the same name, a natural join, which can replace inner/outer join, can be used.
-
-.. code-block:: sql
-
-    CREATE TABLE t1 (a int, b1 int); 
-    CREATE TABLE t2 (a int, b2 int);
-
-    INSERT INTO t1 values(1,1);
-    INSERT INTO t1 values(3,3);
-    INSERT INTO t2 values(1,1);
-    INSERT INTO t2 values(2,2);
-
-The below is an example of running **NATURAL JOIN**.
-
-.. code-block:: sql
-    
-    SELECT /*+ RECOMPILE*/ * 
-    FROM t1 NATURAL JOIN t2;
-
-Running the above query is the same as running the below query, and they display the same result.
-
-.. code-block:: sql
-
-    SELECT /*+ RECOMPILE*/ * 
-    FROM t1 INNER JOIN t2 ON t1.a=t2.a;
-
-::
-
-
-            a           b1            a           b2
-    ================================================
-            1            1            1            1
-
-The below is an example of running **NATURAL LEFT JOIN**.
-    
-.. code-block:: sql
-
-    SELECT /*+ RECOMPILE*/ * 
-    FROM t1 NATURAL LEFT JOIN t2;
-    
-Running the above query is the same as running the below query, and they display the same result.
-
-.. code-block:: sql
-
-    SELECT /*+ RECOMPILE*/ * 
-    FROM t1 LEFT JOIN t2 ON t1.a=t2.a;
-
-::
-
-                a           b1            a           b2
-    ====================================================
-                1            1            1            1
-                3            3         NULL         NULL
-
-The below is an example of running **NATURAL RIGHT JOIN**.
-
-.. code-block:: sql
-
-    SELECT /*+ RECOMPILE*/ * 
-    FROM t1 NATURAL RIGHT JOIN t2;
-
-Running the above query is the same as running the below query, and they display the same result.
-
-.. code-block:: sql
-
-    SELECT /*+ RECOMPILE*/ * 
-    FROM t1 RIGHT JOIN t2 ON t1.a=t2.a;
-    
-::
-
-                a           b1            a           b2
-    ====================================================
-                1            1            1            1
-             NULL         NULL            2            2
-
-(on changing)
-
-STRAIGHT_JOIN
--------------
-CUBRIDSUS-12814
-
-
-
 Subquery
 ========
 
@@ -1098,15 +978,17 @@ The **FOR UPDATE** clause can be used in **SELECT** statements for locking rows 
         <spec_name_comma_list> ::= <spec_name> [, <spec_name>, ... ]
             <spec_name> ::= table_name | view_name 
          
-* <*spec_name_comma_list*>: A list of table/view names referenced from the **FROM** clause.
+* <*spec_name_comma_list*>: A list of table/view names referenced from the FROM clause.
 
-Only table/view referenced in <*spec_name_comma_list*> will be locked. If the <*spec_name_comma_list*> is missing but **FOR UPDATE** is present then we assume that all tables/views from the **FROM** clause of the **SELECT** statement are referenced. Rows are locked using **X_LOCK**.
+Only table/view referenced in <*spec_name_comma_list*> will be locked. If the <*spec_name_comma_list*> is missing but **FOR UPDATE** is present then we assume that all tables/views from the FROM clause of the SELECT statement are referenced. 
+
+The locks which have been acquired by **FOR UPDATE** clause are released in the **UPDATE/DELETE** statement. When **SELECT .. FOR UPDATE** is being executed, the locks on keys aren't acquired.
 
 .. note:: Restrictions
 
-    *   It cannot be used in subqueries (but it can reference subqueries). 
-    *   It cannot be used in a statement that has **GROUP BY**, **DISTINCT** or aggregate functions. 
-    *   It cannot reference **UNION**\s. 
+    *   It CAN'T be used in subqueries (but it CAN reference subqueries). 
+    *   It can't be used in a statement that has GROUP BY, DISTINCT or aggregate functions. 
+    *   It can't reference **UNION**\s. 
 
 The following shows how to use **SELECT ... FOR UPDATE** statements.
 

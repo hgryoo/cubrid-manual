@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid pdo driver, cubrid php data objects, cubrid pdo api, pdo programming, pdo sample
-:meta-description: The official CUBRID PHP Data Objects (PDO) driver is available as a PECL package and it implements the PDO interface to enable access from PDO to CUBRID.PDO is available with PHP 5.1. CUBRID PDO driver is based on CCI API.
-
 **********
 PDO Driver
 **********
@@ -19,7 +15,7 @@ In particular, having a CUBRID PDO driver means that any application that uses P
 
 CUBRID PDO driver is based on CCI API so affected by CCI configurations such as **CCI_DEFAULT_AUTOCOMMIT**.
 
-.. FIXME: To download PDO driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-pdo-driver .
+To download PDO driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-pdo-driver .
 
 Installing and Configuring PDO
 ==============================
@@ -35,9 +31,7 @@ Linux
 
 **Installing CUBRID PHP Driver using PECL**
 
-If **PECL** package has been installed on your system, the installation of CUBRID PDO driver is straightforward. **PECL** will download and compile the driver for you. 
-
-.. FIXME: If you do not have **PECL** installed, follow the instructions at http://www.cubrid.org/wiki_apis/entry/installing-cubrid-php-driver-using-pecl to get it installed.
+If **PECL** package has been installed on your system, the installation of CUBRID PDO driver is straightforward. **PECL** will download and compile the driver for you. If you do not have **PECL** installed, follow the instructions at http://www.cubrid.org/wiki_apis/entry/installing-cubrid-php-driver-using-pecl to get it installed.
 
 #.  Enter the following command to install the latest version of CUBRID PDO driver. ::
     

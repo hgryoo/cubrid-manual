@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid odbc driver, cubrid odbc api, asp sample
-:meta-description: CUBRID ODBC driver supports ODBC version 3.52. It also ODBC core and some parts of Level 1 and Level 2 API. CUBRID ODBC driver is written based on CCI API.
-
 ***********
 ODBC Driver
 ***********
@@ -12,7 +8,7 @@ CUBRID ODBC driver is written based on CCI API, but it's not affected by :ref:`C
 
 .. note:: ODBC is not affected by CCI_DEFAULT_AUTOCOMMIT is from 9.3 version. In the previous versions, you should set CCI_DEFAULT_AUTOCOMMIT as OFF.
 
-.. FIXME: To download ODBC driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-odbc-driver.
+To download ODBC driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-odbc-driver.
 
 **Data Type Mapping Between CUBRID and ODBC**
 

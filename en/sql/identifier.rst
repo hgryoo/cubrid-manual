@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid identifier guideline, cubrid legal identifier, database identifier
-:meta-description: CUBRID Identifiers can be table names, index names, view names, column names, user names etc.
-
 **********
 Identifier
 **********
@@ -48,18 +44,6 @@ Identifiers or reserved keywords shown as below are not allowed. However, if the
     " low cost"
     " abc" " def"
     [position]
-
-.. note::
-
-    From 10.0 version, if a column name which is a reserved word is used together with a "table name (or alias).", you don't need to wrap up a column name with a double quotes.
-
-    .. code-block:: sql 
-
-        CREATE TABLE tbl ("int" int, "double" double); 
-
-        SELECT t.int FROM tbl t; 
-        
-    In the above SELECT query, "int" is a column name which is used together with "t.".
 
 Illegal Identifiers
 ===================

@@ -1,17 +1,6 @@
-
-:meta-keywords: cubrid ascii, cubrid concatenation, cubrid lower, cubrid upper, cubrid chr, cubrid find_in_set, cubrid repeat, cubrid replace, cubrid substr
-
-:tocdepth: 3
-
 ******************************
 String Functions and Operators
 ******************************
-
-.. contents::
-
-.. note:: 
-
-    In the string functions, if the value of **oracle_style_empty_string** parameter is yes, CUBRID does not separate an empty string and NULL; according to each function, CUBRID regards all of them as NULL or an empty string. For the detail description, see :ref:`oracle_style_empty_string <oracle_style_empty_string>`.
 
 Concatenation Operator
 ======================
@@ -1086,8 +1075,6 @@ MID
     ==================================================================
       'eabc'                'eabc'                '1234'
 
-.. _octet_length:
-	  
 OCTET_LENGTH
 ============
 

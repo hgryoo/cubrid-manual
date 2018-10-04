@@ -1,13 +1,6 @@
-
-:meta-keywords: show statement, show tables, show columns, show index, show collation, show timezones, show grants
-
-:tocdepth: 3
-
 ****
 SHOW
 ****
-
-.. contents::
 
 DESC, DESCRIBE
 ==============
@@ -112,7 +105,7 @@ It shows the column information of a table. You can use the **LIKE** clause to s
 
     SHOW [FULL] COLUMNS {FROM | IN} tbl_name [LIKE 'pattern' | WHERE expr];
 
-If a **FULL** keyword is used, it shows the additional information, **collation** and **comment**.
+If a **FULL** keyword is used, It shows the additional information, collation.
 
 **SHOW FIELDS** is the same statement as **SHOW COLUMNS**.
 
@@ -174,14 +167,14 @@ The following shows the examples of this syntax.
     
 .. code-block:: sql
 
-    SHOW FULL COLUMNS FROM athlete WHERE field LIKE '%c%';
+    SHOW COLUMNS FROM athlete WHERE field LIKE '%c%';
     
 ::
 
-	  Field                 Type                  Collation             Null                  Key                   Default               Extra                 Comment             
-	================================================================================================================================================================================
-	  'code'                'INTEGER'             NULL                  'NO'                  'PRI'                 NULL                  'auto_increment'      NULL                
-	  'nation_code'         'CHAR(3)'             'iso88591_bin'        'YES'                 ''                    NULL                  ''                    NULL                
+      Field                 Type                  Collation             Null      Key         Default               Extra
+    ====================================================================================================================================
+      'code'                'INTEGER'             NULL                  'NO'      'PRI'       NULL                  'auto_increment'
+      'nation_code'         'CHAR(3)'             'iso88591_bin'        'YES'     ''          NULL                  ''
 
 .. _show-index-statement:
 
@@ -214,7 +207,6 @@ Packed                                              Shows how keys are packed. I
 Null                                VARCHAR         YES if a column can include **NULL**, NO if not.
 Index_type                          VARCHAR         Index to be used (currently, only the BTREE is supported.)
 Func                                VARCHAR         A function which is used in a function-based index
-Comment                             VARCHAR         Comment to describe the index
 =================================== =============== ======================================================================================================================================
 
 The following shows the examples of this syntax.
@@ -225,13 +217,10 @@ The following shows the examples of this syntax.
     
 ::
 
-	  Table                  Non_unique  Key_name              Seq_in_index  Column_name           Collation             Cardinality     Sub_part  Packed                Null        
-			  Index_type            Func                  Comment             
-	=================================================================================================================================================================================
-	==========================================================================
-	  'athlete'                       0  'pk_athlete_code'                1  'code'                'A'                          6677         NULL  NULL                  'NO'        
-			  'BTREE'               NULL                  NULL 
-
+       Table     Non_unique   Key_name       Seq_in_index  Column_name    Collation     Cardinality   Sub_part  Packed   Null   Index_type  Func
+    =============================================================================================================================================
+     'athlete'     0      'pk_athlete_code'     1          'code'           'A'           6677         NULL     NULL    'NO'      'BTREE'   NULL
+     
 .. code-block:: sql
 
     CREATE TABLE tbl1 (i1 INTEGER , i2 INTEGER NOT NULL, i3 INTEGER UNIQUE, s1 VARCHAR(10), s2 VARCHAR(10), s3 VARCHAR(10) UNIQUE);
@@ -245,27 +234,17 @@ The following shows the examples of this syntax.
     
 ::
 
-	  Table                  Non_unique  Key_name              Seq_in_index  Column_name           Collation             Cardinality     Sub_part  Packed                Null        
-			  Index_type            Func                  Comment             
-	=================================================================================================================================================================================
-	==========================================================================
-	  'tbl1'                          1  'i_tbl1_i1'                      1  'i1'                  'D'                             0         NULL  NULL                  'YES'       
-			  'BTREE'               NULL                  NULL                
-	  'tbl1'                          1  'i_tbl1_i1_s1'                   1  'i1'                  'A'                             0         NULL  NULL                  'YES'       
-			  'BTREE'               NULL                  NULL                
-	  'tbl1'                          1  'i_tbl1_i1_s1'                   2  's1'                  'A'                             0         NULL  NULL                  'YES'       
-			  'BTREE'               NULL                  NULL                
-	  'tbl1'                          0  'i_tbl1_i2_s2'                   1  'i2'                  'A'                             0         NULL  NULL                  'NO'        
-			  'BTREE'               NULL                  NULL                
-	  'tbl1'                          0  'i_tbl1_i2_s2'                   2  's2'                  'A'                             0         NULL  NULL                  'YES'       
-			  'BTREE'               NULL                  NULL                
-	  'tbl1'                          1  'i_tbl1_s1'                      1  's1'                  'A'                             0            7  NULL                  'YES'       
-			  'BTREE'               NULL                  NULL                
-	  'tbl1'                          0  'u_tbl1_i3'                      1  'i3'                  'A'                             0         NULL  NULL                  'YES'       
-			  'BTREE'               NULL                  NULL                
-	  'tbl1'                          0  'u_tbl1_s3'                      1  's3'                  'A'                             0         NULL  NULL                  'YES'       
-			  'BTREE'               NULL                  NULL            
-		  
+      Table  Non_unique  Key_name       Seq_in_index  Column_name  Collation  Cardinality     Sub_part  Packed  Null    Index_type   Func
+    =====================================================================================================================================
+      'tbl1'          1  'i_tbl1_i1'               1  'i1'         'D'                  0         NULL  NULL    'YES'   'BTREE'      NULL
+      'tbl1'          1  'i_tbl1_i1_s1'            1  'i1'         'A'                  0         NULL  NULL    'YES'   'BTREE'      NULL
+      'tbl1'          1  'i_tbl1_i1_s1'            2  's1'         'A'                  0         NULL  NULL    'YES'   'BTREE'      NULL
+      'tbl1'          0  'i_tbl1_i2_s2'            1  'i2'         'A'                  0         NULL  NULL    'NO'    'BTREE'      NULL
+      'tbl1'          0  'i_tbl1_i2_s2'            2  's2'         'A'                  0         NULL  NULL    'YES'   'BTREE'      NULL
+      'tbl1'          1  'i_tbl1_s1'               1  's1'         'A'                  0            7  NULL    'YES'   'BTREE'      NULL
+      'tbl1'          0  'u_tbl1_i3'               1  'i3'         'A'                  0         NULL  NULL    'YES'   'BTREE'      NULL
+      'tbl1'          0  'u_tbl1_s3'               1  's3'         'A'                  0         NULL  NULL    'YES'   'BTREE'      NULL
+
 .. _show-collation-statement:
  
 SHOW COLLATION
@@ -335,100 +314,6 @@ The following shows the examples of this syntax.
       'utf8_ko_cs'          'utf8'                          7  'Yes'                 'No'                  'Not applicable'
       'utf8_ko_cs_uca'      'utf8'                        133  'No'                  'No'                  'Quaternary'
 
-SHOW TIMEZONES
-==============
-
-It shows the timezone information which the current CUBRID supports.
-
-::
-
-    SHOW [FULL] TIMEZONES [ LIKE 'pattern' ];
-
-If FULL is not specified, one column which has timezone's region names is displayed. The name of this column is timezone_region.
-
-If FULL is specified, four columns which have timezone information are displayed.
-
-If LIKE clause is present, it indicates which timezone_region names to match.
-
-=================== =============== ===================================================
-Column name         Type            Description
-=================== =============== ===================================================
-timezone_region     VARCHAR(32)     Timezone region name
-region_offset       VARCHAR(32)     Offset of timezone (daylight saving time is not considered)
-dst_offset          VARCHAR(32)     Offset of daylight saving time (applied to timezone region) which is currently considered
-dst_abbreviation    VARCHAR(32)     An abbreviation of the daylight saving time which is currently applied for the region
-=================== =============== ===================================================
-
-The information listed for the second, third and fourth columns is for the current date and time.
-
-If a timezone region doesn't have daylight saving time rules at all then the dst_offset and dst_abbreviation columns will contain NULL values. 
-
-If at the current date, there aren't daylight saving time rules that apply, then dst_offset will be set to 0 and dst_abbreviation will be the empty string.
-
-The LIKE condition without the WHERE condition is applied on the first column. The WHERE condition may be used to filter the output.
-
-.. code-block:: sql
-
-    SHOW TIMEZONES;
-
-::
-
-    timezone_region
-    ======================
-    'Africa/Abidjan'
-    'Africa/Accra'
-    'Africa/Addis_Ababa'
-    'Africa/Algiers'
-    'Africa/Asmara'
-    'Africa/Asmera'
-    ...
-    'US/Michigan'
-    'US/Mountain'
-    'US/Pacific'
-    'US/Samoa'
-    'UTC'
-    'Universal'
-    'W-SU'
-    'WET'
-    'Zulu'
-
-.. code-block:: sql
-
-    SHOW FULL TIMEZONES;
-
-::
-
-    timezone_region       region_offset         dst_offset            dst_abbreviation
-    ===================================================================================
-    'Africa/Abidjan'      '+00:00'              '+00:00'              'GMT'
-    'Africa/Accra'        '+00:00'              NULL                  NULL
-    'Africa/Addis_Ababa'  '+03:00'              '+00:00'              'EAT'
-    'Africa/Algiers'      '+01:00'              '+00:00'              'CET'
-    'Africa/Asmara'       '+03:00'              '+00:00'              'EAT'
-    'Africa/Asmera'       '+03:00'              '+00:00'              'EAT'
-    ...
-    'US/Michigan'         '-05:00'              '+00:00'              'EST'
-    'US/Mountain'         '-07:00'              '+00:00'              'MST'
-    'US/Pacific'          '-08:00'              '+00:00'              'PST'
-    'US/Samoa'            '-11:00'              '+00:00'              'SST'
-    'UTC'                 '+00:00'              '+00:00'              'UTC'
-    'Universal'           '+00:00'              '+00:00'              'UTC'
-    'W-SU'                '+04:00'              '+00:00'              'MSK'
-    'WET'                 '+00:00'              '+00:00'              'WET'
-    'Zulu'                '+00:00'              '+00:00'              'UTC'
-
-
-.. code-block:: sql
-
-    SHOW FULL TIMEZONES LIKE '%Paris%';
-
-::
-    
-   timezone_region       region_offset         dst_offset            dst_abbreviation
-   ========================================================================================
-   'Europe/Paris'        '+01:00'              '+00:00'              'CET'
-
-	
 .. _show-grants-statement:
 
 SHOW GRANTS
@@ -604,12 +489,12 @@ The following shows the examples of this syntax.
     'data_page_dirties'                     34
     'data_page_ioreads'                     6
     'data_page_iowrites'                    0
+    'data_page_victims'                     0
+    'data_page_iowrites_for_replacement'    0
     'log_page_ioreads'                      0
     'log_page_iowrites'                     0
     'log_append_records'                    0
-    'log_archives'                          0
-    'log_start_checkpoints'                 0
-    'log_end_checkpoints'                   0
+    'log_checkpoints'                       0
     'log_wals'                              0
     'page_locks_acquired'                   13
     'object_locks_acquired'                 9
@@ -644,24 +529,17 @@ The following shows the examples of this syntax.
     'query_nljoins'                         2
     'query_mjoins'                          0
     'query_objfetches'                      0
-    'query_holdable_cursors'                0
-    'sort_io_pages'                         0
-    'sort_data_pages'                       0
     'network_requests'                      88
     'adaptive_flush_pages'                  0
     'adaptive_flush_log_pages'              0
     'adaptive_flush_max_pages'              0
-    'prior_lsa_list_size'                   0
-    'prior_lsa_list_maxed'                  0
-    'prior_lsa_list_removed'                0
-    'heap_stats_bestspace_entries'          0
-    'heap_stats_bestspace_maxed'            0
-
-Diagnostics
-===========
+    'network_requests'                      88
+    'adaptive_flush_pages'                  0
+    'adaptive_flush_log_pages'              0
+    'adaptive_flush_max_pages'              0
 
 SHOW VOLUME HEADER
-------------------
+==================
 
 It shows the volume header of the specified volume in one row.
 
@@ -677,26 +555,27 @@ Column name                         Type            Description
 Volume_id                           INT             Volume identifier
 Magic_symbol                        VARCHAR(100)    Magic value for for a volume file
 Io_page_size                        INT             Size of DB volume
-Purpose                             VARCHAR(32)     Volume purposes, 'Permanent data purpose' or 'Temporary data purpose'
-Type                                VARCHAR(32)     Volume type, 'Permanent Volume' or 'Temporary Volume'
+Purpose                             VARCHAR(32)     Volume purposes, purposes type: DATA, INDEX, GENERIC, TEMP TEMP, TEMP
 Sector_size_in_pages                INT             Size of sector in pages
 Num_total_sectors                   INT             Total number of sectors
 Num_free_sectors                    INT             Number of free sectors
-Num_max_sectors                     INT             Maximum number of sectors
 Hint_alloc_sector                   INT             Hint for next sector to be allocated
+Num_total_pages                     INT             Total number of pages
+Num_free_pages                      INT             Number of free pages
 Sector_alloc_table_size_in_pages    INT             Size of sector allocation table in page
 Sector_alloc_table_first_page       INT             First page of sector allocation table
 Page_alloc_table_size_in_pages      INT             Size of page allocation table in page
 Page_alloc_table_first_page         INT             First page of page allocation table
 Last_system_page                    INT             Last system page
 Creation_time                       DATETIME        Database creation time
-Db_charset                          INT             Charset number of database
+Num_max_pages                       INT             max page count of this volume, this is not equal to the total_pages,if this volume is auto extended
+Num_used_data_pages                 INT             allocated pages for DATA purpose
+Num_used_index_pages                INT             allocated pages for INDEX purpose
 Checkpoint_lsa                      VARCHAR(64)     Lowest log sequence address to start the recovery process of this volume
 Boot_hfid                           VARCHAR(64)     System Heap file for booting purposes and multi volumes
 Full_name                           VARCHAR(255)    The full path of volume
-Next_volume_id                      INT             Next volume identifier
 Next_vol_full_name                  VARCHAR(255)    The full path of next volume
-Remarks                             VARCHAR(64)     Volume remarks
+Remarks                             VARCHAR(64)     
 =================================== =============== ======================================================================================================================================
 
 The following shows the examples of this syntax.
@@ -711,27 +590,30 @@ The following shows the examples of this syntax.
     <00001> Volume_id                       : 0
             Magic_symbol                    : 'MAGIC SYMBOL = CUBRID/Volume at disk location = 32'
             Io_page_size                    : 16384
-            Purpose                         : 'Permanent data purpose'
-            Type                            : 'Permanent Volume'
-            Sector_size_in_pages            : 64
-            Num_total_sectors               : 512
-            Num_free_sectors                : 459
-            Num_max_sectors                 : 512
-            Hint_alloc_sector               : 0
+            Purpose                         : 'Permanent GENERIC Volume'
+            Sector_size_in_pages            : 10
+            Num_total_sectors               : 640
+            Num_free_sectors                : 550
+            Hint_alloc_sector               : 94
+            Num_total_pages                 : 6400
+            Num_free_pages                  : 6025
             Sector_alloc_table_size_in_pages: 1
             Sector_alloc_table_first_page   : 1
-            Last_system_page                : 1
-            Creation_time                   : 09:46:41.000 PM 05/23/2017
-            Db_charset                      : 3
+            Page_alloc_table_size_in_pages  : 1
+            Page_alloc_table_first_page     : 2
+            Last_system_page                : 2
+            Creation_time                   : 06:09:27.000 PM 02/27/2014
+            Num_max_pages                   : 6400
+            Num_used_data_pages             : 192
+            Num_used_index_pages            : 180
             Checkpoint_lsa                  : '(0|12832)'
             Boot_hfid                       : '(0|41|50)'
             Full_name                       : '/home1/brightest/CUBRID/databases/demodb/demodb'
-            Next_volume_id                  : -1
             Next_vol_full_name              : ''
             Remarks                         : ''
 
 SHOW LOG HEADER
----------------
+===============
 
 It shows the header information of an active log file.
 
@@ -746,7 +628,6 @@ This query has the following columns:
 =================================== =============== ======================================================================================================================================
 Column name                         Type            Description
 =================================== =============== ======================================================================================================================================
-Volume_id                           INT             Volume identifier
 Magic_symbol                        VARCHAR(32)     Magic value for log file
 Magic_symbol_location               INT             Magic symbol location from log page
 Creation_time                       DATETIME        Database creation time
@@ -759,7 +640,7 @@ Next_trans_id                       INT             Next transaction identifier
 Num_avg_trans                       INT             Number of average transactions
 Num_avg_locks                       INT             Average number of object locks
 Num_active_log_pages                INT             Number of pages in the active log portion
-Db_charset                          INT             Charset number of database
+Db_charset                          INT             charset number of database
 First_active_log_page               BIGINT          Logical pageid at physical location 1 in active log
 Current_append                      VARCHAR(64)     Current append location
 Checkpoint                          VARCHAR(64)     Lowest log sequence address to start the recovery process
@@ -779,12 +660,8 @@ Backup_info_level1                  VARCHAR(128)    detail information of backup
 Backup_info_level2                  VARCHAR(128)    detail information of backup level 2. currently only backup start-time is used
 Ha_server_state                     VARCHAR(32)     current ha state, one of flowing value: na, idle, active, to-be-active, standby, to-be-standby, maintenance, dead
 Ha_file                             VARCHAR(32)     ha replication status, one of following value: clear, archived, sync
-Eof_lsa                             VARCHAR(64)     EOF LSA
-Smallest_lsa_at_last_checkpoint     VARCHAR(64)     The smallest LSA of the last checkpoint, can be NULL LSA
-Next_mvcc_id                        BIGINT          The next MVCCID will be used for the next transaction
-Mvcc_op_log_lsa                     VARCHAR(32)     The LSA used to link log entries for MVCC operation
-Last_block_oldest_mvcc_id           BIGINT          Used to find the oldest MVCCID in a block of log data, can be NULL
-Last_block_newest_mvcc_id           BIGINT          Used to find the newest MVCCID in a block of log data, can be NULL
+Eof_lsa                             VARCHAR(64)     
+Smallest_lsa_at_last_checkpoint     VARCHAR(64)     
 =================================== =============== ======================================================================================================================================
 
 The following shows the examples of this syntax.
@@ -799,44 +676,38 @@ The following shows the examples of this syntax.
     <00001> Volume_id                      : -2
             Magic_symbol                   : 'CUBRID/LogActive'
             Magic_symbol_location          : 16
-            Creation_time                  : 09:46:41.000 PM 05/23/2017
+            Creation_time                  : 04:42:28.000 PM 12/11/2013
             Release                        : '10.0.0'
-            Compatibility_disk_version     : '10'
+            Compatibility_disk_version     : '9.2'
             Db_page_size                   : 16384
             Log_page_size                  : 16384
             Shutdown                       : 0
-            Next_trans_id                  : 17
-            Num_avg_trans                  : 3
-            Num_avg_locks                  : 30
+            Next_trans_id                  : 607149
+            Num_avg_trans                  : 0
+            Num_avg_locks                  : 0
             Num_active_log_pages           : 1279
-            Db_charset                     : 3
-            First_active_log_page          : 0
-            Current_append                 : '(102|5776)'
-            Checkpoint                     : '(101|7936)'
-            Next_archive_page_id           : 0
-            Active_physical_page_id        : 1
-            Next_archive_num               : 0
-            Last_archive_num_for_syscrashes: -1
+            Db_charset                     : 5
+            First_active_log_page          : 66508
+            Current_append                 : '(66637|14672)'
+            Checkpoint                     : '(66637|14280)'
+            Next_archive_page_id           : 66456
+            Active_physical_page_id        : 1228
+            Next_archive_num               : 52
+            Last_archive_num_for_syscrashes: 52
             Last_deleted_archive_num       : -1
-            Backup_lsa_level0              : '(-1|-1)'
+            Backup_lsa_level0              : '(66636|5240)'
             Backup_lsa_level1              : '(-1|-1)'
             Backup_lsa_level2              : '(-1|-1)'
-            Log_prefix                     : 'mvccdb'
+            Log_prefix                     : 'demodb'
             Has_logging_been_skipped       : 0
             Perm_status                    : 'LOG_PSTAT_CLEAR'
-            Backup_info_level0             : 'time: N/A'
-            Backup_info_level1             : 'time: N/A'
-            Backup_info_level2             : 'time: N/A'
+            Backup_info_level0             : 'time: Mon Dec 16 14:33:17 2013'
+            Backup_info_level1             : 'time: none'
+            Backup_info_level2             : 'time: none'
             Ha_server_state                : 'idle'
-            Ha_file                        : 'UNKNOWN'
-            Eof_lsa                        : '(102|5776)'
-            Smallest_lsa_at_last_checkpoint: '(101|7936)'
-            Next_mvcc_id                   : 6
-            Mvcc_op_log_lsa                : '(102|5488)'
-            Last_block_oldest_mvcc_id      : 4
-            Last_block_newest_mvcc_id      : 5
-
-
+            Ha_file                        : 'unknown'
+            Eof_lsa                        : '(66637|14672)'
+            Smallest_lsa_at_last_checkpoint: '(66637|14280)'
 
 .. code-block:: sql
             
@@ -847,46 +718,41 @@ The following shows the examples of this syntax.
     <00001> Volume_id                      : -2
             Magic_symbol                   : 'CUBRID/LogActive'
             Magic_symbol_location          : 16
-            Creation_time                  : 09:46:41.000 PM 05/23/2017
+            Creation_time                  : 04:42:28.000 PM 12/11/2013
             Release                        : '10.0.0'
-            Compatibility_disk_version     : '10'
+            Compatibility_disk_version     : '9.2'
             Db_page_size                   : 16384
             Log_page_size                  : 16384
             Shutdown                       : 0
-            Next_trans_id                  : 15
-            Num_avg_trans                  : 3
-            Num_avg_locks                  : 30
+            Next_trans_id                  : 607146
+            Num_avg_trans                  : 0
+            Num_avg_locks                  : 0
             Num_active_log_pages           : 1279
-            Db_charset                     : 3
-            First_active_log_page          : 0
-            Current_append                 : '(101|8016)'
-            Checkpoint                     : '(101|7936)'
-            Next_archive_page_id           : 0
-            Active_physical_page_id        : 1
-            Next_archive_num               : 0
-            Last_archive_num_for_syscrashes: -1
+            Db_charset                     : 5
+            First_active_log_page          : 66508
+            Current_append                 : '(66637|14280)'
+            Checkpoint                     : '(66637|14280)'
+            Next_archive_page_id           : 66456
+            Active_physical_page_id        : 1228
+            Next_archive_num               : 52
+            Last_archive_num_for_syscrashes: 52
             Last_deleted_archive_num       : -1
-            Backup_lsa_level0              : '(-1|-1)'
+            Backup_lsa_level0              : '(66636|5240)'
             Backup_lsa_level1              : '(-1|-1)'
             Backup_lsa_level2              : '(-1|-1)'
-            Log_prefix                     : 'mvccdb'
+            Log_prefix                     : 'demodb'
             Has_logging_been_skipped       : 0
             Perm_status                    : 'LOG_PSTAT_CLEAR'
-            Backup_info_level0             : 'time: N/A'
-            Backup_info_level1             : 'time: N/A'
-            Backup_info_level2             : 'time: N/A'
+            Backup_info_level0             : 'time: Mon Dec 16 14:33:17 2013'
+            Backup_info_level1             : 'time: none'
+            Backup_info_level2             : 'time: none'
             Ha_server_state                : 'idle'
-            Ha_file                        : 'UNKNOWN'
-            Eof_lsa                        : '(101|8016)'
-            Smallest_lsa_at_last_checkpoint: '(101|7936)'
-            Next_mvcc_id                   : 4
-            Mvcc_op_log_lsa                : '(-1|-1)'
-            Last_block_oldest_mvcc_id      : NULL
-            Last_block_newest_mvcc_id      : NULL
-
+            Ha_file                        : 'unknown'
+            Eof_lsa                        : '(66637|14280)'
+            Smallest_lsa_at_last_checkpoint: '(66637|14280)'
 
 SHOW ARCHIVE LOG HEADER
------------------------
+=======================
 
 It shows the header information of an archive log file.
 
@@ -928,7 +794,7 @@ The following shows the examples of this syntax.
             Archive_num          : 1
 
 SHOW HEAP HEADER
-----------------
+================
 
 It shows shows the header page of the table. 
 
@@ -1117,7 +983,7 @@ The following shows the examples of this syntax.
             Estimates_full_search_vpid    : '(0|960)'
 
 SHOW HEAP CAPACITY
-------------------
+==================
 
 It shows the capacity of the table. 
 
@@ -1252,7 +1118,7 @@ The following shows the examples of this syntax.
             Total_size_fixed_width_attrs            : 20
 
 SHOW SLOTTED PAGE HEADER
-------------------------
+========================
 
 It shows the header information of specified slotted page.
 
@@ -1276,7 +1142,6 @@ Contiguous_free_area                INT             Contiguous free space on pag
 Free_space_offset                   INT             Byte offset from the beginning of the page to the first free byte area on the page
 Need_update_best_hint               INT             True if saving is need for recovery (undo)
 Is_saving                           INT             True if we should update best pages hint for this page.
-Flags                               INT             Flag value of the page
 =================================== =============== ======================================================================================================================================
 
 The following shows the examples of this syntax.
@@ -1299,10 +1164,9 @@ The following shows the examples of this syntax.
             Free_space_offset    : 460
             Need_update_best_hint: 1
             Is_saving            : 0
-            Flags                : 0
 
 SHOW SLOTTED PAGE SLOTS
-------------------------
+========================
 
 It shows the information of all slots in the specified slotted page.
 
@@ -1356,7 +1220,7 @@ The following shows the examples of this syntax.
             Waste    : 0
 
 SHOW INDEX HEADER
------------------
+=================
 
 It shows the index header page of the index of the table.
 
@@ -1378,7 +1242,9 @@ Column name                         Type            Description
 Table_name                          VARCHAR(256)    Table name
 Index_name                          VARCHAR(256)    Index name
 Btid                                VARCHAR(64)     BTID (volid|fileid|root_pageid)
-Node_level                          INT             Node level (1 for LEAF, 2 or more for NON_LEAF)
+Prev_vpid                           VARCHAR(32)     VPID (volid|pageid)
+Next_vpid                           VARCHAR(32)     VPID (volid|pageid)
+Node_type                           VARCHAR(16)     'LEAF' or 'NON_LEAF'
 Max_key_len                         INT             Maximum key length for the subtree
 Num_oids                            INT             Number of OIDs stored in the Btree
 Num_nulls                           INT             Number of NULLs (they aren't stored)
@@ -1386,8 +1252,7 @@ Num_keys                            INT             Number of unique keys in the
 Topclass_oid                        VARCHAR(64)     Topclass oid or NULL OID (non unique index)(volid|pageid|slotid)
 Unique                              INT             Unique or non-unique
 Overflow_vfid                       VARCHAR(32)     VFID (volid|fileid)
-Key_type                            VARCHAR(256)    Type name
-Columns                             VARCHAR(256)    the list of columns which consists of the index
+Key_type                            VARCHAR(32)     Type name
 =================================== =============== ======================================================================================================================================
 
 The following shows the examples of this syntax.
@@ -1396,18 +1261,21 @@ The following shows the examples of this syntax.
 
     -- Prepare test environment
     CREATE TABLE tbl1(a INT, b VARCHAR(5));
-    CREATE INDEX index_ab ON tbl1(a ASC, b DESC);
+    CREATE INDEX index_a ON tbl1(a ASC);
+    CREATE INDEX index_b ON tbl1(b ASC);  
 
 ..  code-block:: sql
     
     -- csql> ;line on
-    SHOW INDEX HEADER OF tbl1.index_ab;
+    SHOW INDEX HEADER OF tbl1.index_a;
     
 ::
 
     <00001> Table_name   : 'tbl1'
             Index_name   : 'index_a'
             Btid         : '(0|378|950)'
+            Prev_vpid    : '(-1|-1)'
+            Next_vpid    : '(-1|-1)'
             Node_type    : 'LEAF'
             Max_key_len  : 0
             Num_oids     : -1
@@ -1416,11 +1284,45 @@ The following shows the examples of this syntax.
             Topclass_oid : '(0|469|4)'
             Unique       : 0
             Overflow_vfid: '(-1|-1)'
-            Key_type     : 'midxkey(integer,character varying(5))'
-            Columns      : 'a,b DESC'
+            Key_type     : 'integer'
+
+.. code-block:: sql
+      
+    SHOW ALL INDEXES HEADER OF tbl1;
+    
+::
+
+    <00001> Table_name   : 'tbl1'
+            Index_name   : 'index_a'
+            Btid         : '(0|378|950)'
+            Prev_vpid    : '(-1|-1)'
+            Next_vpid    : '(-1|-1)'
+            Node_type    : 'LEAF'
+            Max_key_len  : 0
+            Num_oids     : -1
+            Num_nulls    : -1
+            Num_keys     : -1
+            Topclass_oid : '(0|469|4)'
+            Unique       : 0
+            Overflow_vfid: '(-1|-1)'
+            Key_type     : 'integer'
+    <00002> Table_name   : 'tbl1'
+            Index_name   : 'index_b'
+            Btid         : '(0|381|960)'
+            Prev_vpid    : '(-1|-1)'
+            Next_vpid    : '(-1|-1)'
+            Node_type    : 'LEAF'
+            Max_key_len  : 0
+            Num_oids     : -1
+            Num_nulls    : -1
+            Num_keys     : -1
+            Topclass_oid : '(0|469|4)'
+            Unique       : 0
+            Overflow_vfid: '(-1|-1)'
+            Key_type     : 'character varying'
 
 SHOW INDEX CAPACITY
--------------------
+===================
 
 It shows the index capacity of the index of the table.
 
@@ -1533,317 +1435,3 @@ The following shows the examples of this syntax.
             Total_free_space     : '15.9K'
             Avg_num_page_key     : 0
             Avg_page_free_space  : '15.9K'
-
-SHOW CRITICAL SECTIONS
-----------------------
-
-Total critical section (hereafter CS) information of a database is shown.
-
-.. code-block:: sql
-
-    SHOW CRITICAL SECTIONS;
-
-This query has the following columns:
-
-=================================== =============== ======================================================================================================================================
-Column name                         Type            Description
-=================================== =============== ======================================================================================================================================
-Index                               INT             The index of CS
-Name                                VARCHAR(32)     The name of CS
-Num_holders                         VARCHAR(16)     The number of CS holders. This has one of these values: 'N readers', '1 writer', 'none'
-Num_waiting_readers                 INT             The number of waiting readers
-Num_waiting_writers                 INT             The number of waiting writers
-Owner_thread_index                  INT             The thread index of CS owner writer, NULL if no owner
-Owner_tran_index                    INT             Transaction index of CS owner writer, NULL if no owner
-Total_enter_count                   BIGINT          Total count of enterers
-Total_waiter_count                  BIGINT          Total count of waiters   
-Waiting_promoter_thread_index       INT             The thread index of waiting promoter, NULL if no waiting promoter
-Max_waiting_msecs                   NUMERIC(10,3)   Maximum waiting time (millisecond)
-Total_waiting_msecs                 NUMERIC(10,3)   Total waiting time (millisecond)
-=================================== =============== ======================================================================================================================================
-
-The following shows the examples of this syntax.
-
-.. code-block:: sql
-
-    SHOW CRITICAL SECTIONS;
-
-::
-
-    Index  Name                       Num_holders           Num_waiting_readers  Num_waiting_writers  Owner_thread_index  Owner_tran_index     Total_enter_count    Total_waiter_count  Waiting_promoter_thread_index  Max_waiting_msecs     Total_waiting_msecs 
-    ============================================================================================================================================================================================================================================================
-        0  'ER_LOG_FILE'              'none'                                  0                    0                NULL              NULL                   217                     0                           NULL  0.000                 0.000               
-        1  'ER_MSG_CACHE'             'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000               
-        2  'WFG'                      'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000               
-        3  'LOG'                      'none'                                  0                    0                NULL              NULL                    11                     0                           NULL  0.000                 0.000               
-        4  'LOCATOR_CLASSNAME_TABLE'  'none'                                  0                    0                NULL              NULL                    33                     0                           NULL  0.000                 0.000          
-        5  'QPROC_QUERY_TABLE'        'none'                                  0                    0                NULL              NULL                     3                     0                           NULL  0.000                 0.000               
-        6  'QPROC_LIST_CACHE'         'none'                                  0                    0                NULL              NULL                     1                     0                           NULL  0.000                 0.000               
-        7   'DISK_CHECK'              'none'                                  0                    0                NULL              NULL                     3                     0                           NULL  0.000                 0.000               
-        8  'CNV_FMT_LEXER'            'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000               
-        9  'HEAP_CHNGUESS'            'none'                                  0                    0                NULL              NULL                    10                     0                           NULL  0.000                 0.000               
-        10  'TRAN_TABLE'              'none'                                  0                    0                NULL              NULL                     7                     0                           NULL  0.000                 0.000               
-        11  'CT_OID_TABLE'            'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000               
-        12  'HA_SERVER_STATE'         'none'                                  0                    0                NULL              NULL                     2                     0                           NULL  0.000                 0.000               
-        13  'COMPACTDB_ONE_INSTANCE'  'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000           
-        14  'ACL'                     'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000                    
-        15  'PARTITION_CACHE'         'none'                                  0                    0                NULL              NULL                     1                     0                           NULL  0.000                 0.000               
-        16  'EVENT_LOG_FILE'          'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000               
-        17  'LOG_ARCHIVE'             'none'                                  0                    0                NULL              NULL                     0                     0                           NULL  0.000                 0.000               
-        18  'ACCESS_STATUS'           'none'                                  0                    0                NULL              NULL                     1                     0                           NULL  0.000                 0.000               
-
-SHOW TRANSACTION TABLES
------------------------
-
-It shows internal information of transaction descriptors which is internal data structure to manage each transaction. It only shows valid transactions and the result may not be a consistent snapshot of a transaction descriptor.
-
-.. code-block:: sql
-
-    SHOW { TRAN | TRANSACTION } TABLES [ WHERE EXPR ];
-
-This query has the following columns:
-
-======================== =============== ==============================================================================================================================================================
-Column name              Type            Description
-======================== =============== ==============================================================================================================================================================
-Tran_index               INT             Index on the transaction table or NULL for unassigned transaction descriptor slot
-Tran_id                  INT             Transaction Identifier
-Is_loose_end             INT             0 for Ordinary transactions, 1 for loose-end transactions
-State                    VARCHAR(64)     State of the transaction. Either one of the followings:
-                                         'TRAN_RECOVERY', 'TRAN_ACTIVE', 'TRAN_UNACTIVE_COMMITTED', 'TRAN_UNACTIVE_WILL_COMMIT', 'TRAN_UNACTIVE_COMMITTED_WITH_POSTPONE', 
-                                         'TRAN_UNACTIVE_ABORTED', 'TRAN_UNACTIVE_UNILATERALLY_ABORTED', 'TRAN_UNACTIVE_2PC_PREPARE', 'TRAN_UNACTIVE_2PC_COLLECTING_PARTICIPANT_VOTES',
-                                         'TRAN_UNACTIVE_2PC_ABORT_DECISION', 'TRAN_UNACTIVE_2PC_COMMIT_DECISION', 'TRAN_UNACTIVE_COMMITTED_INFORMING_PARTICIPANTS', 
-                                         'TRAN_UNACTIVE_ABORTED_INFORMING_PARTICIPANTS','TRAN_STATE_UNKNOWN'
-Isolation                VARCHAR(64)     Isolation level of the transaction. Either one of the followings: 'SERIALIZABLE', 'REPEATABLE READ', 'COMMITTED READ', 'TRAN_UNKNOWN_ISOLATION'
-Wait_msecs               INT             Wait until this number of milliseconds for locks.
-Head_lsa                 VARCHAR(64)     First log address of transaction.
-Tail_lsa                 VARCHAR(64)     Last log record address of transaction.
-Undo_next_lsa            VARCHAR(64)     Next log record address of transaction for UNDO purposes.
-Postpone_next_lsa        VARCHAR(64)     Next address of a postpone record to be executed.
-Savepoint_lsa            VARCHAR(64)     Address of last save-point.
-Topop_lsa                VARCHAR(64)     Address of last top operation.
-Tail_top_result_lsa      VARCHAR(64)     Address of last partial abort/commit.
-Client_id                INT             Unique identifier of client application bind to transaction.
-Client_type              VARCHAR(40)     Type of the client. Either one of the followings: 'SYSTEM_INTERNAL', 'DEFAULT', 'CSQL', 'READ_ONLY_CSQL', 'BROKER', 'READ_ONLY_BROKER', 'SLAVE_ONLY_BROKER',
-                                         'ADMIN_UTILITY', 'ADMIN_CSQL', 'LOG_COPIER', 'LOG_APPLIER', 'RW_BROKER_REPLICA_ONLY', 'RO_BROKER_REPLICA_ONLY', 'SO_BROKER_REPLICA_ONLY', 
-                                         'ADMIN_CSQL_WOS', 'UNKNOWN'
-Client_info              VARCHAR(256)    General information of client application.
-Client_db_user           VARCHAR(40)     Current login database account from client application.
-Client_program           VARCHAR(256)    Program name of client application.
-Client_login_user        VARCHAR(16)     Current login user of OS which running the client application.
-Client_host              VARCHAR(64)     Host name of client application.
-Client_pid               INT             Process id of client application.
-Topop_depth              INT             Depth of nested top operation.
-Num_unique_btrees        INT             Number of unique btrees contained in unique_stat_info array.
-Max_unique_btrees        INT             Size of unique_stat_info_array.
-Interrupt                INT             The flag of whether or not interrupt current transaction. 0 for No, 1 for Yes.
-Num_transient_classnames INT             Number of transient classnames by this transaction.
-Repl_max_records         INT             Capacity of replication record array.
-Repl_records             VARCHAR(20)     Replication record buffer array, display address pointer as 0x12345678 or NULL for 0x00000000.
-Repl_current_index       INT             Current position of replication record in the array.
-Repl_append_index        INT             Current position of appended record in the array.
-Repl_flush_marked_index  INT             Index of flush marked replication record at first.
-Repl_insert_lsa          VARCHAR(64)     Insert Replication target LSA.
-Repl_update_lsa          VARCHAR(64)     Update Replication target LSA.
-First_save_entry         VARCHAR(20)     First save entry for the transaction, display address pointer as 0x12345678 or NULL for 0x00000000.
-Tran_unique_stats        VARCHAR(20)     Local statistical info for multiple row. display address pointer as 0x12345678 or NULL for 0x00000000.
-Modified_class_list      VARCHAR(20)     List of dirty classes, display address pointer as 0x12345678 or NULL for 0x00000000.
-Num_temp_files           INT             Number of temporary files.
-Waiting_for_res          VARCHAR(20)     Waiting resource. Just display address pointer as 0x12345678 or NULL for 0x00000000.
-Has_deadlock_priority    INT             Whether or not have deadlock priority. 0 for No, 1 for Yes.
-Suppress_replication     INT             Suppress writing replication logs when flag is set.
-Query_timeout            DATETIME        A query should be executed before query_timeout time or NULL for waiting until query complete.
-Query_start_time         DATETIME        Current query start time or NULL for query completed.
-Tran_start_time          DATETIME        Current transaction start time or NULL for transaction completed.
-Xasl_id                  VARCHAR(64)     vpid:(volid|pageid),vfid:(volid|pageid) or NULL for query completed.
-Disable_modifications    INT             Disable modification if greater than zero.
-Abort_reason             VARCHAR(40)     Reason of transaction aborted. Either one of the followings: 'NORMAL', 'ABORT_DUE_TO_DEADLOCK', 'ABORT_DUE_ROLLBACK_ON_ESCALATION'
-======================== =============== ==============================================================================================================================================================
-
-The following shows the examples of the statement.
-
-.. code-block:: sql
-
-    SHOW TRAN TABLES WHERE CLIENT_TYPE = 'CSQL';
-
-::
-
-        === <Result of SELECT Command in Line 1> ===
-
-        <00001> Tran_index              : 1
-                Tran_id                 : 58
-                Is_loose_end            : 0
-                State                   : 'ACTIVE'
-                Isolation               : 'COMMITTED READ'
-                Wait_msecs              : -1
-                Head_lsa                : '(-1|-1)'
-                Tail_lsa                : '(-1|-1)'
-                Undo_next_lsa           : '(-1|-1)'
-                Postpone_next_lsa       : '(-1|-1)'
-                Savepoint_lsa           : '(-1|-1)'
-                Topop_lsa               : '(-1|-1)'
-                Tail_top_result_lsa     : '(-1|-1)'
-                Client_id               : 108
-                Client_type             : 'CSQL'
-                Client_info             : ''
-                Client_db_user          : 'PUBLIC'
-                Client_program          : 'csql'
-                Client_login_user       : 'cubrid'
-                Client_host             : 'cubrid001'
-                Client_pid              : 13190
-                Topop_depth             : 0
-                Num_unique_btrees       : 0
-                Max_unique_btrees       : 0
-                Interrupt               : 0
-                Num_transient_classnames: 0
-                Repl_max_records        : 0
-                Repl_records            : NULL
-                Repl_current_index      : 0
-                Repl_append_index       : -1
-                Repl_flush_marked_index : -1
-                Repl_insert_lsa         : '(-1|-1)'
-                Repl_update_lsa         : '(-1|-1)'
-                First_save_entry        : NULL
-                Tran_unique_stats       : NULL
-                Modified_class_list     : NULL
-                Num_temp_files          : 0
-                Waiting_for_res         : NULL
-                Has_deadlock_priority   : 0
-                Suppress_replication    : 0
-                Query_timeout           : NULL
-                Query_start_time        : 03:10:11.425 PM 02/04/2016
-                Tran_start_time         : 03:10:11.425 PM 02/04/2016
-                Xasl_id                 : 'vpid: (32766|50), vfid: (32766|43)'
-                Disable_modifications   : 0
-                Abort_reason            : 'NORMAL'
-
-SHOW THREADS
-------------
-
-It shows internal information of each thread. The results are sorted by "Index" column with ascending order and may not be a consistent snapshot of thread entries.
-The statement under SA MODE shows an empty result. 
-
-.. code-block:: sql
-
-    SHOW THREADS [ WHERE EXPR ];
-
-This query has the following columns:
-
-=========================== =============== ==============================================================================================================================================================
-Column name                 Type            Description
-=========================== =============== ==============================================================================================================================================================
-Index                       INT             Thread entry index.
-Jobq_index                  INT             Job queue index only for worker threads. NULL for non-worker threads.
-Thread_id                   BIGINT          Thread id.
-Tran_index                  INT             Transaction index to which this thread belongs. If no related tran index, NULL.
-Type                        VARCHAR(8)      Thread type. Either one of the followings: 'MASTER', 'SERVER', 'WORKER', 'DAEMON', 'VACUUM_MASTER', 'VACUUM_WORKER', 'NONE', 'UNKNOWN'.
-Status                      VARCHAR(8)      Thread status. Either one of the followings: 'DEAD', 'FREE', 'RUN', 'WAIT', 'CHECK'.
-Resume_status               VARCHAR(32)     Resume status. Either one of the followings: 'RESUME_NONE', 'RESUME_DUE_TO_INTERRUPT', 'RESUME_DUE_TO_SHUTDOWN', 'PGBUF_SUSPENDED', 'PGBUF_RESUMED', 
-                                            'JOB_QUEUE_SUSPENDED', 'JOB_QUEUE_RESUMED', 'CSECT_READER_SUSPENDED', 'CSECT_READER_RESUMED', 'CSECT_WRITER_SUSPENDED', 'CSECT_WRITER_RESUMED',
-                                            'CSECT_PROMOTER_SUSPENDED', 'CSECT_PROMOTER_RESUMED', 'CSS_QUEUE_SUSPENDED', 'CSS_QUEUE_RESUMED', 'QMGR_ACTIVE_QRY_SUSPENDED', 'QMGR_ACTIVE_QRY_RESUMED',
-                                            'QMGR_MEMBUF_PAGE_SUSPENDED', 'QMGR_MEMBUF_PAGE_RESUMED', 'HEAP_CLSREPR_SUSPENDED', 'HEAP_CLSREPR_RESUMED', 'LOCK_SUSPENDED', 'LOCK_RESUMED', 
-                                            'LOGWR_SUSPENDED', 'LOGWR_RESUMED'
-Net_request                 VARCHAR(64)     The net request name in net_requests array, such as: 'LC_ASSIGN_OID'. If not request name, shows NULL
-Conn_client_id              INT             Client id whom this thread is responding, if no client id, shows NULL
-Conn_request_id             INT             Request id which this thread is processing, if no request id, shows NULL
-Conn_index                  INT             Connection index, if not connection index, shows NULL
-Last_error_code             INT             Last error code
-Last_error_msg              VARCHAR(256)    Last error message, if message length is more than 256, it will be truncated, If no error message, shows NULL
-Private_heap_id             VARCHAR(20)     The address of id of thread private memory allocator, such as: 0x12345678. If no related heap id, shows NULL.
-Query_entry                 VARCHAR(20)     The address of the QMGR_QUERY_ENTRY*, such as: 0x12345678, if no related QMGR_QUERY_ENTRY, shows NULL.
-Interrupted                 INT             0 or 1, is this request/transaction interrupted
-Shutdown                    INT             0 or 1, is server going down?
-Check_interrupt             INT             0 or 1
-Wait_for_latch_promote      INT             0 or 1, whether this thread is waiting for latch promotion.
-Lockwait_blocked_mode       VARCHAR(24)     Lockwait blocked mode. Either one of the followings: 'NULL_LOCK', 'IS_LOCK', 'S_LOCK', 'IS_LOCK', 'IX_LOCK', 'SIX_LOCK', 'X_LOCK', 'SCH_M_LOCK', 'UNKNOWN'
-Lockwait_start_time         DATETIME        Start blocked time, if not in blocked state, shows NULL
-Lockwait_msecs              INT             Time in milliseconds, if not in blocked state, shows NULL
-Lockwait_state              VARCHAR(24)     The lock wait state such as: 'SUSPENDED', 'RESUMED', 'RESUMED_ABORTED_FIRST', 'RESUMED_ABORTED_OTHER', 'RESUMED_DEADLOCK_TIMEOUT', 'RESUMED_TIMEOUT', 
-                                            'RESUMED_INTERRUPT'. If not in blocked state, shows NULL
-Next_wait_thread_index      INT             The next wait thread index, if not exist, shows NULL
-Next_tran_wait_thread_index INT             The next wait thread index in lock manager, if not exist, shows NULL
-Next_worker_thread_index    INT             The next worker thread index in css_Job_queue.worker_thrd_list, if not exist, shows NULL
-=========================== =============== ==============================================================================================================================================================
-
-The following shows the examples of the statement.
-
-.. code-block:: sql
-
-    SHOW THREADS WHERE RESUME_STATUS != 'RESUME_NONE' AND STATUS != 'FREE';
-
-::
-
-    === <Result of SELECT Command in Line 1> ===
-    <00001> Index                      : 183
-            Jobq_index                 : 3
-            Thread_id                  : 140077788813056
-            Tran_index                 : 3
-            Type                       : 'WORKER'
-            Status                     : 'RUN'
-            Resume_status              : 'JOB_QUEUE_RESUMED'
-            Net_request                : 'QM_QUERY_EXECUTE'
-            Conn_client_id             : 108
-            Conn_request_id            : 196635
-            Conn_index                 : 3
-            Last_error_code            : 0
-            Last_error_msg             : NULL
-            Private_heap_id            : '0x02b3de80'
-            Query_entry                : '0x7f6638004cb0'
-            Interrupted                : 0
-            Shutdown                   : 0
-            Check_interrupt            : 1
-            Wait_for_latch_promote     : 0
-            Lockwait_blocked_mode      : NULL
-            Lockwait_start_time        : NULL
-            Lockwait_msecs             : NULL
-            Lockwait_state             : NULL
-            Next_wait_thread_index     : NULL
-            Next_tran_wait_thread_index: NULL
-            Next_worker_thread_index   : NULL
-    <00002> Index                      : 192
-            Jobq_index                 : 2
-            Thread_id                  : 140077779339008
-            Tran_index                 : 2
-            Type                       : 'WORKER'
-            Status                     : 'WAIT'
-            Resume_status              : 'LOCK_SUSPENDED'
-            Net_request                : 'LC_FIND_LOCKHINT_CLASSOIDS'
-            Conn_client_id             : 107
-            Conn_request_id            : 131097
-            Conn_index                 : 2
-            Last_error_code            : 0
-            Last_error_msg             : NULL
-            Private_heap_id            : '0x02bcdf10'
-            Query_entry                : NULL
-            Interrupted                : 0
-            Shutdown                   : 0
-            Check_interrupt            : 1
-            Wait_for_latch_promote     : 0
-            Lockwait_blocked_mode      : 'SCH_S_LOCK'
-            Lockwait_start_time        : 10:47:45.000 AM 02/03/2016
-            Lockwait_msecs             : -1
-            Lockwait_state             : 'SUSPENDED'
-            Next_wait_thread_index     : NULL
-            Next_tran_wait_thread_index: NULL
-            Next_worker_thread_index   : NULL
-            
-SHOW JOB QUEUES
----------------
-
-It shows the status of job queue. The statement under SA MODE shows an empty result. 
-
-.. code-block:: sql
-
-    SHOW JOB QUEUES;
-
-This query has the following columns:
-
-=========================== =============== =======================================================
-Column name                 Type            Description
-=========================== =============== =======================================================
-Jobq_index                  INT             The index of job queue
-Num_total_workers           INT             Total number of work threads of the queue
-Num_busy_workers            INT             The number of busy worker threads of the queue
-Num_connection_workers      INT             The number of connection worker threads of the queue
-=========================== =============== =======================================================
-

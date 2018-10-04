@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid php driver, cubrid php api
-:meta-description: CUBRID PHP driver implements an interface to enable access from application in PHP to CUBRID database. CUBRID PHP driver is written based on CCI API.
-
 **********
 PHP Driver
 **********
@@ -12,14 +8,12 @@ The official one is available as a PECL package. PECL is a repository for PHP ex
 
 CUBRID PHP driver is written based on CCI API so affected by CCI configurations such as **CCI_DEFAULT_AUTOCOMMIT**.
 
-.. FIXME: To download PHP driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-php-driver .
+To download PHP driver or get the latest information, click http://www.cubrid.org/wiki_apis/entry/cubrid-php-driver .
 
 Installing and Configuring PHP
 ==============================
 
-The easiest and fastest way to get all applications installed on your system is to install CUBRID, Apache web server, PHP, and CUBRID PHP driver at the same time. 
-
-.. FIXME: For details, see http://www.cubrid.org/wiki_apis/entry/install-cubrid-with-apache-and-php-on-ubuntu .
+The easiest and fastest way to get all applications installed on your system is to install CUBRID, Apache web server, PHP, and CUBRID PHP driver at the same time. For details, see http://www.cubrid.org/wiki_apis/entry/install-cubrid-with-apache-and-php-on-ubuntu .
 
 For Linux
 ---------
@@ -33,8 +27,7 @@ For Linux
 **Installing CUBRID PHP Driver using PECL**
 
 If **PECL** package has been installed on your system, the installation of CUBRID PHP driver is straightforward. **PECL** will download and compile the driver for you. 
-
-.. FIXME: If you do not have **PECL** installed, follow the instructions at http://www.cubrid.org/wiki_apis/entry/installing-cubrid-php-driver-using-pecl to get it installed.
+If you do not have **PECL** installed, follow the instructions at http://www.cubrid.org/wiki_apis/entry/installing-cubrid-php-driver-using-pecl to get it installed.
 
 #.  Enter the following command to install the latest version of CUBRID PHP driver.
 

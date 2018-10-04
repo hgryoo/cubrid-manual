@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid jdbc driver, cubrid jdbc api, jdbc programming, jdbc sample
-:meta-description: CUBRID JDBC driver (cubrid_jdbc.jar) implements an interface to enable access from applications in Java to CUBRID database server.
-
 ***********
 JDBC Driver
 ***********
@@ -13,7 +9,7 @@ JDBC Overview
 
 CUBRID JDBC driver (**cubrid_jdbc.jar**) implements an interface to enable access from applications in Java to CUBRID database server. CUBRID JDBC driver is installed in the <*directory where CUBRID is installed*>/**jdbc** directory. The driver has been developed based on the JDBC 2.0 specification and the default driver provided is complied with JDK 1.6.
 
-.. FIXME: To download JDBC driver or get the latest information, please visit http://www.cubrid.org/wiki_apis/entry/cubrid-jdbc-driver\ .
+To download JDBC driver or get the latest information, please visit http://www.cubrid.org/wiki_apis/entry/cubrid-jdbc-driver\ .
 
 **Verifying CUBRID JDBC Driver Version**
 
@@ -148,8 +144,8 @@ The **getConnection** method returns the **Connection** object and it is used to
 *   *port*: The CUBRID broker port number (default value: 33,000)
 *   *db-name*: The name of the database to connect
 
-*   *user-id*: The user ID which is connected to a database. There are two types of users in a database by default: **dba** and **public**. If this is NULL, it becomes <*db_user*> in *db-url*. If this is an empty string (""),  it becomes a **public** user.
-*   *password*: The password of a user who is to be connected to a database. If this is NULL, <*db_password*> in *db-url* is used. If this is an empty string (""), DB password becomes an empty string. You cannot include ':' in the password of the *db-url* string.
+*   *user-id*: The user ID which is connected to a database. There are two types of users in a database by default: **DBA** and **PUBLIC**. If an empty string ("") is entered, a database is connected by the **PUBLIC** user.
+*   *password*: The password of a user who is to be connected to a database. If no password is set, enter an empty string ("").
 
 *   <*property*>
 
@@ -873,23 +869,6 @@ You can get the **LOB** type data in the following ways.
 
     If a string longer than defined max length is inserted (**INSERT**) or updated (**UPDATE**), the string will be truncated.
 
-setBoolean
-----------
-
-prepareStatement.setBoolean(1, true) will set
-    * 1 for numeric types
-    * '1' for string types
-    
-prepareStatement.setBooelan(1, false) will set 
-    * 0 for numeric types
-    * '0' for string types
-    
-.. note:: Behavior of legacy versions
-    
-    prepareStatement.setBoolean(1, true) set
-        * as 2008 R4.1, 9.0, 1 of BIT(1) type
-        * as 2008 R4.3, 2008 R4.4, 9.1, 9.2, 9.3, -128 of SHORT type
-        
 .. _jdbc-error-codes:
 
 JDBC Error Codes and Error Messages

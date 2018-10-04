@@ -1,7 +1,3 @@
-
-:meta-keywords: configure cubrid, cubrid port, cubrid language, cubrid environment, cubrid settings
-:meta-description: The following environment variables need to be set in order to use the CUBRID. The necessary environment variables are automatically set when the CUBRID system is installed or can be changed, as needed, by the user.
-
 Configuring Environment Variables
 =================================
 
@@ -18,7 +14,7 @@ CUBRID Environment Variables
 
 .. note:: 
 
-    *   A user of CUBRID Manager should specify **CUBRID_MSG_LANG**, an environment variable of DB server node into **en_US** to print out messages normally after running database related features. However, database related features are run normally and just the output messages are broken when **CUBRID_MSG_LANG** is not **en_US**.
+    *   A user of CUBRID Manager or CUBRID Query Browser should specify **CUBRID_MSG_LANG**, an environment variable of DB server node into **en_US** to print out messages normally after running database related features. However, database related features are run normally and just the output messages are broken when **CUBRID_MSG_LANG** is not **en_US**.
     *   To apply the changed **CUBRID_MSG_LANG**, CUBRID system of DB server node should be restarted(cubrid service stop, cubrid service start).
 
 *   **CUBRID_TMP**: The environment variable that specifies the location where the cub_master process and the cub_broker process store the UNIX domain socket file in CUBRID for Linux. If it is not specified, the cub_master process stores the UNIX domain socket file under the **/tmp** directory and the cub_broker process stores the UNIX domain socket file under the **$CUBRID/var/CUBRID_SOCK** directory (not used in CUBRID for Windows).
@@ -204,8 +200,15 @@ If you use CUBRID for Windows at the broker machine or the DB server machine, al
 |               | machine(**)   | copylogdb,    |                |                                                     |                          |                        |
 |               |               | applylogdb    |                |                                                     |                          |                        |
 +---------------+---------------+---------------+----------------+-----------------------------------------------------+--------------------------+------------------------+
+| SHARD use     | cub_broker    | application   | BROKER_PORT    | Not supported                                       | Open                     | One-time connection    |
+|               +---------------+---------------+----------------+-----------------------------------------------------+--------------------------+------------------------+
+|               | cub_proxy     | application   | BROKER_PORT    | Not supported                                       | Open                     | Keep connected         |
++---------------+---------------+---------------+----------------+-----------------------------------------------------+--------------------------+------------------------+
 | Manager use   | Manager       | application   | 8001           | 8001                                                | Open                     |                        |
 |               | server        |               |                |                                                     |                          |                        |
++---------------+---------------+               |                |                                                     |                          |                        |
+| Web Manager   | Web Manager   |               |                |                                                     |                          |                        |
+| use           | server        |               |                |                                                     |                          |                        |
 +---------------+---------------+---------------+----------------+-----------------------------------------------------+--------------------------+------------------------+
 
 (*): The machine which has the CAS, CSQL, copylogdb, or applylogdb process
@@ -364,17 +367,56 @@ The connection process between the application and the DB is identical with :ref
 
 On the master node, the applylogdb and the copylogdb run for the case that the master node is switched to the slave node.
 
+.. _cubrid-shard-ports:
+
+Ports for CUBRID SHARD
+----------------------
+
+CUBRID SHARD is supported only on Linux.
+
+The following table summarizes the ports required for each OS, based on the listening processes. Each port on the listener should be opened.
+
++-------------------+--------------+----------------+--------------------------+------------------------+
+| Listener          | requester    | Linux port     | Firewall Port Setting    | Description            |
++===================+==============+================+==========================+========================+
+| cub_broker        | application  | BROKER_PORT    | Open                     | One-time connection    |
++-------------------+--------------+----------------+--------------------------+------------------------+
+| cub_proxy         | application  | BROKER_PORT    | Open                     | Keep connected         |
++-------------------+--------------+----------------+--------------------------+------------------------+
+
+The connection process between the application and the server for the CUBRID SHARD configuration is as follows. The CAS and the cub_proxy have already been connected when starting the CUBRID SHARD (cubrid broker start).
+
+#.  The application tries to connect with the cub_broker through the BROKER_PORT set in the cubrid_broker.conf.
+    
+#.  The cub_broker selects the connectable cub_proxy. 
+    
+#.  The application and the cub_proxy are connected. The number of the cub_proxy are determined by SHARD_NUM_PROXY of the cubrid_broker.conf.
+
+    In Linux, the application is connected to the cub_proxy through the Unix domain socket. In Windows, the application is connected to the cub_proxy through the port calculated based on BROKER_PORT and SHARD_NUM_PROXY set in the cubrid_broker.conf of each cub_proxy as the Unix domain socket cannot be used.
+    
+    For example, in Linux, if BROKER_PORT is 45000 and SHARD_NUM_PROXY is 3, only one port is used: 45000.
+    
+    *   The port used to connect the application to the cub_proxy(1): 45000, the port used to connect the CAS to the cub_proxy(1): None
+    *   The port used to connect the application to the cub_proxy(2): 45000, the port used to connect the CAS to the cub_proxy(2): None
+    *   The port used to connect the application to the cub_proxy(3): 45000, the port used to connect the CAS to the cub_proxy(3): None
+
+#.  The CAS and the cub_proxy have already been connected when starting the CUBRID SHARD (cubrid broker start). In addition, the processes are always in one machine, requiring no remote access.
+
+    When the CAS is connected to the cub_proxy, the Unix domain socket is used in Linux. Multiple CASes can be connected to one cub_proxy. The minimum number and the maximum number of the CAS are determined by MIN_NUM_APPL_SERVER and MAX_NUM_APPL_SERVER of the cubrid_broker.conf. The maximum number of CASes which can be connected to one  cub_proxy simultaneously is determined based on SHARD_MAX_CLIENTS of the cubrid_broker.conf.
+
 .. _cwm-cm-ports:
 
-Ports for CUBRID Manager Server
--------------------------------
+Ports for CUBRID Web Manager and CUBRID Manager Server
+------------------------------------------------------
 
-The following table summarizes the ports, based on the listening processes, used for CUBRID Manager server. The ports are identical regardless of the OS type.
+The following table summarizes the ports, based on the listening processes, used for the CUBRID Web Manager and the CUBRID Manager server. The ports are identical regardless of the OS type.
 
 +--------------------------+--------------+----------------+--------------------------+
 | Listener                 | Requester    | Port           | Firewall Port Setting    |
 +==========================+==============+================+==========================+
-| Manager server           | application  | 8001           | Open                     |
+| Manager server,          | application  | 8001           | Open                     |
+| Web Manager server       |              |                |                          |
 +--------------------------+--------------+----------------+--------------------------+
 
 *   The port used when the CUBRID Manager client accesses the CUBRID Manager server process is **cm_port** of the cm.conf. The default value is 8001.
+*   The port used when the CUBRID Web Manager client accesses the CUBRID Web Manager server process is also **cm_port** of the cm.conf.

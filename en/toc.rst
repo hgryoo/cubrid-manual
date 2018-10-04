@@ -1,7 +1,3 @@
-
-:meta-keywords: cubrid introduction, cubrid glossary, cubrid manual conventions, cubrid versions
-:meta-description: The contents of the CUBRID Database Management System (CUBRID DBMS) product manual, Glossary, Manual Conventions, Version Name and Version String Conventions.
-
 ======================
 Introduction to Manual
 ======================
@@ -19,7 +15,7 @@ The contents of the CUBRID Database Management System (CUBRID DBMS) product manu
 
 *   :doc:`sql/index`: This chapter describes SQL syntaxes such as data types, functions and operators, data retrieval or table manipulation. The chapter also provides SQL syntaxes used for indexes, triggers, partitioning, serial and user information changes, etc.
 
-*   :doc:`admin/index`: This chapter provides instructions on how to create, drop, back up, restore and migrate a database, configuring globalization, and executing CUBRID HA. Also it includes instructions on how to use the  **cubrid** utility, which starts and stops the server, broker, and CUBRID Manager server, etc. Also, this chapter provides instructions on setting system parameters that may influence the performance. It provides information on how to use the configuration file for the server and broker, and describes the meaning of each parameter.
+*   :doc:`admin/index`: This chapter provides instructions on how to create, drop, back up, restore and migrate a database, configuring globalization, and executing CUBRID HA and CUBRID SHARD. Also it includes instructions on how to use the  **cubrid** utility, which starts and stops the server, broker, and CUBRID Manager server, etc. Also, this chapter provides instructions on setting system parameters that may influence the performance. It provides information on how to use the configuration file for the server and broker, and describes the meaning of each parameter.
 
 *   :doc:`api/index`: The "Performance Tuning" chapter provides instructions on setting system parameters that may influence the performance. This chapter provides information on how to use the configuration file for the server and broker, and describes the meaning of each parameter.
 
@@ -100,28 +96,18 @@ The following table provides conventions on definitions used in the CUBRID Datab
 Version Name and Version String Conventions
 -------------------------------------------
 
-Rules for version naming and string since CUBRID 10.1 are as follows:
-
-*  Version name: CUBRID M.m Patch p (Major version, Minor version, Patch version if necessary)
-   CUBRID 10.1 Patch 1 (CUBRID 10.1 P1 in short)
-
-*  Version string: M.m.p.build_number (Major version, Minor version, Patch version, Build number)
-   10.1.0.7595-d652d64
-
-   Build number consists of two parts which are separated by a hyphen. The former is the number of changes from the base revision, which monotonically increases. The later is the SHA-1 hash of the build built.
-   
 Rules for version naming and string since CUBRID 9.0 are as follows:
 
-*  Version name: CUBRID M.m Patch p (Major version, Minor version, Patch version if necessary)
+*  Version name: CUBRID x.x Patch x (major version, minor version, patch version if necessary)
    CUBRID 9.2 Patch 1 (CUBRID 9.2 P1 in short)
 
-*  Version string: M.m.p.build_number (Major version, Minor version, Patch version, Build number)
+*  Version string: x.x.x.x (major version, minor version, patch version, build number)
    9.2.1.0012
    
 Rules for version naming and string before CUBRID 9.0 are as follows:
 
-*  Version name: CUBRID 2008 RM.m Patch p (2008 for Major version, Minor version, Patch version, Build number)
+*  Version name: CUBRID 2008 Rx.x Patch x (2008 for major version, minor version, patch version, build number)
    CUBRID 2008 R4.1 Patch 1
    
-*  Version string: 8.m.p.build_number (Major version, Minor version, Patch version, Build number)
+*  Version string: 8.x.x.x (major version, minor version, patch version, build number)
    8.4.1.1001

@@ -1,19 +1,13 @@
-
-:meta-keywords: update statement, update multiple table
-:meta-description: You can update the column value of a record stored in the target table or view to a new one by using the UPDATE statement.
-
 ******
 UPDATE
 ******
 
-You can update the column value of a record stored in the target table or view to a new one by using the **UPDATE** statement. Specify the name of the column to update and a new value in the **SET** clause, and specify the condition to be used to extract the record to be updated in the :ref:`where-clause`. You can one or more tables only with one **UPDATE** statement.
-
-.. note:: Updating a view with **JOIN** syntax is possible from 10.0 version.
+You can update the column value of a record stored in the target table to a new one by using the **UPDATE** statement. Specify the name of the column to update and a new value in the **SET** clause, and specify the condition to be used to extract the record to be updated in the :ref:`where-clause`. You can one or more tables only with one **UPDATE** statement.
 
 ::
 
     <UPDATE single table>
-    UPDATE table_name|view_name SET column_name = {<expr> | DEFAULT} [, column_name = {<expr> | DEFAULT} ...]
+    UPDATE table_name SET column_name = {<expr> | DEFAULT} [, column_name = {<expr> | DEFAULT} ...]
         [WHERE <search_condition>]
         [ORDER BY {col_name | <expr>}]
         [LIMIT row_count]
@@ -32,7 +26,7 @@ You can update the column value of a record stored in the target table or view t
 
 *   *col_name* | <*expr*>: Specifies base column to be updated.
 
-*   *row_count*: Specifies the number of records to be updated after the :ref:`limit-clause`. It can be one of unsigned integer, a host variable or a simple expression.
+*   *row_count*: Specifies the number of records to be updated after the :ref:`limit-clause`. An integer greater than 0 can be specified.
 
 In case of only one table is to be updated, you can specify :ref:`order-by-clause` or :ref:`limit-clause`. You can also limit the number of records to be updated in the :ref:`limit-clause`. You can use the update with the :ref:`order-by-clause` if you want to maintain the execution order or lock order of triggers. 
 
@@ -129,44 +123,3 @@ For *a_tbl* table and *b_tbl* table, which join the **UPDATE** statement, when t
 In the above example, when the number of rows with *id* = 5, the **JOIN** condition column, is one in *a_tbl* and two in *b_tbl*, *a_tbl.charge*, the update target column in the row with *a_tbl.id* = 5, uses the value of *rate* of the first row in *b_tbl* only.
 
 For more details on join syntax, see :ref:`join-query`.
-
-The following shows to update a view.
-
-.. code-block:: sql 
-
-    CREATE TABLE tbl1(a INT, b INT); 
-    CREATE TABLE tbl2(a INT, b INT); 
-    INSERT INTO tbl1 VALUES (5,5),(4,4),(3,3),(2,2),(1,1); 
-    INSERT INTO tbl2 VALUES (6,6),(4,4),(3,3),(2,2),(1,1); 
-    CREATE VIEW vw AS SELECT tbl2.* FROM tbl2 LEFT JOIN tbl1 ON tbl2.a=tbl1.a WHERE tbl2.a<=3; 
-
-    UPDATE vw SET a=1000; 
-
-The below result for an UPDATE statement depends on the value of the  :ref:`update_use_attribute_references <update_use_attribute_references>` parameter.
-      
-.. code-block:: sql 
-
-    CREATE TABLE tbl(a INT, b INT); 
-    INSERT INTO tbl values (10, NULL); 
-
-    UPDATE tbl SET a=1, b=a; 
-      
-If the value of this parameter is yes, the updated value of "b" from the above UPDATE query will be 1 as being affected by "a=1".
-
-.. code-block:: sql 
-  
-    SELECT * FROM tbl; 
-
-:: 
-  
-    1, 1 
-      
-If the value of this parameter is no, the updated value of "b" from the above UPDATE query will be NULL as being affected by the value of "a" which is stored at this record, not by "a=1".
-
-.. code-block:: sql 
-  
-    SELECT * FROM tbl; 
-      
-:: 
-  
-    1, NULL
