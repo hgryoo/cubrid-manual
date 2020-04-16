@@ -1,0 +1,29 @@
+cache: pip
+language: python
+
+python:
+  - "2.7"
+
+install:
+  - pip install sphinx
+  - pip install sphinx_rtd_theme
+
+stages:
+  - build_english
+  - build_korean
+  - linecheck_english
+  - linecheck_korean
+
+jobs:
+  include:
+      - stage: build_english
+        env: TEST_DIR=en COMMAND=html
+      - stage: build_korean
+        env: TEST_DIR=ko COMMAND=html
+      - stage: linecheck_english
+        env: TEST_DIR=en COMMAND=linecheck
+      - stage: linecheck_korean
+        env: TEST_DIR=ko COMMAND=linecheck
+
+script:
+  - cd $TEST_DIR && make $COMMAND && cd ..
