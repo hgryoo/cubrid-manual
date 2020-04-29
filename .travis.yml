@@ -9,7 +9,8 @@ install:
   - pip install sphinx_rtd_theme
 
 env:
-  - COMMAND=html
+  jobs:
+    - COMMAND=html
   matrix:
     - TEST_DIR=en
     - TEST_DIR=ko
