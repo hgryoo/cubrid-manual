@@ -15,10 +15,18 @@ env:
 
 before_script:
   - cd $TEST_DIR
-  - make html
 
 script:
-  - make linkcheck
+  - make html
 
 after_script:
   - cd ..
+
+stages:
+  - test
+  - linkcheck
+
+jobs:
+  include:
+    - stage: linkcheck
+      script: make linkcheck
