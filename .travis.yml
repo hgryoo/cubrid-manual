@@ -4,6 +4,10 @@ language: python
 python:
   - "2.7"
 
+install:
+  - pip install sphinx
+  - pip install sphinx_rtd_theme
+
 before_script:
   - cd $TEST_DIR
 
