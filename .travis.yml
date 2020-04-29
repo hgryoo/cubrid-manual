@@ -24,7 +24,8 @@ after_script:
 
 jobs:
   include:
-    - name: linkcheck english
-      env: TEST_DIR=en COMMAND=linkcheck
-    - name: linkcheck korean
-      env: TEST_DIR=ko COMMAND=linkcheck
+    - stage:
+      - name: linkcheck english
+        env: TEST_DIR=en COMMAND=linkcheck
+      - name: linkcheck korean
+        env: TEST_DIR=ko COMMAND=linkcheck
