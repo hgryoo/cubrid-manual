@@ -9,6 +9,7 @@ install:
   - pip install sphinx_rtd_theme
 
 env:
+  - COMMAND=html
   matrix:
     - TEST_DIR=en
     - TEST_DIR=ko
@@ -17,8 +18,12 @@ before_script:
   - cd $TEST_DIR
 
 script:
-  - make html
-  - make linkcheck
+  - make $COMMAND
 
 after_script:
   - cd ..
+
+jobs:
+  include:
+    - stage: linkcheck
+      env: COMMAND=linkcheck
