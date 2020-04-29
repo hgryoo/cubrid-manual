@@ -23,7 +23,6 @@ script:
 after_script:
   - cd ..
 
-jobs:
-  include:
-    - stage: linkcheck
-      env: COMMAND=linkcheck
+stages:
+  - name: linkcheck
+    env: COMMAND=linkcheck
