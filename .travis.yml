@@ -8,20 +8,17 @@ install:
   - pip install sphinx
   - pip install sphinx_rtd_theme
 
+env:
+  matrix:
+    - TEST_DIR=en
+    - TEST_DIR=ko
+
 before_script:
   - cd $TEST_DIR
+  - make html
+
+script:
+  - make linkcheck
 
 after_script:
   - cd ..
-
-jobs:
-  include:
-    env:
-      matrix:
-        - TEST_DIR=en
-        - TEST_DIR=ko
-    - stage: test
-      name: "build"
-      script: make html
-    - script: make linkcheck
-      name: "linkcheck"
