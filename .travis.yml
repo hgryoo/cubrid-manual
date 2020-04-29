@@ -8,22 +8,23 @@ install:
   - pip install sphinx
   - pip install sphinx_rtd_theme
 
-stages:
-  - build_english
-  - build_korean
-  - linecheck_english
-  - linecheck_korean
+env:
+  matrix:
+    - TEST_DIR=en COMMAND=html
+    - TEST_DIR=ko COMMAND=html
+
+before_script:
+  - cd $TEST_DIR
+
+script:
+  - make $COMMAND
+
+after_script:
+  - cd ..
 
 jobs:
   include:
-      - stage: build_english
-        env: TEST_DIR=en COMMAND=html
-      - stage: build_korean
-        env: TEST_DIR=ko COMMAND=html
-      - stage: linecheck_english
-        env: TEST_DIR=en COMMAND=linecheck
-      - stage: linecheck_korean
-        env: TEST_DIR=ko COMMAND=linecheck
-
-script:
-  - cd $TEST_DIR && make $COMMAND && cd ..
+    - name: linkcheck english
+      env: TEST_DIR=en COMMAND=linkcheck
+    - name: linkcheck korean
+      env: TEST_DIR=ko COMMAND=linkcheck
