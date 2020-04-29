@@ -31,9 +31,9 @@ jobs:
       env: TEST_DIR=ko COMMAND=html
     - stage: test
       name: "Test English Manaul"
-      env: TEST_DIR=en COMMAND=linkcheck
       install: skip
+      env: TEST_DIR=en COMMAND=linkcheck
     - stage: test
       name: "Test Korean Manaul"
-      env: TEST_DIR=ko COMMAND=linkcheck
       install: skip
+      env: TEST_DIR=ko COMMAND=linkcheck
