@@ -4,10 +4,6 @@ language: python
 python:
   - "2.7"
 
-install:
-  - pip install sphinx
-  - pip install sphinx_rtd_theme
-
 before_script:
   - cd $TEST_DIR
 
@@ -24,10 +20,16 @@ stages:
 jobs:
   include:
     - stage: build
+      name: "Build English Manaul"
       env: TEST_DIR=en COMMAND=html
     - stage: build
+      name: "Build Korean Manaul"
       env: TEST_DIR=ko COMMAND=html
     - stage: test
+      name: "Test English Manaul"
       env: TEST_DIR=en COMMAND=linkcheck
+      install: skip
     - stage: test
+      name: "Test Korean Manaul"
       env: TEST_DIR=ko COMMAND=linkcheck
+      install: skip
