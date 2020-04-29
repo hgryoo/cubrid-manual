@@ -8,11 +8,13 @@ install:
   - pip install sphinx
   - pip install sphinx_rtd_theme
 
+env:
+  matrix:
+    - TEST_DIR=en
+    - TEST_DIR=ko
+
 before_script:
   - cd $TEST_DIR
-
-script:
-  - make $COMMAND
 
 after_script:
   - cd ..
@@ -24,16 +26,6 @@ stages:
 jobs:
   include:
     - stage: build
-      name: "Build English Manaul"
-      env: TEST_DIR=en COMMAND=html
-    - stage: build
-      name: "Build Korean Manaul"
-      env: TEST_DIR=ko COMMAND=html
+      script: make html
     - stage: test
-      name: "Test English Manaul"
-      install: skip
-      env: TEST_DIR=en COMMAND=linkcheck
-    - stage: test
-      name: "Test Korean Manaul"
-      install: skip
-      env: TEST_DIR=ko COMMAND=linkcheck
+      script: make linkcheck
