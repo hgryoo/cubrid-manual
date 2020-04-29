@@ -27,4 +27,9 @@ after_script:
 jobs:
   include:
     - stage: linkcheck
-      env: COMMAND=linkcheck
+      env:
+        jobs:
+          - COMMAND=html
+        matrix:
+          - TEST_DIR=en
+          - TEST_DIR=ko
