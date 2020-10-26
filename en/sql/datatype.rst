@@ -963,7 +963,7 @@ IANA Timezone
 
 In IANA(Internet Assigned Numbers Authority) timezone database, there are lots of codes and data which represent the history of localtime for many representative locations around the globe.
 
-This database is periodically updated to reflect changes made by political bodies to time zone boundaries, UTC offsets, and daylight-saving rules. Its management procedure is described in `BCP 175: Procedures for Maintaining the Time Zone Database <http://tools.ietf.org/html/rfc6557>`_. For more details, see http://www.iana.org/time-zones.
+This database is periodically updated to reflect changes made by political bodies to time zone boundaries, UTC offsets, and daylight-saving rules. Its management procedure is described in `BCP 175: Procedures for Maintaining the Time Zone Database <https://tools.ietf.org/html/rfc6557>`_. For more details, see http://www.iana.org/time-zones.
 
 CUBRID supports IANA timezone, and a user can use the IANA timezone library in the CUBRID installation package as it is. If you want to update as the recent timezone, update timezone first, compile timezone library, and restart the database. 
 
@@ -2082,7 +2082,7 @@ JSON Data Type
 ==============
 
 CUBRID 10.2 adds support for native **JSON** data type, as defined by
-`RFC 7159 <https://tools.ietf.org/html/rfc7159>`_. **JSON** data type
+`RFC 7159 <https://tools.ietf.org/html/rfc7159>`__. **JSON** data type
 offers automatic validation and allows fast access and operations on
 JSON data.
 
@@ -2194,7 +2194,7 @@ JSON Value Types
 
 A JSON value must be an object, an array or a scalar (string, number, boolean
 or null), as defined by `RFC 7159
-<https://tools.ietf.org/html/rfc7159#section-3>`_.
+<https://tools.ietf.org/html/rfc7159#section-3>`__.
 
 A table of JSON value types:
 

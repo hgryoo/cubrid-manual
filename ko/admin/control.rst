@@ -177,13 +177,13 @@ Windows 환경에서는 시스템 권한을 가진 사용자로 로그인한 경
     @ cubrid server start: demodb
 
     This may take a long time depending on the amount of recovery works to do.
-    CUBRID 10.1 
+    CUBRID 10.2 
 
     ++ cubrid server start: success
     @ cubrid server start: testdb
 
     This may take a long time depending on the amount of recovery works to do.
-    CUBRID 10.1 
+    CUBRID 10.2 
 
     ++ cubrid server start: success
     @ cubrid broker start
@@ -258,14 +258,14 @@ CUBRID 서비스를 재구동하려면 다음과 같이 입력한다. 사용자�
 
     This may take a long time depending on the amount of recovery works to do.
 
-    CUBRID 10.1
+    CUBRID 10.2
 
     ++ cubrid server start: success
     @ cubrid server start: testdb
 
     This may take a long time depending on the amount of recovery works to do.
 
-    CUBRID 10.1
+    CUBRID 10.2
 
     ++ cubrid server start: success
     @ cubrid broker start
@@ -284,8 +284,8 @@ CUBRID 서비스를 재구동하려면 다음과 같이 입력한다. 사용자�
     ++ cubrid master is running.
     @ cubrid server status
 
-    Server testdb (rel 10.1, pid 31059)
-    Server demodb (rel 10.1, pid 30950)
+    Server testdb (rel 10.2, pid 31059)
+    Server demodb (rel 10.2, pid 30950)
 
     @ cubrid broker status
     % query_editor
@@ -381,7 +381,7 @@ CUBRID는 cubrid 유틸리티의 수행 결과에 대한 로깅 기능을 제공
 
     This may take a long time depending on the amount of recovery works to do.
 
-    CUBRID 10.1 
+    CUBRID 10.2 
 
     ++ cubrid server start: success
 
@@ -397,7 +397,7 @@ CUBRID는 cubrid 유틸리티의 수행 결과에 대한 로깅 기능을 제공
 
     This may take a long time depending on the amount of recovery works to do.
 
-    CUBRID 10.1 
+    CUBRID 10.2 
 
     ++ cubrid server start: success
 
@@ -454,7 +454,7 @@ CUBRID는 cubrid 유틸리티의 수행 결과에 대한 로깅 기능을 제공
 
     This may take a long time depending on the amount of recovery works to do.
 
-    CUBRID 10.1 
+    CUBRID 10.2 
 
     ++ cubrid server start: success
 
@@ -468,8 +468,8 @@ CUBRID는 cubrid 유틸리티의 수행 결과에 대한 로깅 기능을 제공
     % cubrid server status
     
     @ cubrid server status
-    Server testdb (rel 10.1, pid 24465)
-    Server demodb (rel 10.1, pid 24342)
+    Server testdb (rel 10.2, pid 24465)
+    Server demodb (rel 10.2, pid 24342)
 
 마스터 프로세스가 중지된 상태라면, 다음과 같은 메시지가 출력된다. 
 
@@ -1221,6 +1221,43 @@ QUERY_EDITOR 브로커는 다음과 같은 응용의 접속 요청만을 허용�
 .. note:: 
 
     데이터베이스 서버에서의 접속 제한을 위해서는 :ref:`limiting-server-access` 을 참고한다.
+    
+패킷 암호화
+--------
+
+개방형 네트워크에서 데이터베이스 서버와 클라이언트 간의 통신은 제 3자에게 유출될 수 있으며, 부정 사용될 수있다. 안전하지 않은 통신 환경을 이용한 정보 접근 과정에서 정보 유출을 방지하기 위해서는 송수신되는 모든 정보가 **암호화** 되어야 한다. 큐브리드 브로커는 보안 모드로 설정이 가능하며, 이 경우 데이터베이스 서버와 클라이언트 간의 모든 데이터는 암호회되어 송수신된다.
+
+큐브리드는 **TLS** (Transport Layer Security) 프로토콜을 이용한 암호화 기능을 제공한다. TLS는 암호화 기능 뿐만 아니라 데이터의 변조와 손실을 감지하는 기능을 포함하고 있어서 클라이언트와 서버에게 보안이 강화된 신뢰할 수 있는 통신 수단을 제공한다. 큐브리드는 이러한 기능을 제공하기 위해서 **OpenSSL** 을 채택하였다.
+
+큐브리드 브로커는 보안 모드 (**SSL = ON**) 또는 비보안 모드 (**SSL = OFF**)로 구성할 수 있으며, 이러한 모드는 **cubrid_broker.conf** 의 **SSL** 파라미터의 값에 따라서 결정된다. 브로커의 SSL 파라미터의 값이 변경된 경우, 브로커를 재시작하여야 한다. 브로커가 보안 모드인 경우, **jdbc** 응용 프로그램과 같은 클라이언트들도 보안 모드로 설정되어 접속되어야 한다, 그렇지 않으면 연결 요청은 브로커에 의해서 거부된다. 반대의 경우도 마찬가지이다. 비보안 모드의 브로커에 보안 모드의 클라이언트 접속 요청도 거부된다.
+
+**cubrid_broker.conf** 에 SSL 파라미터가 정의되지 않은 경우, 브로커는 비보안 모드로 동작한다 (**SSL = OFF** 가 기본 모드). 아래의 예는 브로커 **'query_editor'** 를 보안 모드로 설정한 예이다.
+
+ ::
+
+      # cubrid_broker.conf
+      [query_editor]
+      SERVICE                 =ON
+      SSL                     =ON
+      BROKER_PORT             =30000
+      ....
+
+**인증서 (Certificate) 와 개인키 (Private Key)**
+
+**SSL** 은 대칭형 (**symmetric**) 키를 이용하여 송수신 데이터를 암호화 한다 (클라이언트와 서버가 같은 **세션키** 를 공유하여 암호/복호함). 매 통신 세션에서 새로이 생성되는 세션키를 클라이언트와 서버가 암호화한 형태로 교환하기 위해서 비 대칭 **(asymmetric)** 암호화 알고리즘 을 사용하며, 이를 위해서 서버의 공개키와 개인키가 필요하다. 
+
+공개키는 인증서에 포함되어 있으며, 인증서와 개인키는 $CUBRID/conf 디렉터리에 있으며 각각의 파일명은 **'cas_ssl_cert.crt'** 와 **'cas_ssl_cert.crt'** 이다. 이 인증서는 OpenSSL의 명령어 도구를 이용하여 생성된 것이며 'self-signed' 형태의 인증서이다. 
+
+사용자가 원하는 경우 **IdenTrust** 나 **DigiCert** 와 같은 공인 인증기관에서 발급받은 인증서로 대체도 가능하다. 또는 OpenSSL 명령어 도구를 이용하여 개인키/인증서를 새로 생성하여 대체하는 것도 가능하다. 아래의 예는 OpenSSL 명령어 도구를 이용하여 개인키, 인증서를 생성하는 것이다.
+
+::
+
+      $ openssl genrsa -out my_cert.key 2048                                               # 2048 bit 크기의 RSA 개인키 생성
+      $ openssl req -new -key my_cert.key -out my_cert.csr                                 # 인증요청서 CSR (Certificate Signing Request)
+      $ openssl x509 -req -days 365 -in my_cert.csr -signkey my_cert.key -out my_cert.crt  # 1년 유효한 인증서 생성
+      
+위에서 생성된 **my_cert.key** 와 **my_cert.crt** 를 각각 $CUBRID/conf/cas_ssl_cert.key와 $CUBRID/conf/cas_ssl_cert.crt로 대체하면 된다.
+
 
 특정 브로커 관리
 ----------------
@@ -1360,10 +1397,10 @@ SQL 로그 파일은 응용 클라이언트가 요청하는 SQL을 기록하며,
 
     13-06-11 15:07:39.282 (0) STATE idle
     13-06-11 15:07:44.832 (0) CLIENT IP 192.168.10.100
-    13-06-11 15:07:44.835 (0) CLIENT VERSION 9.2.0.0062
+    13-06-11 15:07:44.835 (0) CLIENT VERSION 10.2.0.8787
     13-06-11 15:07:44.835 (0) session id for connection 0
     13-06-11 15:07:44.836 (0) connect db demodb user dba url jdbc:cubrid:192.168.10.200:30000:demodb:dba:********: session id 12
-    13-06-11 15:07:44.836 (0) DEFAULT isolation_level 3, lock_timeout -1
+    13-06-11 15:07:44.836 (0) DEFAULT isolation_level 4, lock_timeout -1
     13-06-11 15:07:44.840 (0) end_tran COMMIT
     13-06-11 15:07:44.841 (0) end_tran 0 time 0.000
     13-06-11 15:07:44.841 (0) *** elapsed time 0.004
@@ -1371,7 +1408,7 @@ SQL 로그 파일은 응용 클라이언트가 요청하는 SQL을 기록하며,
     13-06-11 15:07:44.844 (0) check_cas 0
     13-06-11 15:07:44.848 (0) set_db_parameter lock_timeout 1000
     13-06-11 15:09:36.299 (0) check_cas 0
-    13-06-11 15:09:36.303 (0) get_db_parameter isolation_level 3
+    13-06-11 15:09:36.303 (0) get_db_parameter isolation_level 4
     13-06-11 15:09:36.375 (1) prepare 0 CREATE TABLE unique_tbl (a INT PRIMARY key);
     13-06-11 15:09:36.376 (1) prepare srv_h_id 1
     13-06-11 15:09:36.419 (1) set query timeout to 0 (no limit)
@@ -1381,7 +1418,7 @@ SQL 로그 파일은 응용 클라이언트가 요청하는 SQL을 기록하며,
     13-06-11 15:09:38.344 (0) auto_commit 0
     13-06-11 15:09:38.344 (0) *** elapsed time 1.968
     
-    13-06-11 15:09:54.481 (0) get_db_parameter isolation_level 3
+    13-06-11 15:09:54.481 (0) get_db_parameter isolation_level 4
     13-06-11 15:09:54.484 (0) close_req_handle srv_h_id 1
     13-06-11 15:09:54.484 (2) prepare 0 INSERT INTO unique_tbl VALUES (1);
     13-06-11 15:09:54.485 (2) prepare srv_h_id 1
@@ -1394,7 +1431,7 @@ SQL 로그 파일은 응용 클라이언트가 요청하는 SQL을 기록하며,
     
     ...
     
-    13-06-11 15:19:04.593 (0) get_db_parameter isolation_level 3
+    13-06-11 15:19:04.593 (0) get_db_parameter isolation_level 4
     13-06-11 15:19:04.597 (0) close_req_handle srv_h_id 2
     13-06-11 15:19:04.597 (7) prepare 0 SELECT * FROM unique_tbl  WHERE ROWNUM BETWEEN 1 AND 5000;
     13-06-11 15:19:04.598 (7) prepare srv_h_id 2 (PC)
@@ -1448,7 +1485,7 @@ broker_log_top
 
 .. option:: -F DATETIME
 
-        분석 대상 SQL의 시작 날짜 및 시간을 지정한다. 입력 형식은 YY[-MM[-DD[ hh[:mm[:ss[.msec]]]]]]이며 []로 감싼 부분은 생략할 수 있다. 생략하면 MM, DD는 01을 입력한 것과 같고, hh, mm, ss, msec은 0을 입력한 것과 같다.
+        분석 대상 SQL의 시작 날짜 및 시간을 지정한다. 입력 형식은 YY-MM-DD[ hh[:mm[:ss[.msec]]]]이며 []로 감싼 부분은 생략할 수 있다. 생략하면 hh, mm, ss, msec은 0을 입력한 것과 같다.
         
 .. option:: -T DATETIME
 
@@ -1460,20 +1497,20 @@ broker_log_top
 
 ::
 
-    broker_log_top -F "01/19 15:00:25.000" -T "01/19 15:15:25.180" log1.log
+    broker_log_top -F "13-01-19 15:00:25.000" -T "13-01-19 15:15:25.180" log1.log
 
-다음 예에서 시간 형식이 생략된 부분은 기본값 0으로 정해진다. 즉, -F "01/19 00:00:00.000" -T "01/20 00:00:00.000"을 입력한 것과 같다.
+다음 예에서 시간 형식이 생략된 부분은 기본값 0으로 정해진다. 즉, -F "13-01-19 00:00:00.000" -T "13-01-20 00:00:00.000"을 입력한 것과 같다.
 
 ::
 
-    broker_log_top -F "01/19" -T "01/20" log1.log
+    broker_log_top -F "13-01-19" -T "13-01-20" log1.log
 
-다음 예는 11월 11일부터 11월 12일까지 생성된 SQL 로그에 대해 실행 시간이 긴 SQL문을 확인하기 위하여 **broker_log_top** 유틸리티를 실행한 화면이다. 기간을 지정할 때, 월과 일은 빗금(/)으로 구분한다. Windows에서는 "\*.sql.log" 를 인식하지 않으므로 SQL 로그 파일들을 공백(space)으로 구분해서 나열해야 한다.
+다음 예는 2013년 11월 11일부터 11월 12일까지 생성된 SQL 로그에 대해 실행 시간이 긴 SQL문을 확인하기 위하여 **broker_log_top** 유틸리티를 실행한 화면이다. 기간을 지정할 때, 연, 월, 일은 하이픈(-)으로 구분한다. Windows에서는 "\*.sql.log" 를 인식하지 않으므로 SQL 로그 파일들을 공백(space)으로 구분해서 나열해야 한다.
 
 ::
 
     --Linux에서 broker_log_top 실행
-    % broker_log_top -F "11/11" -T "11/12" -t *.sql.log
+    % broker_log_top -F "13-11-11" -T "13-11-12" -t *.sql.log
 
     query_editor_1.sql.log
     query_editor_2.sql.log
@@ -1482,7 +1519,7 @@ broker_log_top
     query_editor_5.sql.log
 
     --Windows에서 broker_log_top 실행
-    % broker_log_top -F "11/11" -T "11/12" -t query_editor_1.sql.log query_editor_2.sql.log query_editor_3.sql.log query_editor_4.sql.log query_editor_5.sql.log
+    % broker_log_top -F "13-11-11" -T "13-11-12" -t query_editor_1.sql.log query_editor_2.sql.log query_editor_3.sql.log query_editor_4.sql.log query_editor_5.sql.log
 
 위 예제를 실행하면 SQL 로그 분석 결과가 저장되는 **log.top.q** 및 **log.top.res** 파일이 동일한 디렉터리에 생성된다.
 **log.top.q** 에서 각 SQL 문 및 SQL 로그 상의 라인 번호를 확인할 수 있고, **log.top.res** 에서 각 SQL 문에 대한 최소 실행 시간, 최대 실행 시간, 평균 실행 시간, 쿼리 실행 수를 확인할 수 있다.
@@ -1492,14 +1529,14 @@ broker_log_top
     --log.top.q 파일의 내용
     [Q1]-------------------------------------------
     broker1_6.sql.log:137734
-    11/11 18:17:59.396 (27754) execute_all srv_h_id 34 select a.int_col, b.var_col from dml_v_view_6 a, dml_v_view_6 b, dml_v_view_6 c , dml_v_view_6 d, dml_v_view_6 e where a.int_col=b.int_col and b.int_col=c.int_col and c.int_col=d.int_col and d.int_col=e.int_col order by 1,2;
+    13-11-11 18:17:59.396 (27754) execute_all srv_h_id 34 select a.int_col, b.var_col from dml_v_view_6 a, dml_v_view_6 b, dml_v_view_6 c , dml_v_view_6 d, dml_v_view_6 e where a.int_col=b.int_col and b.int_col=c.int_col and c.int_col=d.int_col and d.int_col=e.int_col order by 1,2;
     11/11 18:18:58.378 (27754) execute_all 0 tuple 497664 time 58.982
     .
     .
     [Q4]-------------------------------------------
     broker1_100.sql.log:142068
-    11/11 18:12:38.387 (27268) execute_all srv_h_id 798 drop table list_test;
-    11/11 18:13:08.856 (27268) execute_all 0 tuple 0 time 30.469
+    13-11-11 18:12:38.387 (27268) execute_all srv_h_id 798 drop table list_test;
+    13-11-11 18:13:08.856 (27268) execute_all 0 tuple 0 time 30.469
 
     --log.top.res 파일의 내용
 
@@ -1680,6 +1717,8 @@ CAS 에러는 브로커 응용 서버(CAS) 프로세스에서 발생하는 에�
 | CAS_ER_HOLDABLE_NOT_ALLOWED_KEEP_CON_OFF(-10028) |  Holdable results are not allowed while KEEP_CONNECTION is off      |                                                                                                                      |
 +--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+
 | CAS_ER_NOT_IMPLEMENTED(-10100)                   |  None / Attempt to use a not supported service                      |                                                                                                                      |
++--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+
+| CAS_ER_SSL_TYPE_NOT_ALLOWED(-10103               |  None / The requested SSL mode is not permitted                     |                                                                                                                      |
 +--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+
 | CAS_ER_IS(-10200)                                |  None / Authentication failure                                      |                                                                                                                      |
 +--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+

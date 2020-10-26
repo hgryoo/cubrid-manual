@@ -677,7 +677,7 @@ To prevent wasting needless disk space, it is recommended to keep this value as 
 
 **ha_apply_max_mem_size**
 
-**ha_apply_max_mem_size** is a parameter used to configure the value of maximum memory that the replication log reflection process of CUBRID HA can use. The default and maximum values are **500** (unit: MB). When the value is larger than the size allowed by the system, memory allocation fails and the HA replication reflection process may malfunction. For this reason, you must check whether or not the memory resource can handle the specified value before setting it.
+**ha_apply_max_mem_size** is a parameter used to configure the value of maximum memory that the replication log reflection process of CUBRID HA can use. The default value is **500** (unit: MB) and the maximum value is **INT_MAX** (2147483647). When the value is larger than the size allowed by the system, memory allocation fails and the HA replication reflection process may malfunction. For this reason, you must check whether or not the memory resource can handle the specified value before setting it.
 
 **ha_applylogdb_ignore_error_list**
 
@@ -997,7 +997,7 @@ The following example shows how to configure CCI.
 PHP Configuration
 -----------------
 
-To use the functions of CUBRID HA in PHP, connect to the broker by using `cubrid_connect_with_url <http://www.php.net/manual/en/function.cubrid-connect-with-url.php>`_, which is used to specify the connection information of the failover broker in the connection URL. The attribute specified for CUBRID HA is **altHosts**, the information on one or more broker nodes to be connected when a failover occurs.
+To use the functions of CUBRID HA in PHP, connect to the broker by using `cubrid_connect_with_url <https://www.php.net/manual/en/function.cubrid-connect-with-url.php>`_, which is used to specify the connection information of the failover broker in the connection URL. The attribute specified for CUBRID HA is **altHosts**, the information on one or more broker nodes to be connected when a failover occurs.
 
 The following example shows how to configure PHP.
 

@@ -1222,6 +1222,44 @@ The below is an example of displaying results.
 
     For details on how to limit an access to the database server, see :ref:`limiting-server-access`.
 
+.. _encrypted_connections:
+
+Packet Encryption
+-----------------
+
+In an unencrypted communication environment, someone can monitor and interpret all the traffic between clients and a database server, and collected information could be used illegally. In order to access information in an unsafe communication environment while avoiding such an information leakage, data transmitted and received must be encrypted. CUBRID Broker can be configured in safe mode. In this case, all data transmitted and received between the database server and the client are encrypted.
+
+CUBRID supports encrypted connections between clients and the server using TLS (Transport Layer Security) protocol. TLS provides data encryption mechanism as well as detecting data tampering, loss, hence ensures providing secure and trusted communication channel between clients and the server. CUBRID provides these TLS functions using `OpenSSL <https://www.openssl.org>`_.
+
+CUBRID Broker can be configured for encrypted mode (**SSL = ON**) or non-encrypted mode (**SSL = OFF**) using **SSL** parameter in **cubrid_broker.conf**. A Broker must be restarted when the encryption parameter is changed. When a Broker is configured in encryption mode, clients such as **jdbc client** must connect in encryption mode, otherwise the connection to the broker will be rejected. The opposite is also true. That is, a connection request of clients using encryption mode to non-secure broker will be refused.
+
+When SSL parameter is not specified in cubrid_broker.conf, that broker will be started in non-encrypted mode (**'SSL = OFF'** is the default). The following is an example of setting the Broker **'query_editor'** in **encrypted mode** (cubrid_broker.conf).
+
+::
+
+    # cubrid_broker.conf
+    [query_editor]
+    SERVICE                 =ON
+    SSL                     =ON
+    BROKER_PORT             =30000
+    ....
+
+**Certificate and Private Key**
+
+In order to exchange an encrypted **symmetric session key** which will be used in a secure communication session, a public key and a private key are required in the server.
+
+The public key used by the server is included in the certificate **'cas_ssl_cert.crt'**, and the private key is included in **'cas_ssl_cert.key'**. The certificate and private key are located in the **$CUBRID/conf** directory.
+
+This certificate, **'self-signed'** certificate, was created with the OpenSSL command tool utility, and can be replaced with another certificate issued by a public **CA** (Certificate Authorities, for example **IdenTrust** or **DigiCert**) if desired. Or, existing certificate/private key can be replaced by generating new one using OpenSSL command utility as shown below.
+
+::
+
+    $ openssl genrsa -out my_cert.key 2048                                               # create 2048 bit size RSA private key
+    $ openssl req -new -key my_cert.key -out my_cert.csr                                 # create CSR (Certificate Signing Request)
+    $ openssl x509 -req -days 365 -in my_cert.csr -signkey my_cert.key -out my_cert.crt  # create a certificate valid for 1 year.
+
+And replace **my_cert.key** and **my_cert.crt** with $CUBRID/conf/cas_ssl_cert.key and $CUBRID/conf/cas_ssl_cert.crt respectively.
+
 Managing a Specific Broker
 --------------------------
 
@@ -1448,7 +1486,7 @@ The following is [options] used on **broker_log_top**.
 
 .. option:: -F DATETIME
 
-    Specifies the execution start date and time of the SQL statements to be analyzed. The input format is YY[-MM[-DD[ hh[:mm[:ss[.msec]]]]]], and the part enclosed by [] can be omitted. If you omit the value, it is regarded as that 01 is input for MM and DD, and 0 is input for hh, mm, ss and msec.
+    Specifies the execution start date and time of the SQL statements to be analyzed. The input format is YY-MM-DD[ hh[:mm[:ss[.msec]]]], and the part enclosed by [] can be omitted. If you omit the value, it is regarded as that 0 is input for hh, mm, ss and msec.
 
 .. option:: -T DATETIME
 
@@ -1460,20 +1498,20 @@ The following sets the search range to milliseconds
 
 ::
 
-    broker_log_top -F "01/19 15:00:25.000" -T "01/19 15:15:25.180" log1.log
+    broker_log_top -F "13-01-19 15:00:25.000" -T "13-01-19 15:15:25.180" log1.log
     
-The part where the time format is omitted is set to 0 by default. This means that -F "01/19 00:00:00.000" -T "01/20 00:00:00.000" is input. 
+The part where the time format is omitted is set to 0 by default. This means that -F "13-01-19 00:00:00.000" -T "13-01-20 00:00:00.000" is input. 
 
 ::
 
-    broker_log_top -F "01/19" -T "01/20" log1.log
+    broker_log_top -F "13-01-19" -T "13-01-20" log1.log
 
-The following logs are the results of executing the broker_log_top utility; logs are generated from Nov. 11th to Nov. 12th, and it is displayed in the order of the longest execution of SQL statements. Each month and day are separated by a slash (/) when specifying period. Note that "\*.sql.log" is not recognized so the SQL logs should be separated by a white space on Windows. 
+The following logs are the results of executing the broker_log_top utility; logs are generated from Nov. 11th to Nov. 12th 2013, and it is displayed in the order of the longest execution of SQL statements. Each month and day are separated by a hyphen (-) when specifying period. Note that "\*.sql.log" is not recognized so the SQL logs should be separated by a white space on Windows. 
 
 ::
 
     --Execution broker_log_top on Linux
-    % broker_log_top -F "11/11" -T "11/12" -t *.sql.log
+    % broker_log_top -F "13-11-11" -T "13-11-12" -t *.sql.log
 
     query_editor_1.sql.log
     query_editor_2.sql.log
@@ -1482,7 +1520,7 @@ The following logs are the results of executing the broker_log_top utility; logs
     query_editor_5.sql.log
 
     --Executing broker_log_top on Windows
-    % broker_log_top -F "11/11" -T "11/12" -t query_editor_1.sql.log query_editor_2.sql.log query_editor_3.sql.log query_editor_4.sql.log query_editor_5.sql.log
+    % broker_log_top -F "13-11-11" -T "13-11-12" -t query_editor_1.sql.log query_editor_2.sql.log query_editor_3.sql.log query_editor_4.sql.log query_editor_5.sql.log
 
 The **log.top.q** and **log.top.res** files are generated in the same directory where the analyzed logs are stored when executing the example above; 
 In the **log.top.q** file, you can see each SQL statement, and its line number. In the **log.top.res** file, you can see the minimum execution time, the maximum execution time, the average execution time, and the number of execution queries for each SQL statement. 
@@ -1492,14 +1530,14 @@ In the **log.top.q** file, you can see each SQL statement, and its line number. 
     --log.top.q file
     [Q1]-------------------------------------------
     broker1_6.sql.log:137734
-    11/11 18:17:59.396 (27754) execute_all srv_h_id 34 select a.int_col, b.var_col from dml_v_view_6 a, dml_v_view_6 b, dml_v_view_6 c , dml_v_view_6 d, dml_v_view_6 e where a.int_col=b.int_col and b.int_col=c.int_col and c.int_col=d.int_col and d.int_col=e.int_col order by 1,2;
-    11/11 18:18:58.378 (27754) execute_all 0 tuple 497664 time 58.982
+    13-11-11 18:17:59.396 (27754) execute_all srv_h_id 34 select a.int_col, b.var_col from dml_v_view_6 a, dml_v_view_6 b, dml_v_view_6 c , dml_v_view_6 d, dml_v_view_6 e where a.int_col=b.int_col and b.int_col=c.int_col and c.int_col=d.int_col and d.int_col=e.int_col order by 1,2;
+    13-11-11 18:18:58.378 (27754) execute_all 0 tuple 497664 time 58.982
     .
     .
     [Q4]-------------------------------------------
     broker1_100.sql.log:142068
-    11/11 18:12:38.387 (27268) execute_all srv_h_id 798 drop table list_test;
-    11/11 18:13:08.856 (27268) execute_all 0 tuple 0 time 30.469
+    13-11-11 18:12:38.387 (27268) execute_all srv_h_id 798 drop table list_test;
+    13-11-11 18:13:08.856 (27268) execute_all 0 tuple 0 time 30.469
 
     --log.top.res file
 
@@ -1680,6 +1718,8 @@ If there is only one message, they are the same, but if there are two messages, 
 | CAS_ER_HOLDABLE_NOT_ALLOWED_KEEP_CON_OFF(-10028) |  Holdable results are not allowed while KEEP_CONNECTION is off      |                                                                                                                      |
 +--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+
 | CAS_ER_NOT_IMPLEMENTED(-10100)                   |  None / Attempt to use a not supported service                      |                                                                                                                      |
++--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+
+| CAS_ER_SSL_TYPE_NOT_ALLOWED(-10103)              |  None / The requested SSL mode is not permitted                     |                                                                                                                      |
 +--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+
 | CAS_ER_IS(-10200)                                |  None / Authentication failure                                      |                                                                                                                      |
 +--------------------------------------------------+---------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+

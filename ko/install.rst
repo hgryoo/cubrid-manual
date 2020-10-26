@@ -28,14 +28,14 @@ CUBRID가 지원하는 플랫폼과 설치를 위한 하드웨어/소프트웨�
 
 CUBRID 매니저 JDBC, PHP, ODBC, OLE DB 등의 드라이버들도 http://ftp.cubrid.org 에서 받을 수 있다.
 
-CUBRID 엔진, 사용 도구 및 드라이버에 대한 자세한 정보는 http://www.cubrid.org 를 참고한다.
+CUBRID 엔진, 사용 도구 및 드라이버에 대한 자세한 정보는 https://www.cubrid.org 를 참고한다.
 
 버전 호환성
 -----------
 
 **응용 프로그램의 호환성**
 
-*   2008 R4.1 또는 그 이상 버전에서 JDBC, PHP, CCI API 등을 사용하는 응용 프로그램은 CUBRID 10.0 브로커에 접근할 수 있다. 다만, JDBC, PHP, CCI 인터페이스에 추가/개선된 기능을 사용하기 위해서는 CUBRID 10.1 버전의 라이브러리를 링크하거나 드라이버를 사용해야 한다. 10.0에서 추가된 :ref:`timezone-type` 을 사용하기 위해서는 드라이버를 업그레이드 해야 한다.
+*   2008 R4.1 또는 그 이상 버전에서 JDBC, PHP, CCI API 등을 사용하는 응용 프로그램은 CUBRID 10.2 브로커에 접근할 수 있다. 다만, JDBC, PHP, CCI 인터페이스에 추가/개선된 기능을 사용하기 위해서는 CUBRID 10.2 버전의 라이브러리를 링크하거나 드라이버를 사용해야 한다. 10.0에서 추가된 :ref:`timezone-type` 을 사용하기 위해서는 드라이버를 업그레이드 해야 한다.
 
 *   10.2 서버와 연결하는 그 이전 버전의 드라이버는 JSON 타입 컬럼을 Varchar 타입으로 인식한다.
 
@@ -51,9 +51,9 @@ CUBRID 엔진, 사용 도구 및 드라이버에 대한 자세한 정보는 http
 
     예를 들어, 64Bit 버전 DB 서버라도 CUBRID Manager 32Bit 버전을 사용한다면 JRE 또는 JDK 32Bit 버전을 설치해야 한다.
 
-*   CUBRID 2008 R2.2 이상 버전의 드라이버는 CUBRID 매니저에 기본으로 내장되어 있으며, http://www.cubrid.org 웹사이트에서 별도로 받을 수도 있다.
+*   CUBRID 2008 R2.2 이상 버전의 드라이버는 CUBRID 매니저에 기본으로 내장되어 있으며, https://www.cubrid.org 웹사이트에서 별도로 받을 수도 있다.
 
-.. note:: 과거 버전 사용자들은 드라이버, 브로커, DB 서버 모두를 반드시 업그레이드해야 하며, DB 볼륨이 10.1과 호환되지 않으므로 반드시 데이터 마이그레이션을 해야 한다.
+.. note:: 과거 버전 사용자들은 드라이버, 브로커, DB 서버 모두를 반드시 업그레이드해야 하며, DB 볼륨이 10.2와 호환되지 않으므로 반드시 데이터 마이그레이션을 해야 한다.
     업그레이드 및 데이터 마이그레이션은 :doc:`/upgrade`\ 를 참고한다.
 
 **CUBRID DB 서버와 브로커 간 상호 운용성**
@@ -84,18 +84,21 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
       
         % rpm -q glibc
 
-*   32비트 또는 64비트 
+*   64비트 
     
     10.0 이후 CUBRID는 64비트 버전만 지원한다.  Linux버전은 다음과 같은 방법으로 확인한다. ::
         
         % uname -a
-        Linux host_name 2.6.18-53.1.14.el5xen #1 SMP Wed Mar 5 12:08:17 EST 2008 x86_64 x86_64 x86_64 GNU/Linux
+        Linux host_name 2.6.32-696.20.1.el6.x86_64 #1 SMP Fri Jan 26 17:51:45 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
     
     64비트 Linux에서는 CUBRID 64비트 버전을 설치한다. 
     
 *   추가로 설치할 라이브러리
     
     *   Curses Library (rpm -q ncurses)
+
+        CUBRID는 Curses 라이브러리 버전 5와 함께 패키지된다. 시스템에 최신 버전이 있고 다운 그레이드할 수 없는 경우 ncurses-compat-libs 패키지를 설치해야할 수 있다.
+
     *   gcrypt Library (rpm -q libgcrypt)
     *   stdc++ Library (rpm -q libstdc++)
     
@@ -105,16 +108,16 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
   
 **CUBRID 설치**
 
-설치 프로그램은 바이너리를 포함한 쉘 스크립트로 되어 있어 자동으로 설치할 수 있다. 다음은 리눅스에서 "CUBRID-10.1.0.7663-1ca0ab8-Linux.x86_64.sh" 파일을 이용하여 CUBRID를 설치하는 예제이다. 
+설치 프로그램은 바이너리를 포함한 쉘 스크립트로 되어 있어 자동으로 설치할 수 있다. 다음은 리눅스에서 "CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.sh" 파일을 이용하여 CUBRID를 설치하는 예제이다. 
 
 ::
 
-    $ sh CUBRID-10.1.0.7663-1ca0ab8-Linux.x86_64.sh 
+    $ sh CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.sh 
     Do you agree to the above license terms? (yes or no) : yes
     Do you want to install this software(CUBRID) to the default(/home1/cub_user/CUBRID) directory? (yes or no) [Default: yes] : yes
     Install CUBRID to '/home1/cub_user/CUBRID' ...
     In case a different version of the CUBRID product is being used in other machines, 
-    please note that the CUBRID 10.1 servers are only compatible with the CUBRID 10.1 clients and vice versa.
+    please note that the CUBRID 10.2 servers are only compatible with the CUBRID 10.2 clients and vice versa.
     Do you want to continue? (yes or no) [Default: yes] : yes
     Copying old .cubrid.sh to .cubrid.sh.bak ...
 
@@ -126,7 +129,7 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
     $ . /home1/cub_user/.cubrid.sh
     $ cubrid service start
 
-위의 예제와 같이 다운로드한 파일(CUBRID-10.0.0.1376-linux.x86_64.sh)을 설치한 후, CUBRID 데이터베이스를 사용하기 위해서는 CUBRID 관련 환경 정보를 설정해야 한다. 이 설정은 해당 터미널에 로그인할 때 자동 설정되도록 지정되어 있으므로 설치 후 최초 한 번만 수행하면 된다. ::
+위의 예제와 같이 다운로드한 파일(CUBRID-10.2.0.8787-a31ea42.x86_64.sh)을 설치한 후, CUBRID 데이터베이스를 사용하기 위해서는 CUBRID 관련 환경 정보를 설정해야 한다. 이 설정은 해당 터미널에 로그인할 때 자동 설정되도록 지정되어 있으므로 설치 후 최초 한 번만 수행하면 된다. ::
 
     $ . /home1/cub_user/.cubrid.sh
 
@@ -157,7 +160,7 @@ cubrid service를 구동시킨 후 정상적으로 구동되었는지 확인하�
 
 CentOS 6 환경에서 생성한 RPM 파일을 사용하여 CUBRID를 설치할 수 있으며, 일반적인 RPM 유틸리티와 동일한 방법으로 설치하고 삭제할 수 있다. 설치하면 새로운 시스템 그룹(cubrid) 및 사용자 계정(cubrid)이 생성되며, 설치 후에는 cubrid 사용자 계정으로 로그인하여 CUBRID 서비스를 시작해야 한다. ::
 
-    $ rpm -Uvh cubrid-10.1.0.7663-1ca0ab8-Linux.x86_64.rpm
+    $ rpm -Uvh cubrid-10.2.0.8787-a31ea42-Linux.x86_64.rpm
 
 RPM을 실행하면 CUBRID는 "cubrid" 홈 디렉터리(/opt/cubrid)에 설치되고, CUBRID 관련 환경 설정 파일(cubrid.[c]sh)이 /etc/profile.d 디렉터리에 설치된다. 단, demodb는 자동으로 설치되지 않으므로 "cubrid" Linux 계정으로 로그인하여 /opt/cubrid/demo/make_cubrid_demo.sh를 실행하여야 한다. CUBRID가 설치 완료되면 "cubrid" Linux 계정으로 로그인하여 CUBRID 서비스를 다음과 같이 시작한다. ::
 
@@ -204,7 +207,7 @@ CUBRID를 설치하고 설정 파일을 구성할 때 기존의 설정 파일을
 
 **CUBRID 인터페이스 설치**
 
-CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Ruby, Python, Node.js 등의 인터페이스 모듈은 http://www.cubrid.org/download. 에서 최신 정보를 확인할 수 있고 관련 파일을 내려받아 설치할 수 있다.
+CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Ruby, Python, Node.js 등의 인터페이스 모듈은 https://www.cubrid.org/downloads 에서 최신 정보를 확인할 수 있고 관련 파일을 내려받아 설치할 수 있다.
 
 .. FIXME You can see the latest information on interface modules such as CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Ruby, Python and Node.js and install them by downloading files from http://www.cubrid.org/downloads.  
 
@@ -212,7 +215,7 @@ CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Ruby, Python, Node.js 등의 인터페이
     
 **CUBRID 도구 설치**
 
-CUBRID 매니저 등의 도구는 http://www.cubrid.org/downloads. 에서 최신 정보를 확인할 수 있고 관련 파일을 내려받아 설치할 수 있다.
+CUBRID 매니저 등의 도구는 https://www.cubrid.org/downloads 에서 최신 정보를 확인할 수 있고 관련 파일을 내려받아 설치할 수 있다.
 
 .. FIXME CUBRID 웹매니저는 CUBRID 설치 시 같이 설치된다. 자세한 설명은 `CUBRID 웹 매니저 매뉴얼 <http://www.cubrid.org/wiki_tools/entry/cubrid-web-manager-manual>`_\ 을 참고한다.
     
@@ -225,11 +228,11 @@ Windows에서의 설치와 실행
 
 Windows 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항을 점검한다.
 
-*   64비트/32 비트 
+*   64비트
 
-    CUBRID는 32비트 버전과 64비트 버전을 각각 지원한다. [내 컴퓨터] > [시스템 등록 정보] 창을 활성화하여 Windows 버전 비트를 확인할 수 있다. 32비트 Windows에서는 CUBRID 32비트 버전을 설치하고, 64비트 Windows에서는 CUBRID 64비트 버전을 설치한다.
+    CUBRID는 64비트 버전만 지원한다. [내 컴퓨터] > [시스템 등록 정보] 창을 활성화하여 Windows 버전 비트를 확인할 수 있다. 64비트 Windows에 CUBRID 64비트 버전을 설치한다.
 
-    .. warning:: 10.1이 32비트 Windows의 마지막 릴리스이다. 이후 릴리즈에서는 64비트 버전만 제공한다.
+    .. warning:: 10.1이 32비트 Windows의 마지막 릴리스이다.
 
 **설치 과정**
 
@@ -286,7 +289,7 @@ Windows 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항
 
 **CUBRID 인터페이스 설치**
 
-http://www.cubrid.org/downloads에서 CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Ruby, Python 및 Node.js와 같은 인터페이스 모듈을 다운로드할 수 있다.
+https://www.cubrid.org/downloads 에서 CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Ruby, Python 및 Node.js와 같은 인터페이스 모듈을 다운로드할 수 있다.
 
 .. FIXME: You can see the latest information on interface modules such as JDBC, PHP, ODBC, and OLE DB and install them by downloading files from `<http://www.cubrid.org/wiki_apis>`_.
 
@@ -294,7 +297,7 @@ http://www.cubrid.org/downloads에서 CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Rub
 
 **CUBRID 도구 설치**
 
-http://www.cubrid.org/downloads에서 CUBRID Manager 및 CUBRID Migration Toolkit을 비롯한 다양한 도구를 다운로드할 수 있다.
+https://www.cubrid.org/downloads 에서 CUBRID Manager 및 CUBRID Migration Toolkit을 비롯한 다양한 도구를 다운로드할 수 있다.
 
 .. FIXME: You can see the latest information on interface modules such as JDBC, PHP, ODBC, and OLE DB and install them by downloading files from `<http://www.cubrid.org/wiki_apis>`_.
 
@@ -327,6 +330,9 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
 *   추가로 설치할 라이브러리
     
     * Curses Library (rpm -q ncurses)
+
+      CUBRID는 Curses 라이브러리 버전 5와 함께 패키지된다. 시스템에 최신 버전이 있고 다운 그레이드할 수 없는 경우 ncurses-compat-libs 패키지를 설치해야할 수 있다.
+
     * gcrypt Library (rpm -q libgcrypt)
     * stdc++ Library (rpm -q libstdc++)
     
@@ -342,7 +348,7 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
 
         ::
         
-            tar xvfz CUBRID-10.1.0.7663-1ca0ab8-Linux.x86_64.tar.gz  /home1/cub_user/
+            tar xvfz CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.tar.gz /home1/cub_user/
 
         /home1/cub_user/ 이하에 CUBRID 디렉터리가 생기고 그 이하에 파일이 생성된다.
 
@@ -410,9 +416,9 @@ Windows 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항
 
 *   64비트 여부
 
-    CUBRID는 32비트 버전과 64비트 버전을 각각 지원한다. [내 컴퓨터] > [시스템 등록 정보] 창을 활성화하여 Windows 버전 비트를 확인할 수 있다. 32비트 Windows에서는 CUBRID 32비트 버전을 설치하고, 64비트 Windows에서는 CUBRID 64비트 버전을 설치한다.
+    CUBRID는 64비트 버전만 지원한다. [내 컴퓨터] > [시스템 등록 정보] 창을 활성화하여 Windows 버전 비트를 확인할 수 있다. 64비트 Windows에 CUBRID 64비트 버전을 설치한다.
 
-    .. warning:: 10.1이 32비트 Windows의 마지막 릴리스이다. 이후 릴리즈에서는 64비트 버전만 제공한다.
+    .. warning:: 10.1이 32비트 Windows의 마지막 릴리스이다.
 
 **설치 과정**
 
