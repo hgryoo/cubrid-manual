@@ -241,7 +241,7 @@ AVG
 
 .. code-block:: sql
 
-    SELECT host_year, nation_code, gold,
+  
         AVG(gold) OVER (PARTITION BY nation_code ORDER BY host_year) avg_gold
     FROM participant WHERE nation_code like 'AU%';
      
@@ -250,7 +250,7 @@ AVG
         host_year  nation_code                  gold               avg_gold
     =======================================================================
              1988  'AUS'                           3  3.000000000000000e+00
-             1992  'AUS'                           7  5.000000000000000e+00
+             1992  'AUS'                           7  
              1996  'AUS'                           9  6.333333333333333e+00
              2000  'AUS'                          16  8.750000000000000e+00
              2004  'AUS'                          17  1.040000000000000e+01
