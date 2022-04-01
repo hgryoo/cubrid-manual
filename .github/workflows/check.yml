@@ -25,9 +25,6 @@ jobs:
         lang: ["en", "ko"]
     steps:
     - uses: actions/checkout@v1
-    - name: Create Docs Folder
-      run:
-        |
     - uses: ammaraskar/sphinx-action@master
       with:
         docs-folder: ${{ matrix.lang }}
