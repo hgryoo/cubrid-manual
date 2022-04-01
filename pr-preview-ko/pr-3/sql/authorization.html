@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>사용자 관리 &mdash; CUBRID 11.0.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SET" href="query/set.html" />
+    <link rel="prev" title="데이터베이스 관리" href="db_admin.html" />
+
+    <!-- meta-tags -->
+      
+      
+      
+        
+        
+          
+        
+        
+          
+        
+      
+
+      <!-- keywords & description -->
+      <meta name="keywords" content="사용자 관리, CUBRID 11.0.0 documentation, cubrid authorization, cubrid dba, cubrid user" />
+      <meta name="description" content = "사용자 관리 &mdash; CUBRID 11.0.0 documentation. CUBRID has two types of users by default: DBA and PUBLIC.  DBA and DBA members can create, drop and alter users by using SQL statements. " />
+    
+      <!-- og -->
+      <meta property="og:title" content="사용자 관리 &mdash; CUBRID 11.0.0 documentation"/>
+      <meta property="og:keywords" content="사용자 관리, CUBRID 11.0.0 documentation, cubrid authorization, cubrid dba, cubrid user" />
+      <meta property="og:description" content = "사용자 관리 &mdash; CUBRID 11.0.0 documentation. CUBRID has two types of users by default: DBA and PUBLIC.  DBA and DBA members can create, drop and alter users by using SQL statements. " />
+      <meta property="og:type" content="website"/>
+      <meta property="og:site" content="사용자 관리 &mdash; CUBRID 11.0.0 documentation"/>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CUBRID
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../toc.html">매뉴얼 소개</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../toc.html#id2">매뉴얼 구성</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../toc.html#id3">용어 정리</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../toc.html#id4">매뉴얼 규약</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../toc.html#id5">버전명 및 버전 문자열 규약</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">CUBRID 소개</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#id1">시스템 구조</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../intro.html#id2">프로세스 구조</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../intro.html#database-volume-structure">데이터베이스 볼륨 구조</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../intro.html#permanent-volume">영구적 볼륨(Permanent Volume)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../intro.html#temporary-volume">일시적 볼륨(Temporary Volume)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../intro.html#id4">백업 볼륨</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../intro.html#id5">데이터베이스 서버</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../intro.html#id6">브로커</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../intro.html#id7">인터페이스 모듈</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#id8">CUBRID의 특징</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install_upgrade.html">설치 및 업그레이드</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html">설치와 실행</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../install.html#supported">지원 플랫폼 및 설치 권장 사양</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../install.html#id3">버전 호환성</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../install.html#linux">Linux에서의 설치와 실행</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../install.html#windows">Windows에서의 설치와 실행</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../install.html#id4">압축 파일로 설치하기</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../install.html#linux-tar-gz-cubrid">Linux에서 tar.gz 파일로 CUBRID 설치</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../install.html#windows-zip-cubrid">Windows에서 zip 파일로 CUBRID 설치</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../env.html">환경 변수 설정</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#cubrid">CUBRID 환경 변수</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#os-java">OS 환경 변수 및 Java 환경 변수</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#id2">환경 변수 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#language-setting">언어 및 문자셋 설정</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../env.html#connect-to-cubrid-server">포트 설정</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#cubrid-basic-ports">CUBRID 기본 사용 포트</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#cubrid-ha">CUBRID HA 사용 포트</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#cwm-cm-ports">CUBRID 매니저 서버 사용 포트</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../env.html#id7">CUBRID 자바 저장 프로시저 서버 사용 포트</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade.html">업그레이드</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade.html#id2">업그레이드 시 주의 사항</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade.html#cubrid-9-2-9-3-10-0-10-1-10-2-cubrid-11-0">CUBRID 9.2/9.3/10.0/10.1/10.2 에서 CUBRID 11.0 으로 업그레이드하기</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#db">DB 마이그레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#id3">파라미터  설정</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade.html#cubrid-9-1-cubrid-11-0">CUBRID 9.1에서 CUBRID 11.0으로 업그레이드하기</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#migration-from-91">DB 마이그레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#conf-from-91">파라미터  설정</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade.html#cubrid-2008-r4-1-r4-3-r4-4-cubrid-11-0">CUBRID 2008 R4.1/R4.3/R4.4에서 CUBRID 11.0으로 업그레이드하기</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#migration-from-41">DB 마이그레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#conf-from-41">파라미터 설정</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade.html#cubrid-2008-r4-0-cubrid-11-0">CUBRID 2008 R4.0 이하 버전에서 CUBRID 11.0으로 업그레이드하기</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#id8">DB 마이그레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../upgrade.html#id9">파라미터 설정</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade.html#ha-db">HA 환경에서 DB 마이그레이션</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade.html#cubrid-2008-r2-2-cubrid-11-0-ha">CUBRID 2008 R2.2 이상 버전에서 CUBRID 11.0 으로 HA 마이그레이션</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade.html#cubrid-2008-r2-0-r2-1-cubrid-11-0-ha">CUBRID 2008 R2.0 또는 R2.1에서 CUBRID 11.0 으로 HA 마이그레이션</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../uninstall.html">CUBRID 제거</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../uninstall.html#linux-cubrid">Linux에서 CUBRID 제거</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../uninstall.html#windows-cubrid">Windows에서 CUBRID 제거</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../start.html">시작하기</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick_start.html">CUBRID 서비스 시작</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../quick_start.html#id1">셸 명령어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../quick_start.html#cubridservice-cubrid-service-tray">CUBRIDService 또는 CUBRID Service Tray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../quick_start.html#id2">데이터베이스 생성</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../quick_start.html#id3">데이터베이스 시작</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../qrytool.html">질의 도구</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../qrytool.html#csql">CSQL 인터프리터</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../qrytool.html#cm-cqb">관리 도구</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../qrytool.html#cubrid-sql">CUBRID 매니저로 SQL 실행하기</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../qrytool.html#cubrid">CUBRID 마이그레이션 툴킷으로 스키마/데이터 이전하기</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../qrytool.html#id3">드라이버</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../csql.html">CSQL 인터프리터</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../csql.html#csql-intro">CSQL 인터프리터 소개</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../csql.html#id2">CSQL 실행</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../csql.html#csql-exec-mode">CSQL 실행 모드</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../csql.html#id4">CSQL 사용 방법</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../csql.html#id5">CSQL 시작 옵션</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../csql.html#csql-session-commands">세션 명령어</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CUBRID SQL</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="syntax.html">작성 규칙</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="identifier.html">식별자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="identifier.html#id2">식별자 작성 원칙</a></li>
+<li class="toctree-l4"><a class="reference internal" href="identifier.html#id3">허용되는 식별자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="identifier.html#id4">허용되지 않는 식별자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="identifier.html#id5">식별자 이름의 최대 길이</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="keyword.html">예약어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comment.html">주석</a></li>
+<li class="toctree-l3"><a class="reference internal" href="literal.html">리터럴</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="literal.html#id2">숫자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="literal.html#date-time-literal">날짜/시간</a></li>
+<li class="toctree-l4"><a class="reference internal" href="literal.html#id4">비트열</a></li>
+<li class="toctree-l4"><a class="reference internal" href="literal.html#id5">문자열</a></li>
+<li class="toctree-l4"><a class="reference internal" href="literal.html#id6">컬렉션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="literal.html#null">NULL</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datatype_index.html">데이터 타입</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datatype.html">데이터 타입</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#id2">수치형 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#date-time-type">날짜/시간 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#timezone-type">타임존이 있는 날짜/시간 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#id11">비트열 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#char-data-type">문자열 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#enum">ENUM 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#blob-clob">BLOB/CLOB 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#collection-data-type">컬렉션 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#json">JSON 데이터 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datatype.html#implicit-type-conversion">묵시적 타입 변환</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="schema/index.html">데이터 정의문</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="schema/table_stmt.html">테이블 정의문</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="schema/table_stmt.html#create-table">CREATE TABLE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/table_stmt.html#alter-table">ALTER TABLE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/table_stmt.html#drop-table">DROP TABLE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/table_stmt.html#rename-table">RENAME TABLE</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="schema/index_stmt.html">인덱스 정의문</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="schema/index_stmt.html#create-index">CREATE INDEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/index_stmt.html#alter-index">ALTER INDEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/index_stmt.html#drop-index">DROP INDEX</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="schema/view_stmt.html">뷰 정의문</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="schema/view_stmt.html#create-view">CREATE VIEW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/view_stmt.html#alter-view">ALTER VIEW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/view_stmt.html#drop-view">DROP VIEW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/view_stmt.html#rename-view">RENAME VIEW</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="schema/serial_stmt.html">시리얼 정의문</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="schema/serial_stmt.html#create-serial">CREATE SERIAL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/serial_stmt.html#alter-serial">ALTER SERIAL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/serial_stmt.html#drop-serial">DROP SERIAL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="schema/serial_stmt.html#id3">시리얼 사용</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="function/index.html">연산자와 함수</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="function/logical_op.html">논리 연산자</a></li>
+<li class="toctree-l3"><a class="reference internal" href="function/comparison_op.html">비교 연산자</a></li>
+<li class="toctree-l3"><a class="reference internal" href="function/arithmetic_op.html">산술 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/arithmetic_op.html#numeric-data-type-op-and-conversion">수치형 데이터 타입의 산술 연산과 타입 변환</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/arithmetic_op.html#arithmetic-op-type-casting">날짜/시간 데이터 타입의 산술 연산과 타입 변환</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/set_op.html">집합 산술 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/set_op.html#set-multiset-list">SET, MULTISET, LIST</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/stmt_set_op.html">문장 집합 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/stmt_set_op.html#union-difference-intersection">UNION, DIFFERENCE, INTERSECTION</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/containment_op.html">포함 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/containment_op.html#seteq">SETEQ</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/containment_op.html#setneq">SETNEQ</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/containment_op.html#superset">SUPERSET</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/containment_op.html#superseteq">SUPERSETEQ</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/containment_op.html#subset">SUBSET</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/containment_op.html#subseteq">SUBSETEQ</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/bit_fn.html">비트 함수와 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/bit_fn.html#id2">비트 연산자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/bit_fn.html#bit-and">BIT_AND</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/bit_fn.html#bit-or">BIT_OR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/bit_fn.html#bit-xor">BIT_XOR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/bit_fn.html#bit-count">BIT_COUNT</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/string_fn.html">문자열 함수와 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#id2">병합 연산자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#ascii">ASCII</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#bin">BIN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#bit-length">BIT_LENGTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#char-length-character-length-lengthb-length">CHAR_LENGTH, CHARACTER_LENGTH, LENGTHB, LENGTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#chr">CHR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#concat">CONCAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#concat-ws">CONCAT_WS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#elt">ELT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#field">FIELD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#find-in-set">FIND_IN_SET</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#from-base64">FROM_BASE64</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#insert">INSERT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#instr">INSTR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#lcase-lower">LCASE, LOWER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#left">LEFT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#locate">LOCATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#lpad">LPAD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#ltrim">LTRIM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#mid">MID</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#octet-length">OCTET_LENGTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#position">POSITION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#repeat">REPEAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#replace">REPLACE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#reverse">REVERSE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#right">RIGHT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#rpad">RPAD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#rtrim">RTRIM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#space">SPACE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#strcmp">STRCMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#substr">SUBSTR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#substring">SUBSTRING</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#substring-index">SUBSTRING_INDEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#to-base64">TO_BASE64</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#translate">TRANSLATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#trim">TRIM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/string_fn.html#ucase-upper">UCASE, UPPER</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/numeric_fn.html">수치 연산 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#abs">ABS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#acos">ACOS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#asin">ASIN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#atan">ATAN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#atan2">ATAN2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#ceil">CEIL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#conv">CONV</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#cos">COS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#cot">COT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#crc32">CRC32</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#degrees">DEGREES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#drandom-drand">DRANDOM, DRAND</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#exp">EXP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#floor">FLOOR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#hex">HEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#ln">LN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#log2">LOG2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#log10">LOG10</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#mod">MOD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#pi">PI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#pow-power">POW, POWER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#radians">RADIANS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#random-rand">RANDOM, RAND</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#round">ROUND</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#sign">SIGN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#sin">SIN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#sqrt">SQRT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#tan">TAN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#trunc-truncate">TRUNC, TRUNCATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/numeric_fn.html#width-bucket">WIDTH_BUCKET</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/datetime_fn.html">날짜/시간 함수와 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#adddate-date-add">ADDDATE, DATE_ADD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#addtime">ADDTIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#add-months">ADD_MONTHS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#curdate-current-date">CURDATE, CURRENT_DATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#current-datetime-now">CURRENT_DATETIME, NOW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#curtime-current-time">CURTIME, CURRENT_TIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#current-timestamp-localtime-localtimestamp">CURRENT_TIMESTAMP, LOCALTIME, LOCALTIMESTAMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#date">DATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#datediff">DATEDIFF</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#date-sub-subdate">DATE_SUB, SUBDATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#day-dayofmonth">DAY, DAYOFMONTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#dayofweek">DAYOFWEEK</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#dayofyear">DAYOFYEAR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#extract">EXTRACT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#from-days">FROM_DAYS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#from-tz">FROM_TZ</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#from-unixtime">FROM_UNIXTIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#hour">HOUR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#last-day">LAST_DAY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#makedate">MAKEDATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#maketime">MAKETIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#minute">MINUTE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#month">MONTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#months-between">MONTHS_BETWEEN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#new-time">NEW_TIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#quarter">QUARTER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#round">ROUND</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#sec-to-time">SEC_TO_TIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#second">SECOND</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#sys-date-sysdate">SYS_DATE, SYSDATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#sys-datetime-sysdatetime">SYS_DATETIME, SYSDATETIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#sys-time-systime">SYS_TIME, SYSTIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#sys-timestamp-systimestamp">SYS_TIMESTAMP, SYSTIMESTAMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#time">TIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#time-to-sec">TIME_TO_SEC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#timediff">TIMEDIFF</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#timestamp">TIMESTAMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#to-days">TO_DAYS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#trunc">TRUNC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#tz-offset">TZ_OFFSET</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#unix-timestamp">UNIX_TIMESTAMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#utc-date">UTC_DATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#utc-time">UTC_TIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#week">WEEK</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#weekday">WEEKDAY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/datetime_fn.html#year">YEAR</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/json_fn.html">JSON 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#fn-json-intro">JSON 함수 소개</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-array">JSON_ARRAY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-object">JSON_OBJECT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-keys">JSON_KEYS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-depth">JSON_DEPTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-length">JSON_LENGTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-valid">JSON_VALID</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-type">JSON_TYPE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-quote">JSON_QUOTE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-unquote">JSON_UNQUOTE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-pretty">JSON_PRETTY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-search">JSON_SEARCH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-extract">JSON_EXTRACT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#fn-json-arrow">-&gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#fn-json-double-arrow">-&gt;&gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-contains-path">JSON_CONTAINS_PATH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-contains">JSON_CONTAINS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-merge-patch">JSON_MERGE_PATCH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-merge-preserve">JSON_MERGE_PRESERVE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-merge">JSON_MERGE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-array-append">JSON_ARRAY_APPEND</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-array-insert">JSON_ARRAY_INSERT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-insert">JSON_INSERT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-set">JSON_SET</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-replace">JSON_REPLACE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-remove">JSON_REMOVE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/json_fn.html#json-table">JSON_TABLE</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/lob_fn.html">LOB 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#bit-to-blob">BIT_TO_BLOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#blob-from-file">BLOB_FROM_FILE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#blob-length">BLOB_LENGTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#blob-to-bit">BLOB_TO_BIT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#char-to-blob">CHAR_TO_BLOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#char-to-clob">CHAR_TO_CLOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#clob-from-file">CLOB_FROM_FILE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#clob-length">CLOB_LENGTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/lob_fn.html#clob-to-char">CLOB_TO_CHAR</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/typecast_fn.html">데이터 타입 변환 함수와 연산자</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#cast">CAST</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#date-format">DATE_FORMAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#format">FORMAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#str-to-date">STR_TO_DATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#time-format">TIME_FORMAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-char-date-time">TO_CHAR(date_time)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-char-number">TO_CHAR(number)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-date">TO_DATE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-datetime">TO_DATETIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-datetime-tz">TO_DATETIME_TZ</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-number">TO_NUMBER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-time">TO_TIME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-timestamp">TO_TIMESTAMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/typecast_fn.html#to-timestamp-tz">TO_TIMESTAMP_TZ</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/analysis_fn.html">집계/분석 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#id2">개요</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#id3">집계 함수와 분석 함수 비교</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#over-order-by">OVER 함수 내에 “ORDER BY” 절을 명시해야 하는 분석 함수</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#avg">AVG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#count">COUNT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#cume-dist">CUME_DIST</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#dense-rank">DENSE_RANK</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#first-value">FIRST_VALUE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#group-concat">GROUP_CONCAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#lag">LAG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#last-value">LAST_VALUE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#lead">LEAD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#max">MAX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#median">MEDIAN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#min">MIN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#nth-value">NTH_VALUE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#ntile">NTILE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#percent-rank">PERCENT_RANK</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#percentile-cont">PERCENTILE_CONT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#percentile-disc">PERCENTILE_DISC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#rank">RANK</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#row-number">ROW_NUMBER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#stddev-stddev-pop">STDDEV, STDDEV_POP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#stddev-samp">STDDEV_SAMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#sum">SUM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#variance-var-pop">VARIANCE, VAR_POP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#var-samp">VAR_SAMP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#json-arrayagg">JSON_ARRAYAGG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/analysis_fn.html#json-objectagg">JSON_OBJECTAGG</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/clickcounter_fn.html">클릭 카운터 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/clickcounter_fn.html#incr-decr">INCR, DECR</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/rownum_fn.html">ROWNUM 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/rownum_fn.html#rownum-inst-num">ROWNUM, INST_NUM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/rownum_fn.html#orderby-num">ORDERBY_NUM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/rownum_fn.html#groupby-num">GROUPBY_NUM</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/information_fn.html">정보 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#charset">CHARSET</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#coercibility">COERCIBILITY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#collation">COLLATION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#current-user-user">CURRENT_USER, USER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#database-schema">DATABASE, SCHEMA</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#dbtimezone">DBTIMEZONE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#default">DEFAULT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#disk-size">DISK_SIZE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#index-cardinality">INDEX_CARDINALITY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#inet-aton">INET_ATON</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#inet-ntoa">INET_NTOA</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#last-insert-id">LAST_INSERT_ID</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#list-dbs">LIST_DBS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#row-count">ROW_COUNT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#sessiontimezone">SESSIONTIMEZONE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#user-system-user">USER, SYSTEM_USER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/information_fn.html#version">VERSION</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/encryption_fn.html">암호화 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/encryption_fn.html#md5">MD5</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/encryption_fn.html#sha1">SHA1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/encryption_fn.html#sha2">SHA2</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/condition_op.html">비교 연산식</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#basic-cond-expr">단순 비교 조건식</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#any-some-all">ANY/SOME/ALL 수량어와 그룹 조건식</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#between">BETWEEN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#exists">EXISTS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#in">IN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#is-null">IS NULL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#like">LIKE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#regexp-rlike">REGEXP, RLIKE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_op.html#case">CASE</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/condition_fn.html">비교 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#coalesce">COALESCE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#decode">DECODE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#greatest">GREATEST</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#if">IF</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#ifnull-nvl">IFNULL, NVL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#isnull">ISNULL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#least">LEAST</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#nullif">NULLIF</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/condition_fn.html#nvl2">NVL2</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="function/other_fn.html">기타 함수</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function/other_fn.html#sleep">SLEEP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function/other_fn.html#sys-guid">SYS_GUID</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="query/index.html">데이터 조작문</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="query/select.html">SELECT</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#from">FROM 절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#where">WHERE 절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#group-by-having">GROUP BY … HAVING 절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#order-by">ORDER BY 절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#limit">LIMIT 절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#join-query">조인 질의</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#id8">부질의</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#values">VALUES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/select.html#for-update">FOR UPDATE</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="query/hq.html">계층적 질의</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#start-with">START WITH 절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#connect-by">CONNECT BY 절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#id2">계층 질의 실행</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#id6">계층 질의 의사 칼럼</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#id7">계층 질의 연산자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#id8">계층 질의 함수</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#id9">계층 질의문 예</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/hq.html#id10">계층 질의문의 성능</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="query/insert.html">INSERT</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="query/insert.html#insert-select">INSERT … SELECT 문</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/insert.html#on-duplicate-key-update">ON DUPLICATE KEY UPDATE 절</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="query/update.html">UPDATE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="query/replace.html">REPLACE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="query/delete.html">DELETE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="query/merge.html">MERGE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="query/truncate.html">TRUNCATE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="query/prepare.html">PREPARED STATEMENT</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="query/prepare.html#prepare">PREPARE 문</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/prepare.html#execute">EXECUTE 문</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/prepare.html#deallocate-prepare-drop-prepare">DEALLOCATE PREPARE 문, DROP PREPARE 문</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="query/do.html">DO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="query/cte.html">CTE</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="query/cte.html#id1">CTE 컬럼명</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/cte.html#id2">재귀절</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/cte.html#dml-create-cte">DML과 CREATE에서 CTE의 사용</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tuning_index.html">질의 최적화</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html">통계 정보 갱신</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#info-stats">통계 정보 확인</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#viewing-query-plan">질의 실행 계획 보기</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#query-profiling">질의 프로파일링</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#sql">SQL 힌트</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#index-hint-syntax">인덱스 힌트</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#using-index">USING INDEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#use-force-ignore-index">USE, FORCE, IGNORE INDEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#id6">인덱스 힌트 사용 예</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#id7">특별한 인덱스</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#filtered-index">필터링된 인덱스</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#function-index">함수 기반 인덱스</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#tuning-index">인덱스를 활용한 최적화</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#covering-index">커버링 인덱스</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#order-by">ORDER BY 절 최적화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#index-descending-scan">내림차순 인덱스 스캔</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#group-by">GROUP BY 절 최적화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#multi-key-range-opt">다중 키 범위 최적화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#index-skip-scan">Index Skip Scan</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#loose-index-scan">Loose Index Scan</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#in-memory-sort">인-메모리 정렬</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tuning.html#sort-limit">SORT-LIMIT 최적화</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tuning.html#query-cache">쿼리 캐시</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="partition_index.html">분할</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="partition.html">분할</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#partitioning-key">분할 키</a></li>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#range-partitioning">영역 분할</a></li>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#hash-partitioning">해시 분할</a></li>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#list-partitioning">리스트 분할</a></li>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#partition-pruning">분할 프루닝</a></li>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#id8">분할 관리</a></li>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#index-partitions">분할 테이블의 인덱스</a></li>
+<li class="toctree-l4"><a class="reference internal" href="partition.html#partitioning-notes">분할에 관한 노트</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="i18n_index.html">다국어 지원</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html">다국어 개요</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id2">문자 데이터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id3">관련 용어</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id4">로캘 속성</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#collation-properties">콜레이션 속성</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#collation-naming-rules">콜레이션 명명 규칙</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id7">로캘 저장 위치</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html#locale-setting">로캘 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#locale-selection">1단계: 로캘 선택</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#locale-compilation">2단계: 로캘 컴파일하기</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id11">3단계: 특정 로캘을 사용하기 위해 CUBRID 설정하기</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id13">4단계: 선택한 로캘 설정으로 데이터베이스 생성하기</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#dumplocale">5단계(선택 사항): 로캘 파일의 수동 검증</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id15">6단계: CUBRID 관련 프로세스 시작</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#synccolldb">데이터베이스 콜레이션을 시스템 콜레이션에 동기화</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html#collation">콜레이션 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#collation-charset-column">칼럼의 문자셋과 콜레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#collation-charset-table">테이블의 문자셋과 콜레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#collation-charset-string">문자열 리터럴의 문자셋과 콜레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id27">표현식의 문자셋과 콜레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id28">시스템 데이터의 문자셋과 콜레이션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#db">DB 생성 시 지정한 로캘의 영향</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id31">문자열 리터럴의 입출력</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#collation-cont-exp">콜레이션의 축약과 확장</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#operations-charset-collation">문자셋과 콜레이션을 필요로 하는 연산</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#collation-setting-impacted-features">콜레이션 설정으로 인한 영향</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id44">콜레이션 정보 보기</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html#jdbc-i18n">JDBC에서 i18n 문자 사용</a></li>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html#id45">타임존 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#timezone-library">타임존 라이브러리 컴파일</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html#char-data-conf-guide">다국어 설정을 위한 고려 사항</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id51">로캘</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#char-varchar">CHAR와 VARCHAR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id52">문자셋 선택</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id53">콜레이션 선택</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id54">정규화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#cast-vs-collate">CAST vs COLLATE</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html#id55">주의 사항</a></li>
+<li class="toctree-l3"><a class="reference internal" href="i18n.html#id56">로캘과 콜레이션 추가 안내서</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#ldml">LDML 캘린더 정보</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id57">LDML 숫자 정보</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id58">LDML 알파벳</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id59">LDML 콘솔 변환</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i18n.html#id60">LDML 콜레이션</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="transaction_index.html">트랜잭션과 잠금</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="transaction.html">데이터베이스 트랜잭션</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id2">트랜잭션 커밋</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id3">트랜잭션 롤백</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id4">세이브포인트와 부분 롤백</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transaction.html#cursor-holding">커서 유지</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transaction.html#database-concurrency">데이터베이스 동시성</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transaction.html#multiversion-concurrency-control">다중 버전 동시성 제어(Multiversion Concurrency Control)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id7">버전 관리, 가시성 및 스냅샷</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#vacuum">VACUUM</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transaction.html#lock-protocol">잠금 프로토콜</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id13">잠금의 단위</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#lock-mode">잠금 모드의 종류와 호환성</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#unique">unique 제약 조건을 보호하기 위한 잠금</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#deadlock">트랜잭션 교착 상태(deadlock)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id16">트랜잭션 잠금 타임아웃</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transaction.html#transaction-isolation-level">트랜잭션 격리 수준</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#set-transaction-isolation-level">트랜잭션 격리 수준 설정</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id19">트랜잭션 격리 수준 값 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#read-committed">READ COMMITTED 격리 수준</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#repeatable-read">REPEATABLE READ 격리 수준</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#serializable">SERIALIZABLE 격리 수준</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#cubrid">CUBRID에서 더티 레코드를 다루는 방법</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transaction.html#id20">트랜잭션 종료와 복구</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transaction.html#id21">데이터베이스 재구동</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trigger.html">트리거</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#create-trigger">CREATE TRIGGER</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id3">트리거 정의를 위한 가이드라인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id4">트리거 정의 구문</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#trigger-event-time">이벤트 시점</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id6">트리거 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#trigger-event-type">트리거 이벤트 타입</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#trigger-event-target">트리거 이벤트 대상</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id9">이벤트 타입과 대상 조합</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#trigger-condition">트리거 조건 영역</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#correlation-name">상관명(correlation name)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#trigger-action">트리거 실행 영역</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id12">트리거의 커멘트</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#alter-trigger">ALTER TRIGGER</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id14">트리거 커멘트</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#drop-trigger">DROP TRIGGER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#rename-trigger">RENAME TRIGGER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#id15">지연된 트리거</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id16">지연된 영역 실행</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id17">지연된 영역 취소</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id18">트리거 권한 부여</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#replace-insert-on-duplicate-key-update">REPLACE와 INSERT … ON DUPLICATE KEY UPDATE에서의 트리거</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#id19">트리거 디버깅</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id20">트리거 실행 로그 보기</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trigger.html#id21">중첩된 트리거 제한</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trigger.html#id22">트리거를 이용한 응용</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jsp.html">Java 저장 함수/프로시저</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#jsp-starting-javasp">자바 저장 프로시저 서버 구동하기</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#id2">함수/프로시저 작성</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#cubrid-conf">cubrid.conf 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id4">Java 소스 작성 및 컴파일</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#jsp-loadjava">컴파일된 Java 클래스 로드</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id6">로딩한 Java 클래스 등록</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id7">Java 저장 함수/프로시저 호출</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#jdbc">서버 내부 JDBC 드라이버 사용</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#id8">다른 데이터베이스 연결</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#loadjava">loadjava 유틸리티</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#id9">로딩한 Java 클래스 등록</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#call-specifications">Call Specifications</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id10">데이터 타입 매핑</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id11">등록된 Java 저장 함수/프로시저의 정보 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id12">Java 저장 함수/프로시저의 삭제</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id13">Java 저장 함수/프로시저의 커멘트</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#id14">Java 저장 함수/프로시저 호출</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#call">CALL 문</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#sql">SQL 문에서 호출</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#id15">Java 응용 프로그램에서 호출</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jsp.html#id16">주의 사항</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#java-in-out">Java 저장 함수/프로시저의 리턴 값 및 IN/OUT에 대한 타입 자릿수</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#java-java-sql-resultset">Java 저장 프로시저에서의 java.sql.ResultSet 반환</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#java-set-in-out">Java 저장 함수/프로시저에서 Set 타입의 IN/OUT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jsp.html#java-oid">Java 저장 함수/프로시저에서 OID 사용</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="method.html">메서드</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="method.html#id2">메서드 타입</a></li>
+<li class="toctree-l3"><a class="reference internal" href="method.html#id3">메서드 호출</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="oodb.html">클래스 상속</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="oodb.html#id2">클래스 속성과 클래스 메서드</a></li>
+<li class="toctree-l3"><a class="reference internal" href="oodb.html#id3">상속을 위한 순서 규칙</a></li>
+<li class="toctree-l3"><a class="reference internal" href="oodb.html#inherit">INHERIT 절</a></li>
+<li class="toctree-l3"><a class="reference internal" href="oodb.html#add-superclass">ADD SUPERCLASS 절</a></li>
+<li class="toctree-l3"><a class="reference internal" href="oodb.html#drop-superclass">DROP SUPERCLASS 절</a></li>
+<li class="toctree-l3"><a class="reference internal" href="oodb.html#class-conflict-resolution">클래스 충돌 해결</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="oodb.html#id6">해결 지시자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="oodb.html#id7">수퍼클래스 충돌</a></li>
+<li class="toctree-l4"><a class="reference internal" href="oodb.html#id11">서브클래스 충돌</a></li>
+<li class="toctree-l4"><a class="reference internal" href="oodb.html#id14">스키마 불변성</a></li>
+<li class="toctree-l4"><a class="reference internal" href="oodb.html#id19">스키마 변경 규칙</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="db_admin.html">데이터베이스 관리</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">사용자 관리</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">데이터베이스 사용자</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-alter-drop-user">CREATE/ALTER/DROP USER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#grant">GRANT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#revoke">REVOKE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#alter-owner">ALTER … OWNER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#authorization-method">사용자 권한 관리 메서드</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="query/set.html">SET</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="query/set.html#id1">시스템 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/set.html#id2">사용자 변수</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="query/kill.html">KILL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="query/show.html">SHOW</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#desc-describe">DESC, DESCRIBE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#explain">EXPLAIN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-tables">SHOW TABLES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-columns">SHOW COLUMNS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-index">SHOW INDEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-collation">SHOW COLLATION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-timezones">SHOW TIMEZONES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-grants">SHOW GRANTS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-create-table">SHOW CREATE TABLE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-create-view">SHOW CREATE VIEW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-access-status">SHOW ACCESS STATUS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#show-exec-statistics">SHOW EXEC STATISTICS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="query/show.html#diagnostics">진단(Diagnostics)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="catalog.html">시스템 카탈로그</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="catalog.html#id2">시스템 카탈로그 클래스</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-class">_db_class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-attribute">_db_attribute</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-domain">_db_domain</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-charset">_db_charset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-collation">_db_collation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-method">_db_method</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-meth-sig">_db_meth_sig</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-meth-arg">_db_meth_arg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-meth-file">_db_meth_file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-query-spec">_db_query_spec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-index">_db_index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-index-key">_db_index_key</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-auth">_db_auth</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-data-type">_db_data_type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-partition">_db_partition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-stored-procedure">_db_stored_procedure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-stored-procedure-args">_db_stored_procedure_args</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-user">db_user</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-authorization">db_authorization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-trigger">db_trigger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-ha-apply-info">db_ha_apply_info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#dual">dual</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="catalog.html#id5">시스템 카탈로그 가상 클래스</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id6">DB_CLASS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-direct-super-class">DB_DIRECT_SUPER_CLASS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-vclass">DB_VCLASS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id7">DB_ATTRIBUTE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-attr-setdomain-elm">DB_ATTR_SETDOMAIN_ELM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id8">DB_CHARSET</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id9">DB_COLLATION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id10">DB_METHOD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id11">DB_METH_ARG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-meth-arg-setdomain-elm">DB_METH_ARG_SETDOMAIN_ELM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id12">DB_METH_FILE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id13">DB_INDEX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id14">DB_INDEX_KEY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id15">DB_AUTH</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#db-trig">DB_TRIG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id16">DB_PARTITION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id17">DB_STORED_PROCEDURE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="catalog.html#id18">DB_STORED_PROCEDURE_ARGS</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="catalog.html#id19">카탈로그 클래스/가상 클래스 사용 권한</a></li>
+<li class="toctree-l3"><a class="reference internal" href="catalog.html#id20">카탈로그에 대한 질의</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../admin/index.html">CUBRID 운영</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../admin/control.html">CUBRID 프로세스 제어</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id1">CUBRID 서비스 제어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id2">데이터베이스 서버 제어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id3">브로커 제어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id4">CUBRID 매니저 서버 제어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#cubrid-ha">CUBRID HA 제어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#cubrid-java-sp">CUBRID 자바 저장 프로시저 (Java SP) 서버 제어</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/control.html#control-cubrid-services">CUBRID 서비스</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id6">서비스 등록</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id7">서비스 구동</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id8">서비스 종료</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id9">서비스 재구동</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id10">서비스 상태 관리</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#cubrid-utility-logging">cubrid 유틸리티 로깅</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/control.html#control-cubrid-server">데이터베이스 서버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id13">데이터베이스 서버 구동</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id14">데이터베이스 서버 종료</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id15">데이터베이스 서버 재구동</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#control-cubrid-server-status">데이터베이스 상태 확인</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#limiting-server-access">데이터베이스 서버 접속 제한</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#server-logs">데이터베이스 서버 로그</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#id19">에러 로그</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#server-event-log">이벤트 로그</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#database-server-error">데이터베이스 서버 에러</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/control.html#broker">브로커</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id23">브로커 구동</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id24">브로커 종료</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id25">브로커 재시작</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#broker-status">브로커 상태 확인</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#limiting-broker-access">브로커 서버 접속 제한</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id28">패킷 암호화</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id29">특정 브로커 관리</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#changing-broker-parameter">브로커 파라미터의 동적 변경</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#broker-configuration-info">브로커 설정 정보 확인</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#broker-logs">브로커 로그</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#id33">접속 로그 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#id34">에러 로그 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#sql">SQL 로그 관리</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#cas">CAS 에러</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/control.html#cubrid-manager-server">CUBRID 매니저 서버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id39">CUBRID 매니저 서버 구동</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id40">CUBRID 매니저 서버 종료</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id41">CUBRID 매니저 서버 로그</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id42">CUBRID 매니저 서버 환경 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id43">CUBRID 매니저 사용자 관리 콘솔</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/control.html#cubrid-javasp-server">CUBRID 자바 저장 프로시저 서버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id45">CUBRID 자바 저장 프로시저 서버 구동</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id46">CUBRID 자바 저장 프로시저 서버 종료</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id47">CUBRID 자바 저장 프로시저 서버 재시작</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#id48">CUBRID 자바 저장 프로시저 서버 상태 확인</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#java">Java 저장 함수/프로시저 서버 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#cubrid-javasp-environment-configuration">Java 저장 함수/프로시저 환경 설정</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#cubrid-javasp-system-parameter">자바 저장 프로시저 서버 시스템 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#cubrid-service-cubrid">cubrid service에 CUBRID 자바 저장 프로시저 서버 등록</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#cubrid-javasp-server-log">CUBRID 자바 저장 프로시저 서버 로그</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#id52">에러 로그</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/control.html#id53">자바 로그</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/control.html#cubrid-javasp-server-errors">CUBRID 자바 저장 프로시저 에러</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/db_manage.html">데이터베이스 관리</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/db_manage.html#id2">데이터베이스 사용자</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/db_manage.html#databases-txt">databases.txt 파일</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/db_manage.html#database-volume">데이터베이스 볼륨</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/admin_utils.html">cubrid 유틸리티</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#id1">cubrid 유틸리티 로깅</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#createdb">createdb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#addvoldb">addvoldb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#deletedb">deletedb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#renamedb">renamedb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#alterdbhost">alterdbhost</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#copydb">copydb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#installdb">installdb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#backupdb">backupdb</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#id10">백업 정책 및 방식</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#id11">백업 파일 관리</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#managing-archive-logs">보관 로그 관리</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#restoredb">restoredb</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#id14">복구 정책과 절차</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#id15">다른 서버로의 데이터베이스 복구</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#unloaddb">unloaddb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#loaddb">loaddb</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#howtowrite-loadfile">가져오기용 파일 작성 방법</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#id22">데이터베이스 마이그레이션</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#spacedb">spacedb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#compactdb">compactdb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#optimizedb">optimizedb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#plandump">plandump</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#statdump">statdump</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#lockdb">lockdb</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/admin_utils.html#id29">출력 내용</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#tranlist">tranlist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#killtran">killtran</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#checkdb">checkdb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#diagdb">diagdb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#paramdump">paramdump</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#tde">tde</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#ha">HA 명령어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#locale-command">로캘 명령어</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/admin_utils.html#id36">타임존 명령어</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/config.html">시스템 설정</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/config.html#id2">데이터베이스 서버 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#scope-server-conf">데이터베이스 서버 설정이 미치는 범위</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#id4">데이터베이스 서버 설정값 변경</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#cubrid-conf">cubrid.conf 설정 파일과 기본 제공 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#connection-parameters">접속 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#memory-parameters">메모리 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#disk-parameters">디스크 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#error-parameters">오류 메시지 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#lock-parameters">동시성/잠금 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#logging-parameters">로깅 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#transaction-parameters">트랜잭션 처리 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#stmt-type-parameters">구문/타입 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#thread-parameters">스레드 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#timezone-parameters">타임존 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#plan-cache-parameters">질의 계획 캐시 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#query-cache-parameters">질의 캐쉬 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#utility-parameters">유틸리티 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#ha">HA 관련 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#other-parameters">기타 파라미터</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/config.html#broker-configuration">브로커 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#cubrid-broker-conf">cubrid_broker.conf 설정 파일과 기본 제공 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#broker-common-parameters">공통 적용 파라미터</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/config.html#parameter-by-broker">브로커별 파라미터</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/config.html#id38">HA 설정</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/systemtap.html">SystemTap</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/systemtap.html#id1">개요</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/systemtap.html#id2">SystemTap 설치하기</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id3">설치 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id4">버전</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/systemtap.html#id5">관련 용어</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#marker">마커(Marker)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#probe">프로브(Probe)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id6">비동기 이벤트</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/systemtap.html#cubrid-systemtap">CUBRID에서 SystemTap 사용하기</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#cubrid">CUBRID 소스 빌드</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id7">SystemTap 스크립트 실행</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id8">결과 출력</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/systemtap.html#cubrid-marker">CUBRID 마커</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id10">연결 마커</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id11">질의 마커</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id12">객체 연산 마커</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id13">인덱스 연산 마커</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#locking">잠금(locking) 마커</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id14">트랜잭션 마커</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#i-o">I/O 마커</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/systemtap.html#id15">기타 마커</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/troubleshoot.html">트러블슈팅</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/troubleshoot.html#sql">SQL 로그 확인</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#cas-sql">CAS의 SQL 로그</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#cas">CAS 정보 출력 함수</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#id2">응용 프로그램 로그</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#id3">슬로우 쿼리</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/troubleshoot.html#id4">서버 에러 로그</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#id5">오버플로우 키 또는 오버플로우 페이지 감지</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#id6">로그 회복 시간 감지</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#id7">교착 상태 감지</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/troubleshoot.html#ha">HA 상태 변경 감지</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#ha-split-brain">HA split-brain 감지</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#fail-over-fail-back">Fail-over, Fail-back 감지</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/troubleshoot.html#id8">HA 구동 실패</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#id9">대표적인 복구 불가능 장애</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../admin/troubleshoot.html#id10">HA 구동 실패 시 대처 방법</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../admin/ddl_audit.html">DDL Audit Log</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../admin/ddl_audit.html#id1">개요</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/ddl_audit.html#id2">DDL Audit 로그 파일 이름 규칙</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/ddl_audit.html#cas-ddl-audit">CAS의 DDL Audit 로그 파일 형식</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/ddl_audit.html#csql-ddl-audit">CSQL의 DDL Audit 로그 파일 형식</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../admin/ddl_audit.html#loaddb-ddl-audit">LOADDB의 DDL Audit 로그 형식</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ha.html">CUBRID HA</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id1">CUBRID HA 기본 개념</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id2">노드와 그룹</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id3">프로세스</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#ha-server">서버</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#heartbeat">heartbeat 메시지</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#failover-failback">failover와 failback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#broker-mode">브로커 모드</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id6">CUBRID HA 기능</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id7">서버 이중화</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#duplexing-brokers">브로커 이중화</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#log-multiplexing">로그 다중화</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id10">빠른 시작</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id11">준비</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#quick-server-config">데이터베이스 생성 및 서버 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id13">CUBRID HA 시작 및 확인</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#quick-broker-config">브로커 설정, 시작 및 확인</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#ha-configuration">환경 설정</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#cubrid-conf">cubrid.conf</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#ha">HA 여부</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id16">로깅</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id17">접속</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#cubrid-ha-conf">cubrid_ha.conf</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id19">노드</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id20">접속</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id21">복제</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#sql">SQL 로깅</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#cubrid-broker-conf">cubrid_broker.conf</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id22">접속 대상</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id23">접속 순서</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id24">접속 제한</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id25">재접속</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#databases-txt">databases.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#jdbc">JDBC 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#cci">CCI 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#php">PHP 설정</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#db">브로커와 DB 연결</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id26">접속 절차</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id27">파라미터 설정에 따른 동작의 예</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id28">구동 및 모니터링</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#cubrid-heartbeat">cubrid heartbeat 유틸리티</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#start">start</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#stop">stop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#copylogdb">copylogdb</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#applylogdb">applylogdb</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#reload">reload</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#replication-repl-start">replication(또는 repl) start</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#replication-repl-stop">replication(또는 repl) stop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#status">status</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#cubrid-service-ha">cubrid service에 HA 등록</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#applyinfo">applyinfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#cubrid-changemode">cubrid changemode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id31">CUBRID 매니저 HA 모니터링</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id32">HA 구성 형태</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id33">HA 기본 구성</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id34">다중 슬레이브 노드 구성</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id35">부하 분산 구성</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id36">다중 스탠바이 서버 구성</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id37">HA 제약 사항</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id38">운영 시나리오</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id39">읽기 쓰기 서비스 중 운영 시나리오</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id40">읽기 서비스 중 운영 시나리오</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id41">서비스 정지 후 운영 시나리오</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id42">레플리카 복제 지연 설정 시나리오</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#building-replication">복제 구축</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#restoreslave">restoreslave</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id44">복제 구축 시나리오 예제</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#build-slave">서비스 정지 후 슬레이브 추가</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#build-another-slave">서비스 운영 중 슬레이브 하나 더 추가</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#remove-slave">서비스 운영 중 슬레이브 제거</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#add-replica">서비스 운영 중 레플리카 추가</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#rebuild-slave">서비스 운영 중 슬레이브 재구축</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#id50">복제 불일치 감지</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#id51">복제 불일치 감지 방법</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#checksumdb">checksumdb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#ha-error">HA 오류 메시지</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#cas-cub-cas">CAS 프로세스(cub_cas)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id53">복제 로그 복사 프로세스(copylogdb)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ha.html#id55">복제 로그 반영 프로세스(applylogdb)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ha.html#rebuilding-replication">복제 재구축 스크립트</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ha.html#ha-make-slavedb-sh">ha_make_slavedb.sh 스크립트</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../security.html">CUBRID 보안</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../security.html#id1">패킷 암호화</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#id2">패킷 암호화 필요성</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#access-control">패킷 암호화 방법</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#id4">패킷 암호화를 위한 서버 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#id5">지원하는 드라이버</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../security.html#id6">서버 접근제어</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../security.html#authorization">권한 관리</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../security.html#tde-transparent-data-encryption">TDE (Transparent Data Encryption)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#cubrid-tde">CUBRID TDE 개념</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#tde-key">키 관리</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#tde-2level-key">2 계층 키 관리</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#tde-file-based-key">파일 기반의 마스터 키 관리</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#tde-enc-target">암호화 대상</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#tde-enc-perm">영구 데이터 암호화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#tde-enc-temp">임시 데이터 암호화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#tde-enc-log">로그 데이터 암호화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#dwb">DWB 암호화</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#tde-enc-backup">백업 볼륨 암호화</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#tde-algorithm">암호화 알고리즘</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#tde-check-enc">암호화 테이블 확인</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#show-create-table">SHOW CREATE TABLE 구문 이용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#db-class">db_class 시스템 카탈로그에 질의</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../security.html#cubrid-diagdb">cubrid diagdb 유틸리티를 통한 확인</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#ha-tde">HA 환경에서의 TDE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#tde-load-failure">TDE 기능을 사용할 수 없을 때의 동작</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../security.html#tde-restriction">제약 사항</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API 레퍼런스</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/jdbc.html">JDBC 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/jdbc.html#jdbc-overview">JDBC 개요</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/jdbc.html#id2">JDBC 설치 및 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/jdbc.html#id3">JDBC 프로그래밍</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#jdbc-connection-conf">연결 설정</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#datasource">DataSource 객체로 연결</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#sql-log">SQL LOG 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#id5">외래 키 정보 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#oid">OID와 컬렉션 사용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#id8">자동 증가 특성의 칼럼 값 검색</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#blob-clob">BLOB/CLOB 사용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#setboolean">setBoolean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/jdbc.html#jdbc-error-codes">JDBC 에러 코드와 에러 메시지</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/jdbc.html#jdbc-examples">JDBC 예제 프로그램</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/jdbc.html#jdbc-api">JDBC API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cci_index.html">CCI 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/cci.html">CCI 개요</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/cci.html#id1">CCI 프로그래밍</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/cci.html#id2">CCI 응용 프로그램 작성</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cci.html#id3">라이브러리 적용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cci.html#blob-clob">BLOB/CLOB 사용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cci.html#cci-error-codes">CCI 에러 코드와 에러 메시지</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/cci.html#id5">CCI 예제 프로그램</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/cciapi.html">CCI API 레퍼런스</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-bind-param">cci_bind_param</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-bind-param-array">cci_bind_param_array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-bind-param-array-size">cci_bind_param_array_size</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-bind-param-ex">cci_bind_param_ex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-blob-free">cci_blob_free</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-blob-new">cci_blob_new</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-blob-read">cci_blob_read</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-blob-size">cci_blob_size</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-blob-write">cci_blob_write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-cancel">cci_cancel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-clob-free">cci_clob_free</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-clob-new">cci_clob_new</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-clob-read">cci_clob_read</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-clob-size">cci_clob_size</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-clob-write">cci_clob_write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-close-query-result">cci_close_query_result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-close-req-handle">cci_close_req_handle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-col-get">cci_col_get</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-col-seq-drop">cci_col_seq_drop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-col-seq-insert">cci_col_seq_insert</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-col-seq-put">cci_col_seq_put</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-col-set-add">cci_col_set_add</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-col-set-drop">cci_col_set_drop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-col-size">cci_col_size</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-connect">cci_connect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-connect-ex">cci_connect_ex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-connect-with-url">cci_connect_with_url</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-connect-with-url-ex">cci_connect_with_url_ex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-cursor">cci_cursor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-cursor-update">cci_cursor_update</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-datasource-borrow">cci_datasource_borrow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-datasource-change-property">cci_datasource_change_property</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-datasource-create">cci_datasource_create</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-datasource-destroy">cci_datasource_destroy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-datasource-release">cci_datasource_release</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-disconnect">cci_disconnect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-end-tran">cci_end_tran</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-escape-string">cci_escape_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-execute">cci_execute</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-execute-array">cci_execute_array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-execute-batch">cci_execute_batch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-execute-result">cci_execute_result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-fetch">cci_fetch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-fetch-buffer-clear">cci_fetch_buffer_clear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-fetch-sensitive">cci_fetch_sensitive</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-fetch-size">cci_fetch_size</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-autocommit">cci_get_autocommit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-bind-num">cci_get_bind_num</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-cas-info">cci_get_cas_info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-class-num-objs">cci_get_class_num_objs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-collection-domain">CCI_GET_COLLECTION_DOMAIN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-cur-oid">cci_get_cur_oid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-data">cci_get_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-db-parameter">cci_get_db_parameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-db-version">cci_get_db_version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-err-msg">cci_get_err_msg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-error-msg">cci_get_error_msg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-holdability">cci_get_holdability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-last-insert-id">cci_get_last_insert_id</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-login-timeout">cci_get_login_timeout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-query-plan">cci_get_query_plan</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-query-info-free">cci_query_info_free</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-query-timeout">cci_get_query_timeout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info">cci_get_result_info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info-attr-name">CCI_GET_RESULT_INFO_ATTR_NAME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info-class-name">CCI_GET_RESULT_INFO_CLASS_NAME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info-is-non-null">CCI_GET_RESULT_INFO_IS_NON_NULL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info-name">CCI_GET_RESULT_INFO_NAME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info-precision">CCI_GET_RESULT_INFO_PRECISION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info-scale">CCI_GET_RESULT_INFO_SCALE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-result-info-type">CCI_GET_RESULT_INFO_TYPE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-is-set-type">CCI_IS_SET_TYPE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-is-multiset-type">CCI_IS_MULTISET_TYPE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-is-sequence-type">CCI_IS_SEQUENCE_TYPE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-is-collection-type">CCI_IS_COLLECTION_TYPE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-get-version">cci_get_version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-init">cci_init</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-is-holdable">cci_is_holdable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-is-updatable">cci_is_updatable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-next-result">cci_next_result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-oid">cci_oid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-oid-get">cci_oid_get</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-oid-get-class-name">cci_oid_get_class_name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-oid-put">cci_oid_put</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-oid-put2">cci_oid_put2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-prepare">cci_prepare</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-prepare-and-execute">cci_prepare_and_execute</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-property-create">cci_property_create</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-property-destroy">cci_property_destroy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-property-get">cci_property_get</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-property-set">cci_property_set</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-query-result-free">cci_query_result_free</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-query-result-err-no">CCI_QUERY_RESULT_ERR_NO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-query-result-err-msg">CCI_QUERY_RESULT_ERR_MSG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-query-result-result">CCI_QUERY_RESULT_RESULT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-query-result-stmt-type">CCI_QUERY_RESULT_STMT_TYPE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-register-out-param">cci_register_out_param</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-row-count">cci_row_count</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-savepoint">cci_savepoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-schema-info">cci_schema_info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-allocators">cci_set_allocators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-autocommit">cci_set_autocommit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-db-parameter">cci_set_db_parameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-element-type">cci_set_element_type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-free">cci_set_free</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-get">cci_set_get</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-holdability">cci_set_holdability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-isolation-level">cci_set_isolation_level</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-lock-timeout">cci_set_lock_timeout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-login-timeout">cci_set_login_timeout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-make">cci_set_make</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-max-row">cci_set_max_row</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-query-timeout">cci_set_query_timeout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/cciapi.html#cci-set-size">cci_set_size</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/php.html">PHP 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/php.html#id1">PHP 설치 및 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/php.html#linux">Linux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/php.html#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/php.html#how-to-php-driver-build">PHP 드라이버 빌드</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/php.html#id3">Linux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/php.html#id4">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/php.html#id5">PHP 프로그래밍</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/php.html#id6">데이터베이스 연결</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/php.html#id11">트랜잭션과 자동 커밋</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/php.html#id14">질의 처리</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/php.html#php-api">PHP API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/pdo.html">PDO 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/pdo.html#id1">PDO 설치 및 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#linux">Linux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/pdo.html#php">PHP 드라이버 빌드</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/pdo.html#id2">PDO 프로그래밍</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#dsn">데이터 원본 이름(DSN)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#id3">미리 정의된 상수</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/pdo.html#id4">PDO 예제 프로그램</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#cubrid-pdo">CUBRID PDO 드라이버 확인</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#cubrid">CUBRID 연결</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#select">SELECT 실행</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#update">UPDATE 실행</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#prepare-bind">prepare와 bind</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#id8">PDO::getAttribute() 사용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/pdo.html#id11">CUBRID PDO 확장</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/pdo.html#pdo-api">PDO API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/odbc.html">ODBC 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/odbc.html#id1">ODBC 설치 및 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/odbc.html#id2">ODBC 프로그래밍</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/odbc.html#connection-string">연결 문자열(connection string) 구성</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/odbc.html#asp">ASP 예제 프로그램</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/odbc.html#odbc-api">ODBC API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/oledb.html">OLE DB 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/oledb.html#id1">OLE DB 설치 및 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/oledb.html#id2">OLE DB 프로그래밍</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/oledb.html#id3">데이터 연결 속성 대화 상자 사용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/oledb.html#connection-string">연결 문자열(connection string) 구성</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/oledb.html#net">.NET 환경에서의 멀티 스레드 프로그래밍</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/oledb.html#ole-db-api">OLE DB API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/adodotnet.html">ADO.NET 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/adodotnet.html#id1">ADO.NET 설치 및 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/adodotnet.html#id2">ADO.NET 프로그래밍</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#id3">단순 질의/조회</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#batch">batch 명령어</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#id5">연결 문자열</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#cubrid">CUBRID 컬렉션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#blob-clob">BLOB/CLOB 사용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#id6">CUBRID 메타데이터 지원</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#datatable">DataTable 지원</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#id9">트랜잭션</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#id10">파라미터 사용</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/adodotnet.html#id11">오류 코드 및 메시지</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/adodotnet.html#ado-net-api">ADO.NET API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/perl.html">Perl 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/perl.html#id1">Perl 설치 및 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/perl.html#perl-api">Perl API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/python.html">Python 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/python.html#id1">Python 설치 및 설정</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/python.html#linux-unix">Linux/Unix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/python.html#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/python.html#id2">Python 프로그래밍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/python.html#id3">Python 예제 프로그램</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/python.html#python-api">Python API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/ruby.html">Ruby 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/ruby.html#id1">Ruby 설치 및 설정</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/ruby.html#id2">Ruby 예제 프로그램</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/ruby.html#ruby-api">Ruby API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/node_js.html">Node.js 드라이버</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/node_js.html#id2">Node.js 설치</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/node_js.html#cubrid-node-js-api">CUBRID Node.js API</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../release_note/index.html">릴리스 노트</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../release_note/release_note_latest_ver.html">11.0 릴리즈 노트</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/release_note_latest_ver.html#id2">릴리즈 노트 정보</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/release_note_latest_ver.html#id3">릴리즈 개요</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../release_note/release_note_latest_ver.html#id4">드라이버 호환성</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/release_note_latest_ver.html#changes">11.0 변경사항</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/release_note_latest_ver.html#id6">주의사항</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../release_note/release_note_latest_ver.html#new-cautions">신규 주의 사항</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../release_note/release_note_latest_ver.html#id11">기존 주의 사항</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../release_note/index.html#id2">공통 정보</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/index.html#id3">개정 내역</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/index.html#id4">버그 리포트 및 사용자 피드백 제공 방법</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/index.html#id5">라이선스</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/index.html#id6">추가 정보</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../release_note/index.html#id7">드라이버 관련 주의 사항</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CUBRID</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">CUBRID SQL</a> &raquo;</li>
+          <li><a href="db_admin.html">데이터베이스 관리</a> &raquo;</li>
+      <li>사용자 관리</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sql/authorization.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>사용자 관리<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>데이터베이스 사용자<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>사용자 이름 작성 원칙은 <a class="reference internal" href="identifier.html"><span class="doc">식별자</span></a> 절을 참고한다.</p>
+<p>CUBRID는 기본적으로 <strong>DBA</strong> 와 <strong>PUBLIC</strong> 두 종류의 사용자를 제공한다. 처음 제품을 설치했을 때에는 비밀번호가 설정되어 있지 않다.</p>
+<ul class="simple">
+<li><p>모든 사용자는 <strong>PUBLIC</strong> 사용자에게 부여된 권한을 소유한다. 데이터베이스의 모든 사용자는 <strong>PUBLIC</strong> 의 멤버가 된다. 사용자에게 권한을 부여하는 방법은 <strong>PUBLIC</strong> 사용자에 대한 권한을 부여하는 것이다.</p></li>
+<li><p><strong>DBA</strong> 는 데이터베이스 관리자를 위한 권한을 소유한다. <strong>DBA</strong> 는 자동으로 모든 사용자와 그룹의 멤버가 된다. 즉, <strong>DBA</strong> 는 모든 테이블에 대한 접근 권한을 갖는다. 따라서 <strong>DBA</strong> 와 <strong>DBA</strong> 의 멤버에게 명시적으로 권한을 부여할 필요는 없다. 데이터베이스 사용자는 고유한 이름을 갖는다. 데이터베이스 관리자는 <strong>cubrid createdb</strong> 유틸리티를 이용하여 일괄적으로 사용자를 생성할 수 있다(자세한 내용은 <a class="reference internal" href="../admin/admin_utils.html#cubrid-utilities"><span class="std std-ref">cubrid 유틸리티</span></a> 참조). 데이터베이스 사용자는 동일한 권한을 갖는 멤버를 소유할 수 없다. 사용자에게 권한이 부여되면 해당 사용자의 모든 멤버는 자동으로 동일한 권한을 소유한다.</p></li>
+</ul>
+</div>
+<div class="section" id="create-alter-drop-user">
+<span id="create-user"></span><h2>CREATE/ALTER/DROP USER<a class="headerlink" href="#create-alter-drop-user" title="Permalink to this headline">¶</a></h2>
+<p><strong>DBA</strong> 와 <strong>DBA</strong> 의 멤버는 SQL 문을 사용하여 사용자를 생성, 변경, 삭제할 수 있다.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CREATE</span> <span class="n">USER</span> <span class="n">user_name</span>
+<span class="p">[</span><span class="n">PASSWORD</span> <span class="n">password</span><span class="p">]</span>
+<span class="p">[</span><span class="n">GROUPS</span> <span class="n">user_name</span> <span class="p">[{,</span> <span class="n">user_name</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]]</span>
+<span class="p">[</span><span class="n">MEMBERS</span> <span class="n">user_name</span> <span class="p">[{,</span> <span class="n">user_name</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]]</span>
+<span class="p">[</span><span class="n">COMMENT</span> <span class="s1">&#39;comment_string&#39;</span><span class="p">];</span>
+
+<span class="n">ALTER</span> <span class="n">USER</span> <span class="n">user_name</span> <span class="n">PASSWORD</span> <span class="n">password</span><span class="p">;</span>
+
+<span class="n">DROP</span> <span class="n">USER</span> <span class="n">user_name</span><span class="p">;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><em>user_name</em>: 생성, 삭제, 변경할 사용자 이름을 지정한다.</p></li>
+<li><p><em>password</em>: 생성 혹은 변경할 사용자의 비밀번호를 지정한다.</p></li>
+<li><p><em>comment_string</em>: 사용자에 대한 커멘트를 지정한다.</p></li>
+</ul>
+<p>다음은 사용자 <em>Fred</em> 를 생성하고 비밀번호를 변경한 후에 <em>Fred</em> 를 삭제하는 예제이다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">USER</span> <span class="n">Fred</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">USER</span> <span class="n">Fred</span> <span class="n">PASSWORD</span> <span class="s1">&#39;1234&#39;</span><span class="p">;</span>
+<span class="k">DROP</span> <span class="k">USER</span> <span class="n">Fred</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음은 사용자를 생성하고 생성된 사용자에 멤버를 추가하는 예제이다. 다음 문장을 통해 <em>company</em> 는 <em>engineering</em>, <em>marketing</em>, <em>design</em> 을 멤버로 가지는 그룹이 된다. <em>marketing</em> 은 <em>smith</em>, <em>jones</em> 를, <em>design</em> 은 <em>smith</em> 를, <em>engineering</em> 은 <em>brown</em> 을 멤버로 가지는 그룹이 된다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">USER</span> <span class="n">company</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">engineering</span> <span class="n">GROUPS</span> <span class="n">company</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">marketing</span> <span class="n">GROUPS</span> <span class="n">company</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">design</span> <span class="n">GROUPS</span> <span class="n">company</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">smith</span> <span class="n">GROUPS</span> <span class="n">design</span><span class="p">,</span> <span class="n">marketing</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">jones</span> <span class="n">GROUPS</span> <span class="n">marketing</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">brown</span> <span class="n">GROUPS</span> <span class="n">engineering</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음은 위와 동일한 그룹을 생성하는 예이지만 <strong>GROUPS</strong> 대신 <strong>MEMBERS</strong> 문을 사용하는 예제이다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">USER</span> <span class="n">smith</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">brown</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">jones</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">engineering</span> <span class="n">MEMBERS</span> <span class="n">brown</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">marketing</span> <span class="n">MEMBERS</span> <span class="n">smith</span><span class="p">,</span> <span class="n">jones</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">design</span> <span class="n">MEMBERS</span> <span class="n">smith</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="n">company</span> <span class="n">MEMBERS</span> <span class="n">engineering</span><span class="p">,</span> <span class="n">marketing</span><span class="p">,</span> <span class="n">design</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="section" id="id3">
+<h3>사용자의 커멘트<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>사용자에 대한 커멘트는 다음과 같이 지정한다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">USER</span> <span class="n">designer</span> <span class="n">GROUPS</span> <span class="n">dbms</span><span class="p">,</span> <span class="n">qa</span> <span class="k">COMMENT</span> <span class="s1">&#39;user comment&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>사용자에 대한 커멘트는 ALTER USER 문을 사용하여 다음과 같이 변경이 가능하다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">ALTER</span> <span class="k">USER</span> <span class="n">DESIGNER</span> <span class="k">COMMENT</span> <span class="s1">&#39;new comment&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음 구문으로 사용자에 대한 커멘트를 확인할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="n">name</span><span class="p">,</span> <span class="k">comment</span> <span class="k">FROM</span> <span class="n">db_user</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="grant">
+<span id="granting-authorization"></span><h2>GRANT<a class="headerlink" href="#grant" title="Permalink to this headline">¶</a></h2>
+<p>CUBRID에서 권한 부여의 최소 단위는 테이블이다. 자신이 만든 테이블에 다른 사용자(그룹)의 접근을 허용하려면 해당 사용자(그룹)에게 적절한 권한을 부여해야 한다.</p>
+<p>권한이 부여된 그룹에 속한 모든 멤버는 같은 권한을 소유하므로 모든 멤버에게 개별적으로 권한을 부여할 필요는 없다. <strong>PUBLIC</strong> 사용자가 생성한 (가상) 테이블은 모든 사용자에게 접근이 허용된다. <strong>GRANT</strong> 문을 사용하여 사용자에게 접근 권한을 부여할 수 있다.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GRANT</span> <span class="n">operation</span> <span class="p">[</span> <span class="p">{</span> <span class="p">,</span><span class="n">operation</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]</span> <span class="n">ON</span> <span class="n">table_name</span> <span class="p">[</span> <span class="p">{</span> <span class="p">,</span><span class="n">table_name</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]</span>
+<span class="n">TO</span> <span class="n">user</span> <span class="p">[</span> <span class="p">{</span> <span class="p">,</span><span class="n">user</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]</span> <span class="p">[</span> <span class="n">WITH</span> <span class="n">GRANT</span> <span class="n">OPTION</span> <span class="p">]</span> <span class="p">;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><em>operation</em>: 권한을 부여할 때 사용 가능한 연산을 나타낸다.</p>
+<ul>
+<li><p><strong>SELECT</strong>: 테이블 정의 내용을 읽을 수 있고 인스턴스 조회가 가능. 가장 일반적인 유형의 권한.</p></li>
+<li><p><strong>INSERT</strong>: 테이블의 인스턴스를 생성할 수 있는 권한.</p></li>
+<li><p><strong>UPDATE</strong>: 테이블에 이미 존재하는 인스턴스를 수정할 수 있는 권한.</p></li>
+<li><p><strong>DELETE</strong>: 테이블의 인스턴스를 삭제할 수 있는 권한.</p></li>
+<li><p><strong>ALTER</strong>: 테이블의 정의를 수정할 수 있고, 테이블의 이름을 변경하거나 삭제할 수 있는 권한.</p></li>
+<li><p><strong>INDEX</strong>: 검색 속도의 향상을 위해 칼럼에 인덱스를 생성할 수 있는 권한.</p></li>
+<li><p><strong>EXECUTE</strong>: 테이블 메서드 혹은 인스턴스 메서드를 호출할 수 있는 권한.</p></li>
+<li><p><strong>ALL PRIVILEGES</strong>: 앞서 설명한 7가지 권한을 모두 포함.</p></li>
+</ul>
+</li>
+<li><p><em>table_name</em>: 권한을 부여할 테이블 혹은 뷰의 이름을 지정한다.</p></li>
+<li><p><em>user</em>: 권한을 부여할 사용자나 그룹의 이름을 지정한다. 데이터베이스 사용자의 로그인 이름을 입력하거나 시스템 정의 사용자인 <strong>PUBLIC</strong> 을 입력할 수 있다. <strong>PUBLIC</strong> 이 명시되면 데이터베이스의 모든 사용자는 부여한 권한을 가진다.</p></li>
+<li><p><strong>WITH GRANT OPTION</strong>: <strong>WITH GRANT OPTION</strong> 을 이용하면 권한을 부여받은 사용자가 부여받은 권한을 다른 사용자에게 부여할 수 있다.</p></li>
+</ul>
+<p>다음은 <em>smith</em> (<em>smith</em> 의 모든 멤버 포함)에게 <em>olympic</em> 테이블의 검색 권한을 부여한 예제이다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">GRANT</span> <span class="k">SELECT</span> <span class="k">ON</span> <span class="n">olympic</span> <span class="k">TO</span> <span class="n">smith</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음은 <em>brown</em> 와 <em>jones</em> (두 사용자에 속한 모든 멤버)에게 <em>nation</em> 과 <em>athlete</em> 테이블에 대해 <strong>SELECT</strong>, <strong>INSERT</strong>, <strong>UPDATE</strong>, <strong>DELETE</strong> 권한을 부여한 예제이다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">GRANT</span> <span class="k">SELECT</span><span class="p">,</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span> <span class="k">ON</span> <span class="n">nation</span><span class="p">,</span> <span class="n">athlete</span> <span class="k">TO</span> <span class="n">brown</span><span class="p">,</span> <span class="n">jones</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음은 모든 사용자(public)에게 <em>tbl1</em>, <em>tbl2</em> 테이블에 대해 모든 권한을 부여하는 예제이다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tbl1</span> <span class="p">(</span><span class="n">a</span> <span class="nb">INT</span><span class="p">);</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tbl2</span> <span class="p">(</span><span class="n">a</span> <span class="nb">INT</span><span class="p">);</span>
+<span class="k">GRANT</span> <span class="k">ALL</span> <span class="k">PRIVILEGES</span> <span class="k">ON</span> <span class="n">tbl1</span><span class="p">,</span> <span class="n">tbl2</span> <span class="k">TO</span> <span class="k">public</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음 <strong>GRANT</strong> 문은 <em>brown</em> 에게 <em>record</em>, <em>history</em> 테이블에 대한 검색 권한을 부여하고 <em>brown</em> 이 다른 사용자에게 검색 권한을 부여하는 것을 허용하도록 <strong>WITH GRANT OPTION</strong> 절을 사용한 예제이다. 이후 <em>brown</em> 은 다른 사용자에게 자신이 받은 권한 내에서 권한을 부여할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">GRANT</span> <span class="k">SELECT</span> <span class="k">ON</span> <span class="n">record</span><span class="p">,</span> <span class="n">history</span> <span class="k">TO</span> <span class="n">brown</span> <span class="k">WITH</span> <span class="k">GRANT</span> <span class="k">OPTION</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p></p>
+<ul class="simple">
+<li><p>권한을 부여하는 사용자는 권한 부여 전에 나열된 모든 테이블의 소유자이거나, <strong>WITH GRANT OPTION</strong> 을 가지고 있어야 한다.</p></li>
+<li><p>뷰에 대한 <strong>SELECT</strong>, <strong>UPDATE</strong>, <strong>DELETE</strong>, <strong>INSERT</strong> 권한을 부여하기 전에 뷰의 소유자는 뷰의 질의 명세부에 포함되어 있는 모든 테이블에 대해서 <strong>SELECT</strong> 권한과 <strong>GRANT</strong> 권한을 가져야 한다. <strong>DBA</strong> 사용자와 <strong>DBA</strong> 그룹에 속한 멤버는 자동적으로 모든 테이블에 대한 모든 권한을 가진다.</p></li>
+<li><p><strong>TRUNCATE</strong> 문을 수행하려면 <strong>ALTER</strong>, <strong>INDEX</strong>, <strong>DELETE</strong> 권한이 필요하다.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="revoke">
+<span id="revoking-authorization"></span><h2>REVOKE<a class="headerlink" href="#revoke" title="Permalink to this headline">¶</a></h2>
+<p><strong>REVOKE</strong> 문을 사용하여 권한을 해지할 수 있다. 사용자에게 부여된 권한은 언제든지 해지가 가능하다. 한 사용자에게 두 종류 이상의 권한을 부여했다면 권한 중 일부 또는 전부를 해지할 수 있다. 또한 하나의 <strong>GRANT</strong> 문으로 여러 사용자에게 여러 테이블에 대한 권한을 부여한 경우라도 일부 사용자와 일부 테이블에 대해 선택적인 권한 해지가 가능하다.</p>
+<p>권한을 부여한 사용자에게서 권한(<strong>WITH GRANT OPTION</strong>)을 해지하면, 권한을 해지당한 사용자로부터 권한을 받은 사용자도 권한을 해지당한다.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">REVOKE</span> <span class="n">operation</span> <span class="p">[</span> <span class="p">{</span> <span class="p">,</span> <span class="n">operation</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]</span> <span class="n">ON</span> <span class="n">table_name</span> <span class="p">[</span> <span class="p">{</span> <span class="p">,</span> <span class="n">class_name</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]</span>
+<span class="n">FROM</span> <span class="n">user</span> <span class="p">[</span> <span class="p">{</span> <span class="p">,</span> <span class="n">user</span> <span class="p">}</span> <span class="o">...</span> <span class="p">]</span> <span class="p">;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><em>operation</em>: 권한을 부여할 때 부여할 수 있는 연산의 종류이다(자세한 내용은 <a class="reference internal" href="#granting-authorization"><span class="std std-ref">GRANT</span></a> 참조).</p></li>
+<li><p><em>table_name</em>: 권한을 부여할 테이블 혹은 뷰의 이름을 지정한다.</p></li>
+<li><p><em>user</em>: 권한을 부여할 사용자나 그룹의 이름을 지정한다.</p></li>
+</ul>
+<p>다음은 <em>smith</em>, <em>jones</em> 사용자에게 <em>nation</em>, <em>athlete</em> 두 테이블에 대해 <strong>SELECT</strong>, <strong>INSERT</strong>, <strong>UPDATE</strong>, <strong>DELETE</strong> 권한을 부여하는 예제이다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">GRANT</span> <span class="k">SELECT</span><span class="p">,</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span> <span class="k">ON</span> <span class="n">nation</span><span class="p">,</span> <span class="n">athlete</span> <span class="k">TO</span> <span class="n">smith</span><span class="p">,</span> <span class="n">jones</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음은 <em>jones</em> 에게 조회 권한만을 부여하기 위해 <strong>REVOKE</strong> 문장을 수행하는 예제이다. 만약 <em>jones</em> 가 다른 사용자에게 권한을 부여했다면 권한받은 사용자 또한 조회만 가능하다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">REVOKE</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span> <span class="k">ON</span> <span class="n">nation</span><span class="p">,</span> <span class="n">athlete</span> <span class="k">FROM</span> <span class="n">jones</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음은 <em>smith</em> 에게 부여한 모든 권한을 해지하기 위해 <strong>REVOKE</strong> 문을 수행하는 예제이다. 이 문장이 수행되면 <em>smith</em> 는 <em>nation</em>, <em>athlete</em> 테이블에 대한 어떠한 연산도 허용되지 않는다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">REVOKE</span> <span class="k">ALL</span> <span class="k">PRIVILEGES</span> <span class="k">ON</span> <span class="n">nation</span><span class="p">,</span> <span class="n">athlete</span> <span class="k">FROM</span> <span class="n">smith</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="alter-owner">
+<span id="change-owner"></span><h2>ALTER … OWNER<a class="headerlink" href="#alter-owner" title="Permalink to this headline">¶</a></h2>
+<p>데이터베이스 관리자(<strong>DBA</strong>) 또는 <strong>DBA</strong> 그룹의 멤버는 다음의 질의를 통해 테이블, 뷰, 트리거, Java 저장 함수/프로시저의 소유자를 변경할 수 있다.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ALTER</span> <span class="p">[</span><span class="n">TABLE</span> <span class="o">|</span> <span class="n">CLASS</span> <span class="o">|</span> <span class="n">VIEW</span> <span class="o">|</span> <span class="n">VCLASS</span> <span class="o">|</span> <span class="n">TRIGGER</span> <span class="o">|</span> <span class="n">PROCEDURE</span> <span class="o">|</span> <span class="n">FUNCTION</span><span class="p">]</span> <span class="n">name</span> <span class="n">OWNER</span> <span class="n">TO</span> <span class="n">user_id</span><span class="p">;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><em>name</em>: 소유자를 변경할 스키마 객체의 이름</p></li>
+<li><p><em>user_id</em>: 사용자 ID</p></li>
+</ul>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">test_tbl</span> <span class="k">OWNER</span> <span class="k">TO</span> <span class="k">public</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">VIEW</span> <span class="n">test_view</span> <span class="k">OWNER</span> <span class="k">TO</span> <span class="k">public</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">TRIGGER</span> <span class="n">test_trigger</span> <span class="k">OWNER</span> <span class="k">TO</span> <span class="k">public</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">FUNCTION</span> <span class="n">test_function</span> <span class="k">OWNER</span> <span class="k">TO</span> <span class="k">public</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">PROCEDURE</span> <span class="n">test_procedure</span> <span class="k">OWNER</span> <span class="k">TO</span> <span class="k">public</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="authorization-method">
+<span id="id4"></span><h2>사용자 권한 관리 메서드<a class="headerlink" href="#authorization-method" title="Permalink to this headline">¶</a></h2>
+<p>데이터베이스 관리자(<strong>DBA</strong>)는 데이터베이스 사용자에 대한 정보를 저장하는 <strong>db_user</strong> 또는 시스템 권한 클래스인 <strong>db_authorizations</strong> 에 정의된 권한 관련 메서드들을 호출하여 사용자 권한을 조회 및 수정할 수 있다. 호출하고자 하는 메서드에 따라 <strong>db_user</strong> 또는 <strong>db_authorizations</strong> 클래스를 명시할 수 있으며, 메서드의 리턴 값을 변수에 저장할 수 있다. 또한, 일부 메서드는 <strong>DBA</strong> 와 <strong>DBA</strong> 그룹의 멤버에 의해서만 호출될 수 있음을 유의한다.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>HA 환경에서 마스터 노드에서의 메서드 호출은 슬레이브 노드에 반영되지 않으므로 이에 주의한다.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CALL</span> <span class="n">method_definition</span> <span class="n">ON</span> <span class="n">CLASS</span> <span class="n">auth_class</span> <span class="p">[</span> <span class="n">TO</span> <span class="n">variable</span> <span class="p">]</span> <span class="p">[</span> <span class="p">;</span> <span class="p">]</span>
+<span class="n">CALL</span> <span class="n">method_definition</span> <span class="n">ON</span> <span class="n">variable</span> <span class="p">[</span> <span class="p">;</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>login() 메서드</strong></p>
+<p><strong>login</strong> () 메서드는 <strong>db_user</strong> 클래스의 클래스 메서드로서, 현재 데이터베이스에 접속한 사용자를 변경하고자 할 때 사용된다. 새로 접속할 사용자 이름과 비밀번호가 인자로 주어지며, 문자열 타입이어야 한다. 비밀번호가 없는 경우 인자에 공백 문자(‘’)을 입력할 수 있다. <strong>DBA</strong> 나 <strong>DBA</strong> 그룹의 멤버는 비밀번호를 입력하지 않고 <strong>login</strong> () 메서드를 호출할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- 비밀번호가 없는 DBA 사용자로 접속하기</span>
+<span class="k">CALL</span> <span class="n">login</span> <span class="p">(</span><span class="s1">&#39;dba&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span><span class="p">;</span>
+
+<span class="c1">-- 비밀번호가 cubrid인 user_1 사용자로 접속하기</span>
+<span class="k">CALL</span> <span class="n">login</span> <span class="p">(</span><span class="s1">&#39;user_1&#39;</span><span class="p">,</span> <span class="s1">&#39;cubrid&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>add_user() 메서드</strong></p>
+<p><strong>add_user</strong> () 메서드는 <strong>db_user</strong> 클래스의 클래스 메서드로서, 새로운 사용자를 추가할 때 사용된다. 새로 추가할 사용자 이름과 비밀번호가 인자로 주어지며, 문자열 타입이어야 한다. 이때, 추가할 사용자 이름은 이미 등록된 데이터베이스 사용자 이름과 중복되어서는 안 된다. 한편, <strong>add_user</strong> () 메서드는 <strong>DBA</strong> 사용자와 <strong>DBA</strong> 그룹에 속한 멤버만 호출할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- 비밀번호가 없는 user_2 추가하기</span>
+<span class="k">CALL</span> <span class="n">add_user</span> <span class="p">(</span><span class="s1">&#39;user_2&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span><span class="p">;</span>
+
+<span class="c1">-- 비밀번호가 없는 user_3 추가하고, 메서드 리턴 값을 admin 변수에 저장하기</span>
+<span class="k">CALL</span> <span class="n">add_user</span> <span class="p">(</span><span class="s1">&#39;user_3&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span> <span class="k">to</span> <span class="k">admin</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>drop_user() 메서드</strong></p>
+<p><strong>drop_user</strong> () 메서드는 <strong>db_user</strong> 클래스의 클래스 메서드로서, 기존 사용자를 삭제할 때 사용된다. 삭제하고자 하는 사용자 이름만 인자로 주어지며, 문자열 타입이어야 한다. 이때, 클래스의 소유자는 삭제할 수 없으므로, <strong>DBA</strong> 는 관련 클래스의 소유자를 변경한 후, 해당 사용자를 삭제할 수 있다. <strong>drop_user</strong> () 메서드 역시 <strong>DBA</strong> 사용자와 <strong>DBA</strong> 그룹에 속한 멤버만 호출할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- user_2 삭제하기</span>
+<span class="k">CALL</span> <span class="n">drop_user</span> <span class="p">(</span><span class="s1">&#39;user_2&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>find_user() 메서드</strong></p>
+<p><strong>find_user</strong> () 메서드는 <strong>db_user</strong> 클래스의 클래스 메서드로서, 인자로 주어진 사용자를 검색할 때 사용된다. 찾고자 하는 사용자 이름이 인자로 주어지며, <strong>TO</strong> 뒤에 지정된 변수에 메서드의 리턴 값을 저장하여 다음 질의 수행 시 변수에 저장된 값을 이용할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- user_2를 찾아서 admin이라는 변수에 저장하기</span>
+<span class="k">CALL</span> <span class="n">find_user</span> <span class="p">(</span><span class="s1">&#39;user_2&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span> <span class="k">TO</span> <span class="k">admin</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>set_password() 메서드</strong></p>
+<p><strong>set_password</strong> () 메서드는 사용자 인스턴스 각각에 대해 호출할 수 있는 인스턴스 메서드로서, 사용자의 비밀번호를 변경할 때 사용된다. 지정된 사용자의 새로운 비밀번호가 인자로 주어진다. <strong>DBA</strong> 와 <strong>DBA</strong> 그룹의 멤버를 제외한 일반 사용자는 자신의 비밀번호만 변경할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- user_4 를 추가하고 user_common 변수에 저장하기</span>
+<span class="k">CALL</span> <span class="n">add_user</span> <span class="p">(</span><span class="s1">&#39;user_4&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span> <span class="k">to</span> <span class="n">user_common</span><span class="p">;</span>
+
+<span class="c1">-- user_4의 비밀번호를 &#39;abcdef&#39;로 변경하기</span>
+<span class="k">CALL</span> <span class="n">set_password</span><span class="p">(</span><span class="s1">&#39;abcdef&#39;</span><span class="p">)</span> <span class="k">on</span> <span class="n">user_common</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>change_owner() 메서드</strong></p>
+<p><strong>change_owner</strong> () 메서드는 <strong>db_authorizations</strong> 클래스의 클래스 메서드로서, 클래스 소유자를 변경할 때 사용된다. 소유자를 변경하고자 하는 클래스 이름과 새로운 소유자의 이름이 각각 인자로 주어진다. 이때, 데이터베이스에 존재하는 클래스와 소유자가 인자로 지정되어야 하며, 그렇지 않은 경우 에러가 발생한다. <strong>change_owner</strong> () 메서드는 <strong>DBA</strong> 와 <strong>DBA</strong> 그룹의 멤버만 호출할 수 있다. 이 메서드와 같은 역할을 하는 질의로 <strong>ALTER … OWNER</strong> 가 있다. 이에 대한 내용은 <a class="reference internal" href="#change-owner"><span class="std std-ref">ALTER … OWNER</span></a> 절을 참고한다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- table_1의 소유자를 user_4로 변경하기</span>
+<span class="k">CALL</span> <span class="n">change_owner</span> <span class="p">(</span><span class="s1">&#39;table_1&#39;</span><span class="p">,</span> <span class="s1">&#39;user_4&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_authorizations</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>다음 예제는 특정 데이터베이스 사용자의 존재 여부를 판단하기 위해 시스템 클래스인 <strong>db_user</strong> 에 등록된 메서드인 <strong>find_user</strong> 를 호출하는 <strong>CALL</strong> 문의 수행을 보여준다. 첫 번째 문장은 <strong>db_user</strong> 클래스에 정의된 클래스 메서드를 호출한다. 찾고자 하는 대상 사용자가 데이터베이스에 등록되어 있을 경우 x에는 해당 클래스 이름(여기에서는 <strong>db_user</strong>)이 저장되고, 없을 경우엔 <strong>NULL</strong> 이 저장된다.</p>
+<p>두 번째 문장은 변수 x에 저장된 값을 출력하는 방법이다. 이 질의문에서 <strong>DB_ROOT</strong> 는 시스템 클래스로서, 하나의 인스턴스만이 존재하여 sys_date나 등록된 변수의 값을 출력하는 데 사용할 수 있다. 이러한 용도로 쓰일 경우 <strong>DB_ROOT</strong> 는 인스턴스가 하나인 다른 테이블로 대체할 수 있다.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CALL</span> <span class="n">find_user</span><span class="p">(</span><span class="s1">&#39;dba&#39;</span><span class="p">)</span> <span class="k">ON</span> <span class="k">CLASS</span> <span class="n">db_user</span> <span class="k">to</span> <span class="n">x</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Result</span>
+<span class="o">======================</span>
+<span class="n">db_user</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="n">x</span> <span class="k">FROM</span> <span class="n">db_root</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span>
+<span class="o">======================</span>
+<span class="n">db_user</span>
+</pre></div>
+</div>
+<p><strong>find_user</strong> 메서드를 이용하면 결과값이 <strong>NULL</strong> 인지 아닌지에 따라 해당 사용자가 데이터베이스에 존재하는지 여부를 판단할 수 있다.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="db_admin.html" class="btn btn-neutral float-left" title="데이터베이스 관리" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="query/set.html" class="btn btn-neutral float-right" title="SET" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Search Solution Corporation.
+      <span class="lastupdated">Last updated on Apr 01, 2022.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
