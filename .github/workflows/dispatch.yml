@@ -9,9 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Dispatch slash command
-      uses: peter-evans/slash-command-dispatch@v1
+      uses: peter-evans/slash-command-dispatch@v3
       with:
         token: ${{ secrets.DISPATCH_TOKEN }}
-        reactions: false
-        issue-type: pull-request
-        commands: preview, teardown
+        commands: |
+          preview
+          teardown
+        permission: write
