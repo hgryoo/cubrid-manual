@@ -13,9 +13,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        lang: ["en", "ko"]
     steps:
       - name: Dump context
         env:

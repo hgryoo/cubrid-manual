@@ -20,17 +20,14 @@ on:
 jobs:
   docs:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        lang: ["en", "ko"]
     steps:
     - uses: actions/checkout@v1
     - name: Build and Test Sphinx Doc
     - uses: ammaraskar/sphinx-action@master
       with:
-        docs-folder: ${{ matrix.lang }}
+        docs-folder: en
         pre-build-command: "pip install sphinx_rtd_theme"
     - uses: actions/upload-artifact@v1
       with:
-        name: docs-${{ matrix.lang }}
-        path: ${{ matrix.lang }}/_build/html/
+        name: docs-en
+        path: en/_build/html/
