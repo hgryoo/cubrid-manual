@@ -8,10 +8,10 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch slash command
-        uses: peter-evans/slash-command-dispatch@v1
-        with:
-          token: ${{ secrets.DISPATCH_TOKEN }}
-          reactions: false
-          issue-type: pull-request
-          commands: preview, teardown
+    - name: Dispatch slash command
+      uses: peter-evans/slash-command-dispatch@v1
+      with:
+        token: ${{ secrets.DISPATCH_TOKEN }}
+        reactions: false
+        issue-type: pull-request
+        commands: preview, teardown
