@@ -36,5 +36,7 @@ jobs:
         dist: ./${{ matrix.lang }}/_build/html/
         teardown: 'true'
         failOnError: 'true'
-        build: |
+        build: echo
+    - name: Get the preview_url
+      run: echo "url => ${{ steps.preview_step.outputs.preview_url }}"
 
