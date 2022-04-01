@@ -25,12 +25,18 @@ jobs:
         lang: ["en", "ko"]
     steps:
     - uses: actions/checkout@v1
+    - name: Create Docs Folder
+      run:
+        |
     - uses: ammaraskar/sphinx-action@master
       with:
         docs-folder: ${{ matrix.lang }}
         pre-build-command: "pip install sphinx_rtd_theme"
-    - name: Deploy preview
-      uses: rossjrw/pr-preview-action@v1
-      with:
-        source-dir: ${{ matrix.lang }}/_build/html/
-        umbrella-dir: pr-preview-${{ matrix.lang }}
+  deploy:
+    - name: Preview Manuals
+    - uses: afc163/surge-preview@v1
+        with:
+          surge_token: ${{ secrets.SURGE_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dist: ${{ matrix.lang }}/_build/html/
+          teardown: 'true'
