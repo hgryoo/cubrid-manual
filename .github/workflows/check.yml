@@ -27,11 +27,14 @@ jobs:
     - uses: actions/checkout@v1
     - uses: ammaraskar/sphinx-action@master
       with:
-        docs-folder: ${{ matrix.lang }}
+        docs-folder: ~/${{ matrix.lang }}
         pre-build-command: "pip install sphinx_rtd_theme"
     - uses: afc163/surge-preview@v1
       with:
         surge_token: ${{ secrets.SURGE_TOKEN }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        dist: ${{ matrix.lang }}/_build/html/
+        dist: ~/${{ matrix.lang }}/_build/html/
         teardown: 'true'
+        failOnError: 'true'
+        build: |
+          
