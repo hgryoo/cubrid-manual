@@ -93,6 +93,8 @@ CSQL 인터프리터의 세션 명령어로 지정한 테이블의 통계 정보
             BTID: { 0 , 1049 }
             Cardinality: 5 (5) , Total pages: 2 , Leaf pages: 1 , Height: 2
 
+.. _viewing-query-plan:
+
 질의 실행 계획 보기
 ===================
 
@@ -450,31 +452,42 @@ SQL에 대한 성능 분석을 위해서는 질의 프로파일링(profiling) �
 ::
  
     csql> SET TRACE ON;
-    csql> SELECT /*+ RECOMPILE */ o.host_year, o.host_nation, o.host_city, n.name, SUM(p.gold), SUM(p.silver), SUM(p.bronze)  
-            FROM OLYMPIC o, PARTICIPANT p, NATION n
-            WHERE o.host_year = p.host_year AND p.nation_code = n.code AND p.gold > 10 
-            GROUP BY o.host_nation;
+    csql> SELECT /*+ RECOMPILE ORDERED */ o.host_year, o.host_nation, o.host_city, n.name, SUM(p.gold), SUM(p.silver), SUM(p.bronze)
+            FROM OLYMPIC o,
+                 (select * from PARTICIPANT p where p.gold > 10) p,
+                 NATION n
+          WHERE o.host_year = p.host_year AND p.nation_code = n.code
+          GROUP BY o.host_nation;
     csql> SHOW TRACE;
  
       trace
     ======================
-      '
+    '
     Query Plan:
+      TABLE SCAN (p)
+    
+      rewritten query: (select p.host_year, p.nation_code, p.gold, p.silver, p.bronze from PARTICIPANT p where (p.gold> ?:0 ))
+    
       SORT (group by)
         NESTED LOOPS (inner join)
           NESTED LOOPS (inner join)
             TABLE SCAN (o)
-            INDEX SCAN (p.fk_participant_host_year) (key range: (o.host_year=p.host_year))
+            TABLE SCAN (p)
           INDEX SCAN (n.pk_nation_code) (key range: p.nation_code=n.code)
-
-      rewritten query: select o.host_year, o.host_nation, o.host_city, n.[name], sum(p.gold), sum(p.silver), sum(p.bronze) from OLYMPIC o, PARTICIPANT p, NATION n where (o.host_year=p.host_year and p.nation_code=n.code and (p.gold> ?:0 )) group by o.host_nation
-
+    
+      rewritten query: select /*+ ORDERED */ o.host_year, o.host_nation, o.host_city, n.[name], sum(p.gold), sum(p.silver), sum(p.bronze) from OLYMPIC o, (select p.host_year, p.nation_code, p.gold, p.silver, p.bronze from PARTICIPANT p where (p.gold> ?:0 )) p (host_year, nation_code, gold,
+    silver, bronze), NATION n where o.host_year=p.host_year and p.nation_code=n.code group by o.host_nation
+    
+    
     Trace Statistics:
-      SELECT (time: 1, fetch: 1059, ioread: 2)
-        SCAN (table: olympic), (heap time: 0, fetch: 26, ioread: 0, readrows: 25, rows: 25)
-          SCAN (index: participant.fk_participant_host_year), (btree time: 1, fetch: 945, ioread: 2, readkeys: 5, filteredkeys: 5, rows: 916) (lookup time: 0, rows: 38)
-            SCAN (index: nation.pk_nation_code), (btree time: 0, fetch: 76, ioread: 0, readkeys: 38, filteredkeys: 38, rows: 38) (lookup time: 0, rows: 38)
-        GROUPBY (time: 0, sort: true, page: 0, ioread: 0, rows: 5)
+      SELECT (time: 6, fetch: 880, ioread: 0)
+        SCAN (table: olympic), (heap time: 0, fetch: 104, ioread: 0, readrows: 25, rows: 25)
+          SCAN (hash temp buildtime : 0, time: 0, fetch: 0, ioread: 0, readrows: 76, rows: 38)
+            SCAN (index: nation.pk_nation_code), (btree time: 2, fetch: 760, ioread: 0, readkeys: 38, filteredkeys: 0, rows: 38) (lookup time: 0, rows: 38)
+        GROUPBY (time: 0, hash: true, sort: true, page: 0, ioread: 0, rows: 5)
+        SUBQUERY (uncorrelated)
+          SELECT (time: 2, fetch: 12, ioread: 0)
+            SCAN (table: participant), (heap time: 2, fetch: 12, ioread: 0, readrows: 916, rows: 38)
     '
 
 다음은 트레이스 항목에 대한 설명이다.
@@ -499,7 +512,16 @@ SQL에 대한 성능 분석을 위해서는 질의 프로파일링(profiling) �
     *   readkeys: btree에서 해당 연산 수행 시 읽은 키의 개수
     *   filteredkeys: 읽은 키 중에 키 필터가 적용된 키의 개수
     *   rows: 해당 연산에 대한 결과 행의 개수로, 키 필터가 적용된 결과 행의 개수
-    
+
+*   temp: 템프 파일에서 데이터를 스캔하는 작업
+
+    *   hash: 해시 리스트 스캔 사용 여부. :ref:`NO_HASH_LIST_SCAN <no-hash-list-scan>` 힌트를 참고한다.
+    *   buildtime: 해시 테이블 빌드 수행 시 소요된 시간(ms)
+    *   time: 해시 테이블 조사 수행 시 소요된 시간(ms)
+    *   fetch, ioread: temp file에서 해당 연산 수행 시 소요된 fetch 회수, I/O 읽기 회수
+    *   readrows: 해당 연산 수행 시 읽은 행의 개수
+    *   rows: 해당 연산에 대한 결과 행의 개수
+
 *   lookup: 인덱스 스캔 후 데이터에 접근하는 작업
 
     *   time: 해당 연산 수행 시 소요된 시간(ms)
@@ -511,13 +533,13 @@ SQL에 대한 성능 분석을 위해서는 질의 프로파일링(profiling) �
 *   sort: 정렬 여부
 *   page: 정렬에 사용된 임시 페이지 개수로, 내부 정렬 버퍼 외에 사용한 페이지 개수.
 *   rows: 해당 연산에 대한 결과 행의 개수
+*   hash: 집계 함수에서 투플 정렬 시 해시 집계 방식 적용 여부(true/false). :ref:`NO_HASH_AGGREGATE <no-hash-aggregate>` 힌트를 참고한다.
 
 **INDEX SCAN**
 
 *   key range: 키의 범위
 *   covered: 커버링 인덱스 적용 여부(true/false)
 *   loose: loose index scan 적용 여부(true/false)
-*   hash: 집계 함수에서 투플 정렬 시 해시 집계 방식 적용 여부(true/false). :ref:`NO_HASH_AGGREGATE <no-hash-aggregate>` 힌트를 참고한다.
 
 위의 예는 JSON 형식으로도 출력할 수 있다.
  
@@ -603,6 +625,7 @@ SQL 힌트
     USE_MERGE [ (<spec_name_comma_list>) ] |
     ORDERED |
     USE_DESC_IDX |
+    USE_SBR |
     INDEX_SS [ (<spec_name_comma_list>) ] |
     INDEX_LS |
     NO_DESC_IDX |
@@ -610,6 +633,8 @@ SQL 힌트
     NO_MULTI_RANGE_OPT |
     NO_SORT_LIMIT |
     NO_HASH_AGGREGATE |
+    NO_HASH_LIST_SCAN |
+    NO_LOGGING |
     RECOMPILE
 
     <spec_name_comma_list> ::= <spec_name> [, <spec_name>, ... ]
@@ -618,7 +643,8 @@ SQL 힌트
     <merge_statement_hint> ::=
     USE_UPDATE_INDEX (<update_index_list>) |
     USE_DELETE_INDEX (<insert_index_list>) |
-    RECOMPILE
+    RECOMPILE |
+    QUERY_CACHE
 
 SQL 힌트는 주석에 더하기 기호(+)를 함께 사용하여 지정한다. 힌트를 사용하는 방법은 :doc:`comment` 절에 소개된 바와 같이 세 가지 방식이 있다. 따라서 SQL 힌트도 다음과 같이 세 가지 방식으로 사용할 수 있다.
 
@@ -635,6 +661,12 @@ SQL 힌트는 주석에 더하기 기호(+)를 함께 사용하여 지정한다.
 *   **ORDERED**: 테이블 조인과 관련한 힌트로서, 질의 최적화기는 **FROM** 절에 명시된 테이블의 순서대로 조인하는 실행 계획을 만든다. **FROM** 절에서 왼쪽 테이블은 조인의 외부 테이블이 되고, 오른쪽 테이블은 내부 테이블이 된다.
 *   **USE_IDX**: 인덱스 관련한 힌트로서, 질의 최적화기는 명시된 테이블에 대해 인덱스 조인 실행 계획을 만든다.
 *   **USE_DESC_IDX**: 내림차순 스캔을 위한 힌트이다. 자세한 내용은 :ref:`index-descending-scan`\ 을 참고한다.
+*   **USE_SBR**: 구문 기반 복제(statement-based replication)를 위한 힌트로서, 기본키가 설정되지 않은 테이블에 대한 데이터 복제도 지원한다.
+
+    .. note::
+
+        슬레이브 노드에서 트랜잭션 로그가 반영되는 시점에 해당 구문을 다시 실행하기 때문에 노드 간 반영된 데이터의 불일치가 발생할 수 있다.
+
 *   **INDEX_SS**: index skip scan 실행 계획을 고려한다. 자세한 내용은 :ref:`index-skip-scan`\을 참고한다.
 *   **INDEX_LS**: loose index scan 실행 계획을 고려한다. 자세한 내용은 :ref:`loose-index-scan`\을 참고한다.
 *   **NO_DESC_IDX**: 내림차순 스캔을 사용하지 않도록 하는 힌트이다.
@@ -650,9 +682,25 @@ SQL 힌트는 주석에 더하기 기호(+)를 함께 사용하여 지정한다.
     
         DISTINCT한 값을 계산하는 함수들(예. AVG(DISTINCT x))과 GROUP_CONCAT, MEDIAN 함수들은 각 그룹의 투플들에 대해 외부 정렬(external sorting) 과정을 요구하므로 해시 집계 방식이 동작하지 않을 것이다.
 
+.. _no-hash-list-scan:
+
+*   **NO_HASH_LIST_SCAN**: 부질의 스캔 시 해시 리스트 스캔을 사용하지 않도록 하는 힌트이다. 그 대신, 템프 파일 스캔을 위해 리스트 스캔이 사용된다. 해시 테이블을 빌드 및 조사 함으로써, CUBRID는 조회할 때 필요로 하는 데이터의 양을 줄일 수 있다. 그러나, 어떤 경우에는 외부 데이터양이 매우 적다는 것을 미리 알고 전체적으로 해시 리스트 스캔 과정을 생략하기 위해 이 힌트를 사용할 수 있다. 해시 리스트 스캔의 메모리 크기를 설정하기 위해서는 :ref:`max_hash_list_scan_size <max_hash_list_scan_size>`\ 를 참고한다.
+
+    .. note::
+    
+        해시 리스트 스캔은 오직 동등 연산자를 가지고 있는 조회조건에서 동작하며, OID 타입을 가지고 있는 조회 조건에서는 동작하지 않는다.
+
+*   **NO_LOGGING**: 테이블에 레코드 삽입, 갱신, 삭제 시 생성되는 로그에 리두(redo)가 포함되지 않도록 하는 힌트이다.
+
+    .. note::
+
+        현재 레코드 삽입, 갱신, 삭제 시 힙 파일에서 생성되는 로그에만 영향을 준다. 따라서 복구 후 테이블과 인덱스의 데이터가 불일치하는 문제, 커밋된 레코드가 복구되지 않는 문제 등이 발생할 수 있다. 반드시 주의하여 사용하여야 한다.
+
 .. _recompile:
 
 *   **RECOMPILE** : 질의 실행 계획을 리컴파일한다. 캐시에 저장된 기존 질의 실행 계획을 삭제하고 새로운 질의 실행 계획을 수립하기 위해 이 힌트를 사용한다.
+
+*   **QUERY_CACHE** : 질의와 그 결과를 캐시한다. 이 힌트는 **SELECT** 질의에서만 사용할 수 있으며, 자세한 내용은 :ref:`query-cache` 를 참고한다.
 
 .. note::
 
@@ -670,8 +718,8 @@ SQL 힌트는 주석에 더하기 기호(+)를 함께 사용하여 지정한다.
 
 MERGE 문에는 다음과 같은 힌트를 사용할 수 있다. 
 
-*   **USE_INSERT_INDEX** (<*insert_index_list*>): MERGE 문의 INSERT 절에서 사용되는 인덱스 힌트. *insert_index_list*\ 에 INSERT 절을 수행할 때 사용할 인덱스 이름을 나열한다. MERGE 문의 <*join_condition*>에 해당 힌트가 적용된다.
-*   **USE_UPDATE_INDEX** (<*update_index_list*>): MERGE 문의 UPDATE 절에서 사용되는 인덱스 힌트. *update_index_list*\ 에 UPDATE 절을 수행할 때 사용할 인덱스 이름을 나열한다. MERGE 문의 <*join_condition*>과 <*update_condition*>에 해당 힌트가 적용된다.
+*   **USE_INSERT_IDX** (<*insert_index_list*>): MERGE 문의 INSERT 절에서 사용되는 인덱스 힌트. *insert_index_list*\ 에 INSERT 절을 수행할 때 사용할 인덱스 이름을 나열한다. MERGE 문의 <*join_condition*>에 해당 힌트가 적용된다.
+*   **USE_UPDATE_IDX** (<*update_index_list*>): MERGE 문의 UPDATE 절에서 사용되는 인덱스 힌트. *update_index_list*\ 에 UPDATE 절을 수행할 때 사용할 인덱스 이름을 나열한다. MERGE 문의 <*join_condition*>과 <*update_condition*>에 해당 힌트가 적용된다.
 *   **RECOMPILE**: 위의 :ref:`RECOMPILE <recompile>`\ 을 참고한다.
 
 조인 시 사용하는 힌트의 경우 힌트 안에 조인할 테이블이나 뷰 이름을 명시할 수 있는데, 이때 테이블 이름/뷰 이름은 ","로 구분한다.
@@ -2339,3 +2387,80 @@ SORT-LIMIT 최적화는 **ORDER BY** 절과 LIMIT 절을 명시한 질의에 적
                    cost:  6 card 1000
         sort:  2 asc
         cost:  7 card 0
+
+.. _query-cache :
+
+쿼리 캐시
+===========
+
+**QUERY_CACHE** 힌트는 반복적으로 실행되는 쿼리의 성능을 향상시키는 데 사용할 수 있으며, 쿼리는 전용 메모리 영역에 캐시되고 그 결과도 별도의 디스크 공간에 캐시된다. 단, 힌트는 SELECT 쿼리에만 적용된다. 그러나 다음과 같은 경우에는 쿼리에 힌트를 적용 할 수 없으며 힌트는 의미가 없어진다.
+
+* 아래와 같이 질의에 시스템 시간 또는 날짜 관련 속성이 포함된 경우.
+    예) SELECT SYSDATE, ADDDATE (SYSDATE, INTERVAL -24 HOUR), ADDDATE (SYSDATE, -1);
+* SERIAL 관련 속성이 포함된 경우.
+* 컬럼 경로 관련 속성이 포함된 경우.
+* 메서드가 포함된 경우.
+* 저장 프로 시저 또는 저장 함수가 포함된 경우.
+* dual, _db_attribute 등과 같은 시스템 테이블이 포함된 경우.
+* sys_guid ()와 같은 시스템 함수가 포함된 경우.
+
+힌트가 설정되고 새 SELECT 질의가 처리될 때 질의가 캐시에서 발견되면 쿼리 캐시를 사용한다. 동일한 데이터베이스에서 동일한 질의 텍스트와 동일한 바인딩 값을 사용하는 경우 질의는 동일한 것으로 간주된다. 캐시된 질의를 찾을 수 없는 경우 질의가 처리된 다음 결과와 함께 캐시가 생성된다. 질의가 캐시에서 발견되면 캐시된 영역에서 결과를 가져온다. CSQL에서는 아래 예제와 같이 COUNT 함수를 사용하여 질의를 반복적으로 실행할 때 개선된 성능을 쉽게 측정 할 수 있다. 첫번째 질의에 대한 결과는 캐시가 되어 있지 않아서 느리지만, 두 번째 질의의 결과는 캐시 된 영역에서 가져오므로 응답 시간이 이전 질의보다 훨씬 빠르다. ::
+
+    csql> SELECT /*+ QUERY_CACHE */ count(*) FROM game;
+
+    === <Result of SELECT Command in Line 1> ===
+
+         count(*)
+    =============
+         8653
+
+    1 row selected. (0.107082 sec) Committed.
+
+    1 command(s) successfully processed.
+
+    csql> SELECT /*+ QUERY_CACHE */ count(*) FROM game;
+
+    === <Result of SELECT Command in Line 1> ===
+
+         count(*)
+    =============
+         8653
+
+    1 row selected. (0.003932 sec) Committed.
+
+    1 command(s) successfully processed.
+
+다음과 같이 CSQL에 세션 명령 *;info qcache* 를 입력하여 쿼리가 캐시되는지 여부를 확인할 수 있다. ::
+
+    csql> ;info qcache
+
+    LIST_CACHE {
+      n_hts 1010
+      n_entries 1  n_pages 1
+      lookup_counter 1
+      hit_counter 1
+      miss_counter 0
+      full_counter 0
+    }
+
+    list_hts[0] 0x6a74d10
+    HTABLE NAME = list file cache (DB_VALUE list), SIZE = 211, REHASH_AT = 147,
+    NENTRIES = 1, NPREALLOC = 0, NCOLLISIONS = 0
+
+    HASH AT 0
+    LIST_CACHE_ENTRY (0x6c46d18) {
+      param_values = [ ]
+      list_id = { type_list { 1 integer/1 } tuple_cnt 1 page_cnt 1 first_vpid { 65 32766 } last_vpid { 65 32766 } lasttpl_len 24 query_id 2
+      temp_vfid { 64 32766 } }
+      uncommitted_marker = false
+      tran_isolation = 4
+      tran_index_array = [ ]
+      last_ta_idx = 0
+      query_string = select /*+ QUERY_CACHE */ count(*) from [game] [game]?193="en_US";194="en_US";249="Asia/Seoul";user=0|833|1
+      time_created = 11/23/20 16:07:12.779703
+      time_last_used = 11/23/20 16:07:22.772330
+      ref_count = 1
+      deletion_marker = false
+    }
+
+캐시 된 질의는 결과 화면 중간에 **query_string** 으로 표시되며 각 **n_entries** 및 **n_pages** 는 캐시된 질의 수와 캐시 된 결과의 페이지 수를 나타낸다. **n_entries** 는 파라미터 **max_query_cache_entries** 의 값으로 제한되고 **n_pages** 는 **query_cache_size_in_pages** 의 값으로 제한된다. **n_entries** 가 초과되거나 **n_pages** 가 초과되면 캐시 항목 중 일부가 삭제될 후보로 선택되어 삭제되고, 삭제되는 캐시는 **max_query_cache_entries** 값과 **query_cache_size_in_pages** 값의 약 20% 이다.

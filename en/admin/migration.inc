@@ -300,7 +300,7 @@ The following table shows [options] available with the **cubrid loaddb** utility
 
     This option specifies the table name if a table name header is omitted in the data file to be loaded. ::
 
-        cubrid loaded -u dba -d demodb_objects -t tbl_name newdb
+        cubrid loaddb -u dba -d demodb_objects -t tbl_name newdb
 
 .. option:: --error-control-file=FILE
 
@@ -531,3 +531,7 @@ The following steps describes migration scenario that can be applied while the e
 .. warning:: 
 
     Even if the version is identical, the 32-bit database volume and the 64-bit database volume are not compatible for backup and recovery. Therefore, it is not recommended to recover a 32-bit database backup on the 64-bit CUBRID or vice versa.
+
+.. warning::
+
+    When using the TDE feature in CUBRID 11, it does not provide backward compatibility. So, the unloaded file in CUBRID 11 cannot be loaded into a lower version if more the one TDE table exists.

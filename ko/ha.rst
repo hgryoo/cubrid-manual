@@ -926,7 +926,7 @@ CAS가 연결할 호스트 순서를 결정할 때 **$CUBRID_DATABASES/databases
 
 *   2차 연결: 1차 연결 실패 후 실패한 위치에서부터 두번째로 접속을 시도하는 단계. DB 상태(active/standby)와 복제 지연 여부를 무시. 단, **SO** 브로커는 항상 standby DB에만 접속 허용.
 
-    이때는 DB의 상태(active/standby) 및 복제 지연 여부와 무관하게 접속이 가능하면 접속을 결정한다. 하지만 질의 수행 단계에서 에러가 발생할 수 있다. 예를 들어 **ACCESS_MODE** 가 **RW**인데 standby 상태의 서버에 접속하면 INSERT 질의 수행 시 에러가 발생한다. 에러 발생과는 무관하게, standby로 연결되어 트랜잭션이 수행된 이후에는 1차 연결을 다시 시도한다. 단, **SO** 브로커는 절대로 active DB에 연결될 수 없다.
+    이때는 DB의 상태(active/standby) 및 복제 지연 여부와 무관하게 접속이 가능하면 접속을 결정한다. 하지만 질의 수행 단계에서 에러가 발생할 수 있다. 예를 들어 **ACCESS_MODE** 가 **RW**\인데 standby 상태의 서버에 접속하면 INSERT 질의 수행 시 에러가 발생한다. 에러 발생과는 무관하게, standby로 연결되어 트랜잭션이 수행된 이후에는 1차 연결을 다시 시도한다. 단, **SO**\ 브로커는 절대로 active DB에 연결될 수 없다.
     
 **MAX_NUM_DELAYED_HOSTS_LOOKUP**\ 의 값에 따라 접속을 시도하는 호스트의 개수가 제한되는 방법은 다음과 같다:
 
@@ -1805,7 +1805,7 @@ HA로 구성된 노드 수가 많으므로 CUBRID HA 그룹 내의 여러 노드
 
 부하 분산 구성은 HA 구성(한 개의 마스터 노드와 한 개의 슬레이브 노드)에 여러 개의 레플리카 노드를 두어 CUBRID 서비스의 가용성을 높이고, 많은 읽기 부하를 분산하여 처리할 수 있는 구성이다.
 
-레플리카 노드들은 HA 구성에 포함된 노드들로부터 복제 로그를 받아 데이터를 동일하게 유지하고, HA 구성에 포함된 노드들은 레플리카 노드에서 복제 로그를 받지 않으므로 다중 슬레이브 구성에 비해 네트워크 및 디스크 사용률이 낮다.
+레플리카 노드들은 HA 구성 중 마스터 노드로부터 복제 로그를 받아 데이터를 동일하게 유지하고, 마스터 노드는 레플리카 노드에서 복제 로그를 받지 않으므로 다중 슬레이브 구성에 비해 네트워크 및 디스크 사용률이 낮다.
 
 레플리카 노드는 HA 구성에 포함되지 않으므로 HA 구성 내의 모든 노드에 장애가 발생해도 failover되지 않고 읽기 서비스만 제공한다.
 
@@ -1996,9 +1996,13 @@ CUBRID HA 그룹 내의 노드 간 특정 테이블의 데이터가 동기화되
 
 분할 테이블에서 **PROMOTE** 문에 의해 일부 분할이 승격된 테이블은 모든 데이터를 슬레이브에 복제하지만, 기본 키를 가지지 않게 되므로 이후 마스터에서 해당 테이블의 데이터를 수정해도 슬레이브에 반영되지 않음에 주의한다.
 
+.. note::
+
+    **USE_SBR** 힌트를 통해 기본키가 설정되지 않은 테이블에 대한 데이터 복제도 지원한다. 자세한 내용은 :ref:`sql-hint` 을 참고한다.
+
 **Java 저장 프로시저(java stored procedure)**
 
-CUBRID HA에서 Java 저장 프로시저 환경 구축은 복제되지 않으므로, Java 저장 프로시저를 사용하려면 모든 노드에 각각 Java 저장 프로시저 환경을 설정해야 한다. :ref:`jsp-environment-configuration`\ 을 참고한다.
+CUBRID HA에서 Java 저장 프로시저 환경 구축은 복제되지 않으므로, Java 저장 프로시저를 사용하려면 모든 노드에 각각 Java 저장 프로시저 환경을 설정해야 한다. :ref:`cubrid-javasp-server-config`\ 을 참고한다.
 
 **메서드**
 
@@ -2212,6 +2216,10 @@ restoreslave
 .. option:: -u, --use-database-location-path
 
     이 옵션은 databases.txt에 지정된 데이터베이스 경로로 복구를 수행할 경우 지정한다. 더 많은 정보는 :ref:`restoredb` 의 -u 옵션을 참고한다.
+
+.. option:: -k, --keys-file-path=PATH
+
+    이 옵션은 복구 시 필요한 키 파일의 경로를 지정한다. 더 많은 정보는 :ref:`restoredb` 를 참고한다.
 
 복제 구축 시나리오 예제
 -----------------------
@@ -2595,7 +2603,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
     
         ::
     
-            [nodeB]$ 
+            [nodeB]$ cd $CUBRID_DATABASES/testdb/log
             [nodeB]$ scp -l 131072 testdb_bk* cubrid_usr@nodeC:$CUBRID_DATABASES/testdb/log
         
         .. note::
@@ -2990,7 +2998,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
     
         ::
     
-            [nodeB]$ 
+            [nodeB]$ cd $CUBRID_DATABASES/testdb/log
             [nodeB]$ scp -l 131072 testdb_bk* cubrid_usr@nodeC:$CUBRID_DATABASES/testdb/log
             
             .. note::
@@ -3193,10 +3201,10 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
         ::
         
             [nodeA]$ csql --sysadm -u dba testdb@localhost 
-            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path-='/home/cubrid/DB/databases/testdb_nodeB'
+            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeB';
 
             [nodeC]$ csql --sysadm --write-on-standby -u dba testdb@localhost 
-            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path-='/home/cubrid/DB/databases/testdb_nodeB'
+            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeB';
 
     *   *nodeA* 백업
 
@@ -3273,7 +3281,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             
             repl_log_path=$repl_log_home_abs/${db_name}_${master_host}
 
-            local_db_creation=`awk 'BEGIN { print strftime("%m/%d/%Y %H:%M:%S", $db_creation) }'`
+            local_db_creation=`awk 'BEGIN { print strftime("%m/%d/%Y %H:%M:%S", '$db_creation') }'`
                 csql_cmd="\
                 INSERT INTO \
                         db_ha_apply_info \
@@ -3404,11 +3412,11 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
 복제 불일치 감지 방법
 ---------------------
 
-마스터 노드와 슬레이브 노드의 데이터가 일치하지 않는 복제 노드 간 데이터 불일치 현상은 다음과 같은 과정을 통해 어느 정도 감지할 수 있다. 또한 :ref:`cubrid-checksumdb` 유틸리티를 사용해 복제 불일치를 감지할 수도 있다.  그러나 마스터 노드와 슬레이브 노드의 데이터를 서로 직접 비교해보는 방법보다 더 정확한 확인 방법은 없다. 복제 불일치 상태라는 판단이 될 경우, 마스터 노드의 데이터베이스를 슬레이브 노드에 새로 구축해야 한다.( :ref:`rebuilding-replication` 참고).
+마스터 노드와 슬레이브 노드(또는 레플리카 노드)의 데이터가 일치하지 않는 복제 노드 간 데이터 불일치 현상은 다음과 같은 과정을 통해 어느 정도 감지할 수 있다. 또한 :ref:`cubrid-checksumdb` 유틸리티를 사용해 복제 불일치를 감지할 수도 있다.  그러나 마스터 노드와 슬레이브 노드(또는 레플리카 노드)의 데이터를 서로 직접 비교해보는 방법보다 더 정확한 확인 방법은 없다. 복제 불일치 상태라는 판단이 될 경우, 마스터 노드의 데이터베이스를 슬레이브 노드(또는 레플리카 노드)에 새로 구축해야 한다.( :ref:`rebuilding-replication` 참고).
 
 *   **cubrid statdump** 명령을 수행하여 **Time_ha_replication_delay** 시간을 확인한다. 이 값이 클 수록 복제 지연 정도가 클 수 있다는 것을 의미하며, 지연된 시간만큼 복제 불일치가 존재할 가능성이 커진다.
 
-*   슬레이브 노드에서 **cubrid applyinfo** 를 실행하여 "Fail count" 값을 확인한다. "Fail count"가 0이면, 복제에 실패한 트랜잭션이 없다고 볼 수 있다(:ref:`cubrid-applyinfo` 참고). ::
+*   슬레이브 노드(또는 레플리카 노드)에서 **cubrid applyinfo** 를 실행하여 "Fail count" 값을 확인한다. "Fail count"가 0이면, 복제에 실패한 트랜잭션이 없다고 볼 수 있다(:ref:`cubrid-applyinfo` 참고). ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
          
@@ -3422,7 +3430,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
         Fail count                     : 0
         ...
 
-*   슬레이브 노드에서 복제 로그의 복사 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Copied Active Info."의 "Append LSA" 값과 "Active Info."의 "Append LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브 노드에 복사되는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
+*   슬레이브 노드(또는 레플리카 노드)에서 복제 로그의 복사 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Copied Active Info."의 "Append LSA" 값과 "Active Info."의 "Append LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브 노드(또는 레플리카 노드)에 복사되는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
      
@@ -3444,7 +3452,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
 
 *   복제 로그 복사 지연이 의심되는 경우 네트워크 회선 속도가 느려졌는지, 디스크 여유 공간이 충분한지, 디스크 I/O에는 이상이 없는지 등을 확인한다.
 
-*   슬레이브 노드에서 복제 로그의 반영 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Applied Info." 의 "Committed page" 값과 "Copied Active Info."의 "EOF LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브 데이터베이스를 반영하는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
+*   슬레이브 노드(또는 레플리카 노드)에서 복제 로그의 반영 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Applied Info." 의 "Committed page" 값과 "Copied Active Info."의 "EOF LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브(또는 레플리카) 데이터베이스에 반영되는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
      
@@ -3465,11 +3473,11 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
         HA server state                : active
         ...
 
-*   복제 로그 반영 지연이 심한 경우 수행 시간이 긴 트랜잭션을 의심해 볼 수 있는데, 해당 트랜잭션의 수행이 정상이라면 복제 지연 역시 정상적으로 발생할 수 있다. 정상 여부를 판단하기 위해 **cubrid applyinfo** 를 지속적으로 수행하면서 applylogdb가 복제 로그를 슬레이브 노드에 계속 반영하고 있는지 확인해야 한다.
+*   복제 로그 반영 지연이 심한 경우 수행 시간이 긴 트랜잭션을 의심해 볼 수 있는데, 해당 트랜잭션의 수행이 정상이라면 복제 지연 역시 정상적으로 발생할 수 있다. 정상 여부를 판단하기 위해 **cubrid applyinfo** 를 지속적으로 수행하면서 applylogdb가 복제 로그를 슬레이브 노드(또는 레플리카 노드)에 계속 반영하고 있는지 확인해야 한다.
 
 *   copylogdb, applylogdb 프로세스가 생성한 오류 로그의 메시지를 확인한다(오류 메시지 참고).
 
-*   마스터 데이터베이스 테이블의 레코드 개수, 슬레이브 데이터베이스 테이블의 레코드 개수를 비교한다.
+*   마스터 데이터베이스 테이블의 레코드 개수, 슬레이브(또는 레플리카) 데이터베이스 테이블의 레코드 개수를 비교한다.
 
 
 
@@ -3478,7 +3486,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
 checksumdb
 ----------
 
-**checksumdb** 를 통해 간단하게 복제 무결성을 확인할 수 있다. 기본적으로 이 유틸리티는 마스터 노드의 각 테이블을 청크(chunk)로 분할한 후 CRC32 값을 계산한다. 계산 값이 아닌 계산 방법이 CUBRID HA를 통해 복제된다. 결과적으로 마스터 노드와 슬레이브 노드에서 계산된 CRC32 값을 비교함으로써 **checksumdb** 는 복제 무결성 여부를 확인할 수 있다. **checksumdb** 는 성능 저하를 최소화하도록 설계되었으나 마스터의 성능에 영향을 줄 수 있어 사용시 유의해야 한다. ::
+**checksumdb** 를 통해 간단하게 복제 무결성을 확인할 수 있다. 기본적으로 이 유틸리티는 마스터 노드의 각 테이블을 청크(chunk)로 분할한 후 CRC32 값을 계산한다. 계산 값이 아닌 계산 방법이 CUBRID HA를 통해 복제된다. 결과적으로 마스터 노드와 슬레이브 노드(또는 레플리카 노드)에서 계산된 CRC32 값을 비교함으로써 **checksumdb** 는 복제 무결성 여부를 확인할 수 있다. **checksumdb** 는 성능 저하를 최소화하도록 설계되었으나 마스터의 성능에 영향을 줄 수 있어 사용시 유의해야 한다. ::
 
         cubrid checksumdb [options] <database-name>@<hostname>
 
@@ -3960,6 +3968,8 @@ ha_make_slavedb.sh 스크립트
 *   **restore_option** : 복제 대상 노드에서 **restoredb** 수행 시 필요한 옵션을 설정한다.
 
 *   **scp_option** : 복제 원본 노드의 백업 볼륨을 복제 대상 노드로 복사해 오기 위한 **scp** 옵션을 설정할 수 있는 항목으로 기본값은 복제 원본 노드의 네트워크 부하를 주지 않기 위해 **-l 131072** 옵션을 사용한다(전송 속도를 16M로 제한).
+
+*   **ssh_port** : 스크립트에서 사용되는 ssh와 scp를 위한 **port** 번호를 설정할 수 있는 항목으로 기본값은 **22** 로 설정된다. 이 옵션은 스크립트에서 이용되는 **expect** 에도 동일하게 적용된다.
 
 스크립트의 설정이 끝나면 **ha_make_slavedb.sh** 스크립트를 복제 대상 노드에서 수행한다. 스크립트 수행 시 여러 단계에 의해 복제 재구축이 이루어지며 각 단계의 진행을 위해서 사용자가 적절한 값을 입력해야 한다. 다음은 입력할 수 있는 값에 대한 설명이다.
 

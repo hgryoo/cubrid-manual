@@ -40,6 +40,7 @@ The following shows how to use the cubrid management utilities. ::
         dumplocale [option] <database-name>   --- Printing human readable text for the compiled binary locale information
         gen_tz [option] [<database-name>]  --- Generates C source file containing timezone data ready to be compiled into a shared library
         dump_tz [option]  --- Displaying timezone related information
+        tde <operation> [option] <database-name> --- Managing Transparent Data Encryption (TDE)
 
 cubrid Utility Logging
 ----------------------
@@ -289,6 +290,16 @@ The following example shows how to create a database, with additional volumes, i
     cubrid createdb --db-volume-size=512M --log-volume-size=256M cubriddb en_US
     cubrid addvoldb -S -n cubriddb_DATA01 --db-volume-size=512M cubriddb
     cubrid addvoldb -S -p temp -n cubriddb_TEMP01 --db-volume-size=512M cubriddb
+
+.. note:: **Creating a database using an existing key file**
+
+    When the database is created, a key file is created together by default. If you want to use an existing key file when creating a database:
+   
+    #.  Copy the key file with the name **<database-name>_keys**.
+    #.  Specify the directory path of the copied key file by the system parameter **tde_keys_file_path**.
+    #.  Create a database by using the **createdb utility**.
+
+    For more information on the TDE key file, see :ref:`tde-file-based-key`.
 
 .. _adding-database-volume:
 
@@ -790,9 +801,9 @@ Reference to the object deleted during compacting is displayed as **NULL**, whic
 
 *   *database_name*: The name of the database whose space is to be compacted. The path name to the directory where the database is to be created must not be included.
 
-*   *class_name_list*: You can specify the list of tables names that you want to compact space after a database name; the **-i** option cannot be used together. It is used in client/server mode only.
+*   *class_name_list*: You can specify the list of tables names that you want to compact space after a database name; the **-i** option cannot be used together. If you use the lists on client/server mode, it skips securing space taken by objects such as catalog, delete files and tracker, etc. 
 
-**-I**, **-i**, **-c**, **-d**, **-p** options are applied in client/server mode only.
+**-I**, **-c**, **-d**, **-p** options are applied in client/server mode only.
 
 The following shows [options] available with the **cubrid compactdb** utility.
 
@@ -815,11 +826,11 @@ The following shows [options] available with the **cubrid compactdb** utility.
 
     This option specifies to compact used space in client/server mode while database server is running; no argument is specified. Even though this option is omitted, system recognizes that the job is executed in client/server mode. 
 
-The following options can be used in client/server mode only.
-
 .. option:: -i, --input-class-file=FILE
 
-    You can specify an input file name that contains the table name with this option. Write one table name in a single line; invalid table name is ignored. Note that you cannot specify the list of the table names after a database name in case of you use this option.
+    You can specify an input file name that contains the table name with this option. Write one table name in a single line; invalid table name is ignored. Note that you cannot specify the list of the table names after a database name in case of you use this option. If you use this option on client/server mode, it skips securing space taken by objects such as catalog, delete files and tracker, etc.
+
+The following options can be used in client/server mode only.
 
 .. option:: -p, --pages-commited-once=NUMBER
 
@@ -2787,7 +2798,7 @@ When the object type is a class (table), *Nsubgranules* is displayed, which is t
 tranlist
 --------
 
-The **cubrid tranlist** is used to check the transaction information of the target database. Only DBA or DBA group can use this utility. ::
+The **cubrid tranlist** is used to check the transaction information of the target database. ::
 
     cubrid tranlist [options] database_name
 
@@ -2845,14 +2856,6 @@ The following shows [options] available with the **cubrid tranlist** utility.
 
 .. program:: tranlist
 
-.. option:: -u, --user=USER
-
-    *USER* is DB user's ID to log-in. It only allows DBA and DBA group users.(The default: DBA)
-    
-.. option:: -p, --password=PASSWORD
-
-    *PASSWORD* is DB user's password.
-    
 .. option:: -s, --summary
 
     This option outputs only summarized information(it omits query execution information or locking information).
@@ -2920,7 +2923,7 @@ The following shows [options] available with the **cubrid tranlist** utility.
 killtran
 --------
 
-The **cubrid killtran** is used to check transactions or abort specific transaction. Only a DBA can execute this utility. ::
+The **cubrid killtran** is used to check transactions or abort specific transaction. Only a **DBA** can use options for killing a transaction. ::
 
     cubrid killtran [options] database_name
 
@@ -2971,7 +2974,7 @@ The following shows [options] available with the **cubrid killtran** utility.
 
         cubrid killtran --kill-user-name=os_user_id demodb
 
-.. option::  --kill- host-name=HOST
+.. option::  --kill-host-name=HOST
 
     This option kills transactions of a specified client host. ::
 
@@ -2989,15 +2992,16 @@ The following shows [options] available with the **cubrid killtran** utility.
 
         cubrid killtran --kill-sql-id=5377225ebc75a demodb
 
-.. option:: -p PASSWORD
+.. option:: -p, --dba-password=PASSWORD
 
+    This option can only be used, if using killing option such as -i and --kill options.
     A value followed by the -p option is a password of the **DBA**, and should be entered in the prompt.
 
 .. option:: -q, --query-exec-info
 
     The difference with the output of "cubrid tranlist" command is that there are no "User name" column and "Host name" column. See :ref:`tranlist`.
 
-.. option:: -d, --display
+.. option:: -d, --display-information
 
     This is the default option and it displays the summary of transactions. Its output is the same as the output of "cubrid tranlist" with **-s** option. See :option:`tranlist -s`
         
@@ -3211,6 +3215,89 @@ The following shows [options] available with the **cubrid paramdump** utility.
     This option displays parameter information of the server process in client/server mode. ::
 
         cubrid paramdump -C demodb
+
+.. _tde-utility:
+
+tde
+---
+
+The **cubrid tde** utility is used to manage the TDE encryption of the database and can only be executed by the **DBA** user. With **cubrid tde** utility, you can change the key set on the database, add a new key, or remove a key in the key file stably. Also, you can inquire about the keys added to the key file and the key set on the database. For more information, see :ref:`tde`.
+
+::
+
+    cubrid tde <operation> [option] database_name
+
+*   **cubrid**: An integrated utility for the CUBRID service and database management.
+
+*   **tde**: A utility that manages TDE encryption applied to the database.
+
+*   *operation*: There are four types of operation: key addition, key deletion, key change, and showing keys' information. One operation must be set, and they are exclusive.
+
+*   *database_name*: The name of the database on which TDE administration operations to be performed.
+
+The following table shows <operation> available with the cubrid tde utility.
+
+.. program:: tde
+
+.. option:: -s, --show-keys
+
+    This option displays information about the keys set on the database and keys in the key file (_keys).  ::
+
+        $ cubrid tde -s testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        The current key set on testdb:
+        Key Index: 2
+        Created on Fri Nov 27 11:14:54 2020
+        Set     on Fri Nov 27 11:15:30 2020
+
+        Keys Information:
+        Key Index: 0 created on Fri Nov 27 11:11:27 2020
+        Key Index: 1 created on Fri Nov 27 11:14:47 2020
+        Key Index: 2 created on Fri Nov 27 11:14:54 2020
+        Key Index: 3 created on Fri Nov 27 11:14:55 2020
+
+        The number of keys: 4
+
+    **The current key** section shows the information on the key set on the current database, which displays the index for the key in the key file, the creation time, and the set time. The set key can be identified by the key index and creation time, and a key change plan can be established with the set time.
+
+    **Keys Information** section shows the keys added and being managed in the key file, through which the key indexes and creation time of them is checked.
+
+.. option:: -n, --generate-new-key
+
+    This option is used to add a new key to the key file (up to 128). If it is successful, the index of the added key is displayed, and this index is used to identify the key when changing or removing the key later. Information of added keys can be checked by \\-\\-show-keys. ::
+
+        $ cubrid tde -n testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        SUCCESS: A new key has been generated - key index: 1 created on Tue Dec  1 11:30:47 2020
+
+.. option:: -d, --delete-key=KEY_INDEX
+
+    This option is used to remove a key specified by index from the key file. The key currently set on the database cannot be removed. :: 
+
+        $ cubrid tde -d 1 testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        SUCCESS: The key (index: 1) has been deleted
+
+.. option:: -c, --change-key=KEY_INDEX
+
+    This option is used to change the key set on the database to another key existing in the key file. When changing, both the previously set key and the new key to be set must exist.  ::
+
+        $ cubrid tde -c 2 testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        Trying to change the key from the key (index: 0) to the key (index: 2)..
+        SUCCESS: The key has been changed from the key (index: 0) to the key (index: 2)
+
+    To change the key set on the database, a user must first create a key to be set by the \\-\\-generate-new-key option. The user can create a new key to change, or create multiple keys in advance for changing the key according to their own security plans.
+
+The following table shows [options] available with the cubrid tde utility.
+
+.. option:: -p, --dba-password=PASSWORD
+
+    This option specifies the password of the DBA.
 
 HA Commands
 -----------

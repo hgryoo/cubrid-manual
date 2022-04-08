@@ -31,15 +31,17 @@ To install CUBRID Python driver by compiling source code, you should have Python
 
 .. FIXME: If you do not have the package, follow the instructions stated at http://www.cubrid.org/wiki_apis/entry/install-python-development-package .
 
+#.  For building CCI Driver, GNU Developer Toolset 8 or higher is required.
+
 #.  Download the source code from https://www.cubrid.org/downloads#python.
 
 #.  Extract the archive to the desired location. ::
 
-        tar xvfz cubrid-python-src-8.4.0.0001.tar.gz
+        tar xvfz cubrid-python-11.0-latest.tar.gz
 
 #.  Navigate to the directory where you have extracted the source code. ::
 
-        cd cubrid-python-src
+        cd RB-11.0.0
 
 #.  Build the driver. At this and next step, make sure you are still under the root user. ::
 
@@ -51,7 +53,7 @@ To install CUBRID Python driver by compiling source code, you should have Python
 
 **Using a Package Manager (EasyInstall) of CUBRID Python Driver (Linux)**
 
-EasyInstall is a Python module (**easy_install**) bundled with **setuptools** that lets you automatically download, build, install, and manage Python packages. It gives you a quick way to install packages remotely by connecting to other websites via HTTP as well as connecting to the Package Index. It is somewhat analogous to the CPAN and PEAR tools for Perl and PHP, respectively. For more information about EasyInstall, see https://setuptools.readthedocs.io/en/latest/easy_install.html.
+EasyInstall is a Python module (**easy_install**) bundled with **setuptools** that lets you automatically download, build, install, and manage Python packages. It gives you a quick way to install packages remotely by connecting to other websites via HTTP as well as connecting to the Package Index. It is somewhat analogous to the CPAN and PEAR tools for Perl and PHP, respectively. For more information about EasyInstall, see https://setuptools.readthedocs.io/en/latest/deprecated/easy_install.html.
 
 Enter the command below to install CUBRID Python driver by using EasyInstall. ::
 
@@ -103,7 +105,7 @@ This sample program will show steps that you need to perform in order to connect
     
     .. code-block:: python
     
-        conn = CUBRIDdb.connect('CUBRID:localhost:30000:demodb:dba::')
+        conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'dba', '')
 
 For the *demodb* database, it is not required to enter any password. In a real-world scenario, you will have to provide the password to successfully connect. 
 The syntax to use the `connect <https://pythonhosted.org/CUBRID-Python/_cubrid-module.html#connect>`_ () function is as follows: ::
@@ -156,7 +158,7 @@ The entire script up to now looks like this:
 .. code-block:: python
 
     import CUBRIDdb
-    conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'public', '')
+    conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'dba', '')
     cur = conn.cursor()
      
     # Plain insert statement

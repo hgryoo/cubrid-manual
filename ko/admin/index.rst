@@ -1,5 +1,5 @@
 
-:meta-keywords: cubrid administrator, cubrid dba, cubrid tools, cubrid utilities, cubrid services, cubrid processes, cubrid config, cubrid troubleshoot
+:meta-keywords: cubrid administrator, cubrid dba, cubrid tools, cubrid utilities, cubrid services, cubrid processes, cubrid config, cubrid troubleshoot, ddl audit
 :meta-description: This manual chapter covers everything needed by database administrators how to use cubrid utilities, how to monitor cubrid systems, how to troubleshoot and how to fix problems.
 
 ***********
@@ -41,6 +41,10 @@ CUBRID 운영
 *   HA 유틸리티: HA 관련 프로세스를 구동 및 관리한다.
 
     *   :ref:`cubrid heartbeat <cubrid-heartbeat>`
+
+*   자바 저장프로시저 서버 유틸리티: 자바 저장프로시저 서버를 구동 및 관리한다.
+    
+    *   :ref:`cubrid javasp <cubrid-javasp-server>`
 
 자세한 설명은 :ref:`control-cubrid-processes` 절을 참조한다.
 
@@ -124,3 +128,4 @@ CUBRID 운영
     config.rst
     systemtap.rst
     troubleshoot.rst
+    ddl_audit.rst

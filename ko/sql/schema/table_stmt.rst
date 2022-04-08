@@ -78,9 +78,10 @@ CREATE TABLE
      
         <resolution> ::= [CLASS] {column_name} OF superclass_name [AS alias]
         <table_options> ::= <table_option> [[,] <table_option> ...] 
-            <table_option> ::= REUSE_OID | 
+            <table_option> ::= REUSE_OID | DONT_REUSE_OID |
                                COMMENT [=] 'table_comment_string' |
-                               [CHARSET charset_name] [COLLATE collation_name]
+                               [CHARSET charset_name] [COLLATE collation_name] |
+                               ENCRYPT [=] [AES | ARIA]
 
 *   **IF NOT EXISTS**: 생성하려는 테이블이 존재하는 경우 에러 없이 테이블을 생성하지 않는다. 
 *   *table_name*: 생성할 테이블의 이름을 지정한다(최대 254바이트).
@@ -685,6 +686,15 @@ KEY 또는 INDEX
 테이블 옵션
 -----------
 
+테이블 옵션 중 **REUSE_OID** 와 **DONT_REUSE_OID** 은 생성하는 테이블이 참조 가능한 테이블인지 아닌지를 지정하는 옵션이다. 두개의 옵션은 함께 사용할 수 없으며 다른 옵션들과는 함께 사용할 수 있다. 테이블 생성시 옵션을 생략한 경우에는 **REUSE_OID** 테이블 옵션을 사용한다. 기본 옵션을 **DONT_REUSE_OID** 로 변경하려면, 시스템 파라미터인 **create_table_reuseoid** 값을 **no** 로 변경하면 된다. 자세한 내용은 :ref:`stmt-type-parameters` 를 참조하면 된다.
+
+::
+
+        <table_options> ::= <table_option> [[,] <table_option> ...]
+            <table_option> ::= REUSE_OID | DONT_REUSE_OID |
+                               COMMENT [=] 'table_comment_string' |
+                               [CHARSET charset_name] [COLLATE collation_name]
+
 .. _reuse-oid:
 
 REUSE_OID
@@ -728,6 +738,13 @@ OID(Object Identifier)는 볼륨 번호, 페이지 번호, 슬롯 번호와 같�
     *   OID 재사용 테이블은 CUBRID 2008 R2.2 버전 이상에서만 지원되며, 하위 호환성을 보장하지 않는다. 즉, 더 낮은 버전의 데이터베이스 서버에서 OID 재사용 테이블이 존재하는 데이터베이스에 접근할 수 없다.
     *   OID 재사용 테이블은 분할 테이블로 관리될 수 있으며, 복제될 수 있다.
 
+.. _dont-reuse-oid:
+
+DONT_REUSE_OID
+^^^^^^^^^^^^^^
+
+테이블 생성시 **DONT_REUSE_OID** 옵션을 명시하면, **REUSE_OID** 와 상반된 참조 가능(referable)한 테이블을 생성한다. 
+
 문자셋과 콜레이션
 ^^^^^^^^^^^^^^^^^
 
@@ -758,10 +775,30 @@ OID(Object Identifier)는 볼륨 번호, 페이지 번호, 슬롯 번호와 같�
     
     csql> ;sc tbl
 
+.. _create-tde-table:
+
+테이블 암호화 (TDE)
+^^^^^^^^^^^^^^^^^^^
+
+다음과 같이 테이블을 암호화할 수 있다. TDE 암호화에 관한 자세한 내용은 :ref:`tde` 절을 참고한다. 
+
+.. code-block:: sql
+
+    CREATE TABLE enc_tbl (a INT, b INT) ENCRYPT = AES;
+
+암호화 알고리즘으로 **AES**, **ARIA** 를 지정할 수 있다. 다음과 같이 생략할 경우 시스템 파라미터 **tde_default_algorithm** 으로
+지정된 암호화 알고리즘이 사용 된다. 기본 값은 **AES** 이다.
+
+.. code-block:: sql
+
+    CREATE TABLE enc_tbl (a INT, b INT) ENCRYPT;
+
+암호화 여부는 상속되지 않는다.
+
 CREATE TABLE LIKE
 -----------------
 
-**CREATE TABLE ... LIKE** 문을 사용하면, 이미 존재하는 테이블의 스키마와 동일한 스키마를 갖는 테이블을 생성할 수 있다. 기존 테이블에서 정의된 칼럼 속성, 테이블 제약 조건, 인덱스도 그대로 복제된다. 원본 테이블에서 자동 생성된 인덱스의 이름은 새로 생성된 테이블의 이름에 맞게 새로 생성되지만, 사용자에 의해 지어진 인덱스 이름은 그대로 복제된다. 그러므로 인덱스 힌트 구문(:ref:`index-hint-syntax` 참고)으로 특정 인덱스를 사용하도록 작성된 질의문이 있다면 주의해야 한다.
+**CREATE TABLE ... LIKE** 문을 사용하면, 이미 존재하는 테이블의 스키마와 동일한 스키마를 갖는 테이블을 생성할 수 있다. 기존 테이블에서 정의된 칼럼 속성, 테이블 제약 조건, 암호화 여부, 인덱스도 그대로 복제된다. 원본 테이블에서 자동 생성된 인덱스의 이름은 새로 생성된 테이블의 이름에 맞게 새로 생성되지만, 사용자에 의해 지어진 인덱스 이름은 그대로 복제된다. 그러므로 인덱스 힌트 구문(:ref:`index-hint-syntax` 참고)으로 특정 인덱스를 사용하도록 작성된 질의문이 있다면 주의해야 한다.
 
 **CREATE TABLE ... LIKE** 문은 스키마만 복제하므로 칼럼 정의문을 작성할 수 없다. 
 
@@ -970,7 +1007,8 @@ ALTER TABLE
             MODIFY <alter_modify> |            
             INHERIT <resolution>, ... |
             AUTO_INCREMENT = <initial_value> |
-            COMMENT [=] 'table_comment_string'
+            COMMENT [=] 'table_comment_string' |
+            COMMENT ON {COLUMN | CLASS ATTRIBUTE} <column_comment_definition> [, <column_comment_definition>] ;
                            
             <alter_add> ::= 
                 [ATTRIBUTE|COLUMN] [(]<class_element>, ...[)] [FIRST|AFTER old_column_name] |
@@ -1017,9 +1055,11 @@ ALTER TABLE
 
             <index_col_name> ::= column_name [(length)] [ASC | DESC]
 
+            <column_comment_definition> ::= column_name [=] 'column_comment_string'
+
 .. note::
 
-    칼럼의 커멘트는 <column_definition>에서 지정한다. <column_definition>은 위의 CREATE TABLE 구문을 참고한다.
+    칼럼의 커멘트는 <column_definition>에서 지정하거나 <column_comment_definition>에서 지정한다. <column_definition>은 위의 :ref:`CREATE TABLE 문법<column-definition>`\을 참고한다.
 
 .. warning::
 
@@ -1363,7 +1403,7 @@ CHANGE/MODIFY 절
 
 **CHANGE** 절이나 **MODIFY** 절로 새 칼럼에 적용할 타입, 크기 및 속성을 설정할 때 기존에 정의된 속성은 새 칼럼의 속성에 전달되지 않는다.
 
-**CHANGE** 절이나 **MODIFY** 절로 칼럼에 데이터 타입을 변경할 때, 기존의 칼럼 값이 변경되면서 데이터가 변형될 수 있다. 예를 들어 문자열 칼럼의 길이를 줄이면 문자열이 잘릴 수 있으므로 주의해야 한다.
+**CHANGE** 절이나 **MODIFY** 절로 칼럼에 데이터 타입을 변경할 때, 기존의 칼럼 값이 변경되면서 데이터가 변형될 수 있다. 예를 들어 문자열 칼럼의 길이를 줄이면 문자열이 잘릴 수 있으므로 주의해야 한다. 단, **alter_table_change_type_strict** 설정 값이 **yes** 인 경우 에러가 발생한다. 마찬가지로 **allow_truncated_string** 설정 값이 **no** 인 경우에도 에러가 발생한다.
 
 .. warning::
 
@@ -1607,13 +1647,13 @@ CHANGE/MODIFY 절
 
 **alter_table_change_type_strict** 파라미터의 값이 no이면 상황에 따라 다음과 같이 동작한다. 
 
-*   숫자 또는 문자열을 숫자로 변환 중 오버플로우 발생: 결과 타입의 부호에 따라 음수면 최소값, 양수면 최대값으로 정해지고 오버플로우가 발생한 레코드에 대한 경고 메시지가 로그에 기록된다. 문자열은 **DOUBLE** 타입으로 변환한 후 같은 법칙을 따른다.
+*   숫자 또는 문자열을 숫자로 변환 중 오버플로우 발생: 결과 타입의 부호에 따라 음수면 최소값, 양수면 최대값으로 정해지고 오버플로우가 발생한 레코드에 대한 경고 메시지가 로그에 기록된다. 문자열은 **DOUBLE** 타입으로 변환한 후 같은 법칙을 따른다. 다만, **allow_truncated_string** 설정 값이 **no** 인 경우 오버플로우 에러가 반환될 수 있다.
 
-*   문자열을 더 짧은 문자열로 변환: 레코드는 정의한 타입의 고정 기본값(hard default value)으로 업데이트되고 경고 메시지가 로그에 기록된다.
+*   문자열을 더 짧은 문자열로 변환: 레코드는 정의한 타입의 고정 기본값(hard default value)으로 업데이트되고 경고 메시지가 로그에 기록된다. 단, **allow_truncated_string** 설정 값이 **no**\인 경우 허용되지 않을 수 있다.
 
 *   그 밖의 이유로 인한 변환 실패: 레코드는 정의한 타입의 고정 기본값(hard default value)으로 업데이트되고 경고 메시지가 로그에 기록된다.
 
-**alter_table_change_type_strict** 파라미터의 값이 yes이면 위의 모든 경우에 에러 메시지를 출력하고 변경 내용을 롤백한다.
+**alter_table_change_type_strict** 파라미터의 값이 **yes** 혹은 **allow_truncated_string** 파라미터 값이 **no**\이면 에러 메시지를 출력하고 변경 내용이 롤백될 수 있다.
 
 **ALTER CHANGE** 문은 레코드를 업데이트하기 전에 해당 타입 변환이 가능한지 검사하지만, 특정 값은 타입 변환에 실패할 수도 있다. 예를 들어, **VARCHAR** 를 **DATE** 로 변환할 때 값의 형식이 올바르지 않으면 변환에 실패할 수 있으며, 이때에는 **DATE** 타입의 고정 기본값(hard default value)이 지정된다.
 
@@ -1668,18 +1708,27 @@ CHANGE/MODIFY 절
 칼럼의 커멘트
 -------------
 
-칼럼의 커멘트는 ADD/MODIFY/CHANGE 구문 뒤에 위치하는 <*column_definition*> 에서 지정한다. <*column_definition*>은 위의 CREATE TABLE 구문을 참고한다.
+칼럼의 커멘트는 ADD/MODIFY/CHANGE 구문 뒤에 위치하는 <*column_definition*> 에서 지정하거나 COMMENT ON COLUMN 구문 뒤에 위치하는 <column_comment_definition> 에서 지정한다. <*column_definition*>은 위의 :ref:`CREATE TABLE 문법<column-definition>`\을 참고한다.
 
-다음은 칼럼의 커멘트를 확인하는 구문이다.
+COMMENT ON COLUMN 구문에서는 하나 이상의 칼럼을 지정하여 칼럼 커멘트를 변경할 수 있다.
+다음은 COMMENT ON COLUMN 구문을 이용해서 칼럼의 커멘트를 변경하는 예제이다.
 
 .. code-block:: sql
 
-    SHOW CREATE TABLE table_name;
+    ALTER TABLE t1 COMMENT ON COLUMN c1 = 'changed table column c1 comment';
+    ALTER TABLE t1 COMMENT ON COLUMN c2 = 'changed table column c2 comment', c3 = 'changed table column c3 comment';
+
+다음은 칼럼의 커멘트를 확인하는 예제이다.
+
+.. code-block:: sql
+
+    SHOW CREATE TABLE t1 /* table_name */ ;
 
     SELECT attr_name, class_name, comment 
-    FROM db_attribute WHERE class_name ='classname';
+    FROM db_attribute
+    WHERE class_name = 't1' /* lowercase_table_name */ ;
 
-    SHOW FULL COLUMNS FROM table_name;
+    SHOW FULL COLUMNS FROM t1 /* table_name */ ;
 
 CSQL 인터프리터에서 ";sc table_name" 명령으로도 확인할 수 있다.
 
@@ -1687,7 +1736,7 @@ CSQL 인터프리터에서 ";sc table_name" 명령으로도 확인할 수 있다
 
     $ csql -u dba demodb
     
-    csql> ;sc table_name
+    csql> ;sc t1
 
 .. _rename-column:
 

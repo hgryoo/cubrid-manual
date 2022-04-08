@@ -2,6 +2,8 @@
 :meta-keywords: cubrid catalog
 :meta-description: With CUBRID you can easily obtain schema information using SQL statements on system catalog virtual classes.
 
+.. _catalog:
+
 **************
 System Catalog
 **************
@@ -73,6 +75,9 @@ Represents class information. An index for class_name is created.
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | collation_id       | INTEGER                   | Collation id                                                                             |
 |                    |                           |                                                                                          |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| tde_algorithm      | INTEGER                   | TDE encryption algorithm                                                                 |
+|                    |                           | 0: NONE, 1: AES, 2: ARIA                                                                 |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | sub_classes        | SEQUENCE OF _db_class     | Class one level down                                                                     |
 |                    |                           |                                                                                          |
@@ -882,6 +887,47 @@ A table that stores the progress status every time the **applylogdb** utility ap
 | start_time           | DATETIME        | Time when the applylogdb process accessed the slave database                                                                                       |
 +----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
 
+dual
+----
+
+The dual class is a one-row, one-column table that is used as a dummy table. It is used to select a constant, expression, or pseudo column such as SYS_DATE or USER. Pseudo columns can be provided as functions in CUBRID. More details and examples are in :ref:`operators-and-functions`. However, it is not mandatory to have FROM clause when selecting a constant, expression, or pseudo column because dual class will be referenced automatically. Like other system catalog classes, dual class is created to be owned by dba but dba can only execute SELECT operation. Unlike other system catalog classes, however, any user can execute SELECT operation on dual class.
+
++--------------------+---------------+----------------------------------------------------------+
+|   Attribute Name   |   Data Type   |   Description                                            |
++====================+===============+==========================================================+
+| dummy              | VARCHAR(1)    | Value used for dummy purpose only                        |
++--------------------+---------------+----------------------------------------------------------+
+
+The following example shows the result which ran the query that select pseudo column after inputting ";plan detail" or "SET OPTIMIZATION LEVEL 513;" in CSQL (:ref:`viewing-query-plan`). This shows the dual class is referenced automatically even if there is no FROM clause.
+
+.. code-block:: sql
+
+  SET OPTIMIZATION LEVEL 513;
+  SELECT SYS_DATE;
+
+::
+
+  Join graph segments (f indicates final):
+  seg[0]: [0]
+  Join graph nodes:
+  node[0]: dual dual(1/1) (loc -1)
+
+  Query plan:
+
+    sscan
+      class: dual node[0]
+      cost:  1 card 1
+
+  Query stmt:
+
+  select  SYS_DATE  from dual dual
+
+  === <Result of SELECT Command in Line 1> ===
+
+          SYS_DATE
+        ============
+          11/26/2020
+
 System Catalog Virtual Class
 ============================
 
@@ -902,6 +948,8 @@ Represents information of classes for which the current user has access authoriz
 | class_type         | VARCHAR(6)    | 'CLASS' for a class, and 'VCLASS' for a virtual class    |
 +--------------------+---------------+----------------------------------------------------------+
 | is_system_class    | VARCHAR(3)    | 'YES' for a system class, and 'NO' otherwise.            |
++--------------------+---------------+----------------------------------------------------------+
+| tde_algorithm      | VARCHAR(32)   | TDE encryption algorithm                                 |
 +--------------------+---------------+----------------------------------------------------------+
 | partitioned        | VARCHAR(3)    | 'YES' for a partitioned group class, and 'NO' otherwise. |
 +--------------------+---------------+----------------------------------------------------------+
@@ -981,9 +1029,11 @@ The following example shows how to retrieve system classes that can be accessed 
     ======================
       'db_authorization'
       'db_authorizations'
+      'db_ha_apply_info'
       'db_root'
       'db_serial'
       'db_user'
+      'dual'
 
 DB_DIRECT_SUPER_CLASS
 ---------------------

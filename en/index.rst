@@ -5,7 +5,7 @@
 .. _reference-index:
 
 #######################
-CUBRID 10.2 User Manual
+CUBRID 11.0 User Manual
 #######################
 
 Topic Quick Reference Table
@@ -28,7 +28,7 @@ Topic Quick Reference Table
 |                                | :doc:`/admin/admin_utils`       | :doc:`/sql/partition`           | :ref:`blocking DML w/o WHERE    | :doc:`/api/odbc`                | :ref:`cas-error`                |
 |                                |                                 |                                 | <block_nowhere_statement>`      |                                 |                                 |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
-|                                | :ref:`database-volume`          | :ref:`cursor-holding`           |                                 | :doc:`/api/adodotnet`           | :ref:`ha-error`                 |
+|                                | :ref:`database-volume`          | :ref:`cursor-holding`           | :ref:`tde`                      | :doc:`/api/adodotnet`           | :ref:`ha-error`                 |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
 |                                | :ref:`backupdb`                 |                                 |                                 | :doc:`/api/perl`                | :ref:`server-logs`              |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
@@ -54,6 +54,7 @@ Table of Contents
     sql/index.rst
     admin/index.rst
     ha.rst
+    security.rst
     api/index.rst
     release_note/index.rst
 

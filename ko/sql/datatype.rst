@@ -1047,6 +1047,7 @@ BIT VARYING(n)
     INSERT INTO bitvar_tbl VALUES (0b1010, 0b1010);
     INSERT INTO bitvar_tbl VALUES (0xaa, 0xaa);
     INSERT INTO bitvar_tbl(a1) VALUES (0xaaa);
+    INSERT INTO bitvar_tbl(a2) VALUES (0xaaa);
     SELECT * FROM bitvar_tbl;
 
 ::
@@ -1057,14 +1058,7 @@ BIT VARYING(n)
       X'a'                  X'a'
       X'aa'                 X'aa'
       X'aaa'                NULL
-
-.. code-block:: sql
-
-    INSERT INTO bitvar_tbl(a2) VALUES (0xaaa);
-
-::
-
-    ERROR: Data overflow coercing X'aaa' to type bit varying.
+      NULL                  X'aa'
 
 .. _char-data-type:
 
@@ -1107,7 +1101,8 @@ CUBRID는 두 종류의 문자열(character string) 타입을 지원한다.
 
     또한, 고정 길이 문자열 타입인 **CHAR** 에서는 선언한 길이에 고정되므로, 문자를 저장할 때 오른쪽에 공백 문자(trailing space)를 채운다. 한편, 가변 길이 문자열 타입인 **VARCHAR** 에서는 공백 문자를 채우지 않고 실제 입력된 문자열만큼 저장한다.
 
-    **CHAR** 또는 **VARCHAR** 타입에서 지정할 수 있는 최대 길이는 1,073,741,823이다.
+    **VARCHAR** 타입에서 지정할 수 있는 최대 길이는 1,073,741,823이며,
+    **CHAR** 타입에서 지정할 수 있는 최대 길이는 268,435,455이다.
     
     또한, **CSQL** 문장으로 한 번에 입력 또는 출력할 수 있는 최대 크기는 8192KB이다. 
     
@@ -1141,13 +1136,13 @@ CHAR(n)
 
 고정길이 문자열은 **CHAR** (*n*)로 표현하며, 여기서 *n* 은 문자의 개수를 나타낸다. *n* 이 생략되면 길이는 기본값인 1로 지정된다. 
 
-문자열의 길이가 *n* 을 초과하면 초과 부분을 절삭한다. *n* 보다 작은 문자열이 저장되면 나머지 부분은 공백 문자로 채워진다.
+문자열의 길이가 *n* 을 초과하면 **allow_truncated_string** 설정 값이 **yes** 인 경우 초과 부분을 절삭하지만, 설정 값이 **no**\인경우 에러가 발생한다. *n* 보다 작은 문자열이 저장되면 나머지 부분은 공백 문자로 채워진다.
 
 **CHAR** (*n*)와 **CHARACTER** (*n*)는 같은 의미로 사용된다.
 
 .. note:: CUBRID 9.0 미만 버전에서는 *n* 이 문자의 개수가 아니라 바이트 길이를 나타낸다.
 
-*   *n* 은 1부터 1,073,741,823(1G) 사이의 정수이다.
+*   *n* 은 1부터 268,435,455 (256M) 사이의 정수이다.
 
 *   공백 값은 빈 따옴표('')로 처리하며, 이 경우 **LENGTH** 함수의 리턴 값은 0이 아니라 **CHAR** (*n*)에서 정의한 고정길이이다. 즉, **CHAR** (10)인 칼럼에 공백 값을 넣더라도 리턴 값은 10이며, *n* 이 생략되면 기본값이 **1** 이므로 **CHAR** (1)로 간주된다.
 
@@ -1156,8 +1151,8 @@ CHAR(n)
 ::
 
     CHAR(12)에 'pacesetter'를 저장하면 'pacesetter  '가 된다(10자리 문자열과 공백 문자 2개로 구성됨).
-    CHAR(10)에 'pacesetter  '를 저장하면 'pacesetter'가 된다(10을 넘어서는 부분이 공백 문자이므로 이를 절삭하고 10자리 문자열로 구성됨).
-    CHAR(4)에 'pacesetter'를 저장하면 'pace'가 된다(문자열의 크기가 4보다 크므로 절삭함).
+    CHAR(10)에 'pacesetter  '를 저장하면 'pacesetter'가 된다(10을 넘어서는 부분이 공백 문자이므로 이를 절삭하고 10자리 문자열로 구성됨. 단, **allow_truncated_string** 설정 값이 **no**\인 경우 에러가 발생).
+    CHAR(4)에 'pacesetter'를 저장하면 'pace'가 된다(문자열의 크기가 4보다 크므로 절삭함. 단, **allow_truncated_string** 설정 값이 **no**\인 경우 에러가 발생).
     CHAR에 'p '를 저장하면 'p'가 된다(n이 생략되면 길이는 기본값인 1로 지정됨).
 
 *   이 타입의 칼럼에 **DEFAULT** 속성이 지정될 수 있다.
@@ -1167,7 +1162,7 @@ VARCHAR(n) 또는 CHAR VARYING(n)
 
 가변길이 문자열은 **VARCHAR** (*n*)로 표현하며, 여기서 *n* 은 문자의 개수를 나타낸다. *n* 이 생략되면 길이는 최대 길이인 1,073,741,823로 지정된다.
 
-문자열의 길이가 *n* 을 초과하면 초과 부분을 절삭한다. *n* 보다 작은 문자열이 저장되면 **CHAR** (*n*)는 나머지 부분을 공백 문자로 채우지만 **VARCHAR** (*n*)에는 해당 문자열 길이만큼만 저장한다.
+문자열의 길이가 *n* 을 초과하면 **allow_truncated_string** 설정 값이 **yes**\인 경우 초과 부분을 절삭하지만, 설정 값이 **no**\인경우 에러가 발생한다. *n* 보다 작은 문자열이 저장되면 **CHAR** (*n*)는 나머지 부분을 공백 문자로 채우지만 **VARCHAR** (*n*)에는 해당 문자열 길이만큼만 저장한다.
 
 **VARCHAR** (*n*)와 **CHARACTER VARYING** (*n*), **CHAR VARYING** (*n*)은 같은 의미로 사용된다.
 
@@ -1179,11 +1174,11 @@ VARCHAR(n) 또는 CHAR VARYING(n)
 
 ::
 
-    VARCHAR(4)에 'pacesetter'를 저장하면 'pace'가 된다(문자열의 크기가 4보다 크므로 절삭함).
+    VARCHAR(4)에 'pacesetter'를 저장하면 'pace'가 된다(문자열의 크기가 4보다 크므로 절삭함. 단, **allow_truncated_string** 설정 값이 **no**\인 경우 에러가 발생).
     VARCHAR(12)에 'pacesetter'를 저장하면 'pacesetter'가 된다(10자리 문자열로 구성됨).
     VARCHAR(12)에 'pacesetter  '를 저장하면 'pacesetter  '가 된다(10자리 문자열과 공백 문자 2개로 구성됨).
-    VARCHAR(10)에 'pacesetter  '를 저장하면 'pacesetter'가 된다(10을 넘어서는 부분이 공백 문자이므로 이를 절삭하고 10자리 문자열로 구성됨).
-    VARCHAR에 'p '를 저장하면 'p'가 된다(n이 생략되면 최대 길이는 기본값인 1,073,741,823로 지정되고, 저장 시 나머지 부분은 공백 문자로 채워지지 않음).
+    VARCHAR(10)에 'pacesetter  '를 저장하면 'pacesetter'가 된다(10을 넘어서는 부분이 공백 문자이므로 이를 절삭하고 10자리 문자열로 구성됨. 단, **allow_truncated_string** 설정 값이 **no**\인 경우 에러가 발생).
+    VARCHAR에 'p '를 저장하면 'p '가 된다(n이 생략되면 최대 길이는 기본값인 1,073,741,823로 지정되고, 저장 시 나머지 부분은 공백 문자로 채워지지 않음).
 
 *   이 타입의 칼럼에 **DEFAULT** 속성이 지정될 수 있다.
 
@@ -1333,6 +1328,28 @@ ESCAPE 절에서는 백슬래시가 이스케이프 문자로 간주되기 때�
 .. code-block:: sql
 
     SELECT a FROM t1 WHERE a LIKE 'aaa#%' ESCAPE '#';
+
+비교 규칙
+--------- 
+
+두 문자열 값을 비교할 때 후행 공백에 대한 비교 규칙은 다음과 같다.
+
+* 후행 공백 무시
+* 후행 공백 포함
+
+**후행 공백 무시**
+
+두 문자열 값이 모두 고정 길이 타입 (CHAR) 인 경우의 비교는 아래 예와 같이 후행 공백을 무시한다.
+'abc'와 'abc ' 비교 결과는 "일치" 이다.
+
+**후행 공백 포함**
+
+두 문자열 값이 모두 가변 길이 타입 (VARCHAR) 인 경우의 비교는 아래 예와 같이 후행 공백을 무시하지 않는다.
+'abc'를 'abc ' 비교 결과는 'abc '가 'abc'보다 "크다" 이다.
+
+**예외**
+
+두 문자열 값을 비교할 때 하나는 고정형이고 다른 하나는 변수형이면 CUBRID는 **후행 공백 포함** 규칙을 따른다.
 
 ENUM 데이터 타입
 ================
@@ -2078,6 +2095,8 @@ LIST 또는 SEQUENCE
     ============================================
       {'a', 'b', 'c'}  {'a', 'b', 'b', 'c', 'c', 'c'}
 
+.. _json-data-type:
+
 JSON 데이터 타입
 ================
 
@@ -2135,7 +2154,7 @@ JSON 값으로 자동으로 변환된다.
   ============================================
     {"a":1}               'json'
 
-JSON 데이터 타입은 :ref:`fn-json-object`나 :ref:`fn-json-array`를 사용하여 생성할 수도 있다.
+JSON 데이터 타입은 :ref:`fn-json-object` 나 :ref:`fn-json-array` 를 사용하여 생성할 수도 있다.
 
 JSON 유효성 검사
 ----------------
@@ -2191,7 +2210,7 @@ JSON 데이터로의 변환은 내장된 유효성 검사를 수행하고
 JSON 데이터의 타입
 --------------------
 
-JSON 데이터의 값은 `RFC 7159 <https://tools.ietf.org/html/rfc7159#section-3>`_에서 정의된 것과 같이 
+JSON 데이터의 값은 `RFC 7159 <https://tools.ietf.org/html/rfc7159#section-3>` 에서 정의된 것과 같이 
 객체 (Object), 배열 (Array) 또는 스칼라 (Scalar) 여야 한다. 스칼라 값은 문자열, 숫자형, 불리언 (boolean) 또는 널 (null) 이다.
 
 JSON 데이터 타입 표:
