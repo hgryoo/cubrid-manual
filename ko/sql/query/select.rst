@@ -15,9 +15,9 @@ SELECT
         [WHERE <search_condition>]
         [GROUP BY {col_name | expr} [ASC | DESC], ...[WITH ROLLUP]]
         [HAVING  <search_condition> ]
-        [ORDER BY {col_name | expr} [ASC | DESC], ... [NULLS {FIRST | LAST}]
-        [LIMIT [offset,] row_count]
         [USING INDEX { index_name [,index_name, ...] | NONE }]
+        [ORDER BY {col_name | expr} [ASC | DESC], ... [NULLS {FIRST | LAST}]
+        [LIMIT [offset,] row_count]        
         [FOR UPDATE [OF <spec_name_comma_list>]]
         
         <qualifier> ::= ALL | DISTINCT | DISTINCTROW | UNIQUE
@@ -41,10 +41,10 @@ SELECT
 
     <correlation> ::= [AS] <identifier> [(<identifier_comma_list>)]
      
-    <single_table_spec> ::= [ONLY] <table_name> |
-                          ALL <table_name> [ EXCEPT <table_name> ]
+    <single_table_spec> ::= [ONLY] [schema_name.]table_name |
+                          ALL [schema_name.]table_name [ EXCEPT [schema_name.]table_name ]
      
-    <metaclass_specification> ::= CLASS <class_name>
+    <metaclass_specification> ::= CLASS [schema_name.]class_name
      
     <join_table_specification> ::=
         {
@@ -71,6 +71,8 @@ SELECT
     *   *expression_comma_list* : *expression* 은 칼럼 이름이나 경로 표현식(예: *tbl_name.col_name*), 변수, 테이블 이름이 될 수 있으며 산술 연산을 포함하는 일반적인 표현식도 모두 사용될 수 있다. 쉼표(,)는 리스트에서 개별 표현식을 구분하는데 사용된다. 조회하고자 하는 칼럼 또는 연산식에 대해 **AS** 키워드를 사용하여 별칭(alias)를 지정할 수 있으며, 지정된 별칭은 칼럼 이름으로 사용되어 **GROUP BY**, **HAVING**, **ORDER BY** 절 내에서 사용될 수 있다. 칼럼의 위치 인덱스(position)는 칼럼이 명시된 순서대로 부여되며, 시작 값은 1이다.
 
         *expression*\ 에는 **AVG**, **COUNT**, **MAX**, **MIN**, **SUM** 과 같이 조회된 데이터를 조작하는 집계 함수가 사용될 수 있다. 
+
+*   *schema_name*: 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
 
 *   *table_name*.\*: 테이블 이름을 지정한다. \*을 사용하면 명시한 테이블의 모든 칼럼을 지정하는 것과 같다.
 
@@ -144,6 +146,7 @@ FROM 절
 *   개별 테이블(single table)
 *   부질의(subquery)
 *   유도 테이블(derived table)
+*   원격 테이블(remote table)
 
 ::
 
@@ -156,16 +159,20 @@ FROM 절
      
     <table_specification> ::=
         <single_table_spec> [<correlation>] |
+        <remote_table_spec> [<correlation>] |
         <metaclass_specification> [<correlation>] |
         <subquery> <correlation> |
-        TABLE (<expression>) <correlation>
+        TABLE (<expression>) <correlation> |
+        DBLINK (<dblink_expr>) <dblink_identifier_col_attrs> 
      
     <correlation> ::= [AS] <identifier> [(<identifier_comma_list>)]
      
-    <single_table_spec> ::= [ONLY] <table_name> |
-                          ALL <table_name> [EXCEPT <table_name>]
+    <single_table_spec> ::= [ONLY] [schema_name.]table_name |
+                          ALL [schema_name.]table_name [EXCEPT [schema_name.]table_name]
+
+    <remote_table_spec> ::= [schema_name.]table_name@server_name
      
-    <metaclass_specification> ::= CLASS <class_name>
+    <metaclass_specification> ::= CLASS [schema_name.]class_name
      
 
 *   <*select_expressions*>: 조회하고자 하는 칼럼 또는 연산식을 하나 이상 지정할 수 있으며, 테이블 내 모든 칼럼을 조회할 때에는 * 를 지정한다. 조회하고자 하는 칼럼 또는 연산식에 대해 **AS** 키워드를 사용하여 별칭(alias)를 지정할 수 있으며, 지정된 별칭은 칼럼 이름으로 사용되어 **GROUP BY**, **HAVING**, **ORDER BY** 절 내에서 사용될 수 있다. 칼럼의 위치 인덱스(position)는 칼럼이 명시된 순서대로 부여되며, 시작 값은 1이다.
@@ -246,6 +253,141 @@ FROM 절
       'CHN'                2004         32
       'DEN'                1996          4
       'ESP'                1992         13
+
+
+.. _dblink-clause:
+
+원격 테이블
+-----------
+
+FROM절에 원격 테이블 (remote table) 을 명시할 수 있으며, 원격 테이블을 명시할 때는 '@'를 사용하여 table_name@server_name와 같은 테이블 확장명을 사용한다. 원격 서버는 CUBRID 뿐만아니라 타 DBMS(ORACLE, MySQL 또는 MariaDB)을 사용할 수 있다. 원격 테이블은 최적화 단계를 거치면서 DBLINK 구문으로 재 작성되어 실행된다.
+
+.. code-block:: sql
+
+   -- at remote-side, "remote_server"
+   CREATE TABLE remote_tbl (
+     id INT,
+     name VARCHAR(32)
+   );
+
+   INSERT INTO remote_tbl VALUES (1, 'Kim');
+   INSERT INTO remote_tbl VALUES (2, 'Lee');
+   INSERT INTO remote_tbl VALUES (3, 'Park');
+
+::
+
+   -- at local-side
+   SELECT *
+   FROM remote_tbl@remote_server rem
+   WHERE id < 3;
+
+::
+
+       id       name
+   ===================
+        1       Kim
+        2       Lee
+
+최적화 단계에서 원격테이블에 대해 DBLINK 구문으로 재 작성된 질의는 아래와 같다.
+
+.. code-block:: sql
+
+   SELECT *
+   FROM DBLINK(remote_server, 'SELECT id, name FROM remote_tbl WHERE id < 3') AS dbl (id INT, name VARCHAR(32));
+
+.. note::
+
+    테이블 확장명에 허용되는 객체는 일반 테이블, 동의어(synonym), 그리고 뷰가 있다. 아래의 예는 세가지 형태의 테이블 확장명을 보여주고 있다.
+
+.. code-block:: sql
+
+    -- at remote-side
+    CREATE TABLE remote_table (
+      id INT,
+      phone VARCHAR(12)
+    };
+
+    CREATE SYNONYM a_remote_tbl FOR user_a.remote_table
+    CREATE VIEW v_remote_tbl(r_phone) AS SELECT phone FROM remote_tble WHERE id > 10;
+
+::
+
+    -- at local-side
+
+    -- remote-table
+    SELECT phone FROM user_a.remote_table@server1 WHERE id > 10;
+
+    -- remote-synonym
+    SELECT phone FROM a_remote_tbl@server1 WHERE id > 10;
+
+    -- remote-view
+    SELECT r_phone FROM v_remote_tbl@server1;
+
+위 3개의 질의는 모두 동일한 결과를 반환한다.
+
+DBLINK
+--------
+
+원격지에 있는 별도의 DBMS에서 질의를 수행하여 그 결과를 얻을 수 있다. 그 결과는 일종의 부질의로 :ref:`유도 테이블(derived table) <subquery-derived-table>`\ 로 생성된다.
+
+::
+
+    FROM DBLINK (<dblink_expr>) [AS] <dblink_identifier_col_attrs> 
+
+        <dblink_expr> ::= <dblink_conn>,  remote_query_sting  
+        <dblink_conn> ::= server_name | dblink_conn_string
+            
+        <dblink_identifier_col_attrs> ::= dblink_table_alias ( <dblink_column_definition_list> ) 
+        <dblink_column_definition_list> ::= dblink_column_alias <primitive_type> [{, dblink_column_alias <primitive_type>} ...]
+
+*   *remote_query_sting*: 원격지 DBMS에 전달할 질의문으로 SELECT 질의만 지정 할 수 있다.
+*   *server_name*: :doc:`/sql/schema/server_stmt`\을 사용해서 생성한 서버 이름.
+*   *dblink_conn_string*: 문자열로 표현된 원격지 접속 정보.
+*   *dblink_table_alias*: DBLINK를 이용하여 생성하는 유도테이블(derived table) 이름.
+*   *dblink_column_alias*: DBLINK의 *remote_query_sting* 의 select list에 대응하는 가상의 칼럼명.
+
+.. note::
+
+    DBLINK에서 지원하는 칼럼의 속성은 다음과 같다.
+    
+    * INT, BIGINT, SHORT, FLOAT, DOUBLE, MONETARY, NUMERIC
+    * VARCHAR, CHAR
+    * DATE, TIME, TIMESTAMP, DATETIME
+    * DATETIMETZ, DATETIMELTZ, TIMESTAMPTZ, TIMESTAMPLTZ
+
+.. warning::
+
+    DBLINK에서는 다음과 같은 속성의 칼럼은 지원하지 않는다.
+    
+    * COLLECTION TYPE ( SET, MULTISET, SEQUENCE )
+    * OBJECT
+    * CLOB / BLOB
+    * ENUM
+    * BIT / BIT VARYING
+    * JSON
+
+.. note::
+
+    *dblink_conn_string*\은 아래와 같은 구조로 구성된다. 
+    각각의 내용은 :doc:`/sql/schema/server_stmt` 구문의 HOST, PORT, DBNAME, USER, PASSWOED, PROPERTIES에 해당하는 정보이다.
+    각 항목은 ':' 문자로 구분된다.    
+    
+    <broker-host>:<port#>:<db_name>:<db_user>:<db_password>:[?<properties>]
+    
+    비밀번호의 노출을 막기 위해서는 *dblink_conn_string*\을 이용하기 보다는 *server_name*\을 이용하는 것을 권장한다.
+  
+.. code-block:: sql
+
+    CREATE SERVER remote_srv1 ( HOST='127.0.0.1', PORT=3300, DBNAME=demodb, USER=cub, PASSWORD='cub-password');    
+    SELECT * FROM DBLINK (remote_srv1, 'SELECT col1 FROM remote_t') AS t(col1 int);
+    
+    SELECT * FROM DBLINK ('127.0.0.1:3300:demodb:cub:cub-password:','SELECT col1, col2 FROM remote_t') AS t(col1 int, col2 varchar(32));
+
+  
+위 예시에서 두 SELECT 구문은 동일한 기능을 수행한다.  
+  
+
+
 
 .. _where-clause:
 
@@ -982,7 +1124,7 @@ CUBRID는 외부 조인 중 왼쪽 외부 조인과 오른쪽 외부 조인만 �
 단일 행 부질의
 --------------
 
-단일 행 부질의는 하나의 칼럼을 갖는 하나의 행을 만든다. 부질의에 의해 행이 반환되지 않을 경우에 부질의 표현식은 **NULL** 을 가진다. 만약 부질의가 두 개 이상의 행을 반환하도록 만들어진 경우에는 에러가 발생한다.
+단일 행 부질의는 하나의 칼럼을 갖는 하나의 행을 만든다. 부질의에 의해 행이 반환되지 않을 경우에 부질의 표현식은 **NULL** 을 가진다. 만약 부질의가 두 개 이상의 행을 반환하도록 만들어진 경우에는 오류가 발생한다.
 
 다음은 역대 기록 테이블을 조회하는데, 신기록을 수립한 올림픽이 개최된 국가도 함께 조회하는 예제이다. 이 예제는 표현식으로 사용된 단일 행 부질의를 보여준다. 이 예에서 부질의는 *olympic* 테이블에서 *host_year* 칼럼 값이 *history* 테이블의 *host_year* 칼럼 값과 같은 행에 대해 *host_nation* 값을 반환한다. 조건에 일치되는 값이 없을 경우 부질의 결과는 **NULL** 이 표시된다.
 
@@ -1097,7 +1239,7 @@ FOR UPDATE
     SELECT ... [FOR UPDATE [OF <spec_name_comma_list>]]
 
         <spec_name_comma_list> ::= <spec_name> [, <spec_name>, ... ]
-            <spec_name> ::= table_name | view_name 
+            <spec_name> ::= [schema_name.]table_name | [schema_name.]view_name 
          
 * <*spec_name_comma_list*>: **FROM** 절에서 참조하는 테이블/뷰들의 목록
 

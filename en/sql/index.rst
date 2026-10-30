@@ -2,6 +2,8 @@
 :meta-keywords: cubrid sql, database sql, cubrid statements
 :meta-description: This chapter describes SQL syntax such as data types, functions and operators, data retrieval or table manipulation. You can also find SQL statements used for index, trigger, partition, serial and changing user information.
 
+.. _cubrid_sql:
+
 **********
 CUBRID SQL
 **********
@@ -27,19 +29,21 @@ The main topics covered in this chapter are as follows:
 
 *   Query Optimization: Describes the query optimization by using the index, hint, and the index hint syntax.
 
+*   Parallel Query Processing: Describes the parallel execution features for processing large amounts of data.
+
 *   Partitioning: Describes how to partition one table into several independent logical units.
 
 *   Trigger: Describes how to create, alter, drop, and rename a trigger that is automatically executed in response to certain events.
-
-*   Java Stored Functions/Procedures: Describes how to create a Java method and call it in the query statement.
-
-*   Method: Describes the method, a built-in function of the CUBRID database system.
 
 *   Class Inheritance: Describes how to inherit the attribute from the parent to the child table (class).
 
 *   Database Administration: Describes about user management, SET and SHOW statements.
 
+*   User Schema: Describes a logical collection of objects in a database that is created with users.
+
 *   System Catalog: Describes the CUBRID system catalog, the internal information of the CUBRID database.
+
+*   Information Schema: Describes the SQL standard INFORMATION_SCHEMA views that expose database metadata in a portable way.
 
 .. toctree::
     :maxdepth: 3
@@ -50,13 +54,15 @@ The main topics covered in this chapter are as follows:
     function/index.rst
     query/index.rst
     tuning_index.rst
+    parallel_index.rst
     partition_index.rst
     i18n_index.rst
     transaction_index.rst
     trigger.rst
-    jsp.rst
-    method.rst
+    dblink.rst
     oodb.rst
     db_admin.rst
+    user_schema.rst
     catalog.rst
-    
+    information_schema.rst
+

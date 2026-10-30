@@ -100,6 +100,8 @@ COLLATION
 
     'utf8_bin'
 
+.. _fn_current_user:
+
 CURRENT_USER, USER
 ==================
 
@@ -109,7 +111,7 @@ CURRENT_USER, USER
 
     **CURRENT_USER**\ 와 **USER** 의사 칼럼(pseudo column)은 동일하며, 현재 데이터베이스에 로그인한 사용자의 이름을 문자열로 반환한다.
 
-    기능이 비슷한 :func:`SYSTEM_USER` 함수와 :func:`USER` 함수는 사용자 이름을 호스트 이름과 함께 반환한다.
+    기능이 비슷한 :func:`SYSTEM_USER` 함수와 :func:`USER` 함수는 사용자 이름을 CSQL 또는 CAS가 실행된 호스트 이름과 함께 반환한다.
 
     :rtype: STRING
     
@@ -149,25 +151,28 @@ CURRENT_USER, USER
       'ALMOST_DBA_USER'            NULL  db_password
       'SELECT_ONLY_USER2'          NULL  NULL
 
-DATABASE, SCHEMA
-================
+DATABASE, SCHEMA, CURRENT_SCHEMA
+================================
 
 .. function:: DATABASE()
 .. function:: SCHEMA()
+.. function:: CURRENT_SCHEMA()
 
-    **DATABASE** 함수와 **SCHEMA** 함수는 동일하며, 현재 연결된 데이터베이스 이름을 **VARCHAR** 타입의 문자열로 반환한다.
+    **DATABASE** 함수는 현재 연결된 데이터베이스 이름을 **VARCHAR** 타입의 문자열로 반환한다.
+
+    **SCHEMA** 함수와 **CURRENT_SCHEMA** 함수는 동일하며, 현재 스키마 이름을 **VARCHAR** 타입의 문자열로 반환한다. 사용자 스키마를 지원하는 11.2 버전부터 스키마 이름은 현재 사용자 이름과 같다.
 
     :rtype: STRING
     
 .. code-block:: sql
 
-    SELECT DATABASE(), SCHEMA();
+    SELECT DATABASE(), SCHEMA(), CURRENT_SCHEMA();
     
 ::
 
-       database()            schema()
-    ============================================
-      'demodb'              'demodb'
+       database()            schema()              current_schema()
+    ==================================================================
+      'demodb'              'DBA'                 'DBA'
 
 DBTIMEZONE
 ==========
@@ -197,9 +202,9 @@ DEFAULT
 .. function:: DEFAULT(column_name)
 .. c:macro:: DEFAULT
 
-    **DEFAULT**\ 와 **DEFAULT** 함수는 칼럼에 정의된 기본값을 반환한다. 해당 칼럼에 기본값이 지정되지 않으면 **NULL** 또는 에러를 출력한다. **DEFAULT**\ 는 인자가 없는 반면, **DEFAULT** 함수는 칼럼 이름을 입력 인자로 하는 차이가 있다. **DEFAULT**\ 는 **INSERT** 문의 입력 데이터, **UPDATE** 문의 **SET** 절에서 사용될 수 있고, **DEFAULT** 함수는 모든 곳에서 사용될 수 있다.
+    **DEFAULT**\ 와 **DEFAULT** 함수는 칼럼에 정의된 기본값을 반환한다. 해당 칼럼에 기본값이 지정되지 않으면 **NULL** 또는 오류를 출력한다. **DEFAULT**\ 는 인자가 없는 반면, **DEFAULT** 함수는 칼럼 이름을 입력 인자로 하는 차이가 있다. **DEFAULT**\ 는 **INSERT** 문의 입력 데이터, **UPDATE** 문의 **SET** 절에서 사용될 수 있고, **DEFAULT** 함수는 모든 곳에서 사용될 수 있다.
 
-    기본값이 정의되지 않은 칼럼에 어떠한 제약 조건이 정의되어 있지 않거나 **UNIQUE** 제약 조건이 정의된 경우에는 **NULL**\ 을 반환하고, 해당 칼럼에 **NOT NULL** 또는 **PRIMARY KEY** 제약 조건이 정의된 경우에는 에러를 반환한다.
+    기본값이 정의되지 않은 칼럼에 어떠한 제약 조건이 정의되어 있지 않거나 **UNIQUE** 제약 조건이 정의된 경우에는 **NULL**\ 을 반환하고, 해당 칼럼에 **NOT NULL** 또는 **PRIMARY KEY** 제약 조건이 정의된 경우에는 오류를 반환한다.
 
 .. code-block:: sql
 
@@ -267,25 +272,117 @@ DISK_SIZE
                    4               4              10             300
 
     
+ESTIMATED_AVG_ROW_LENGTH
+========================
+
+.. function:: ESTIMATED_AVG_ROW_LENGTH(table_name)
+
+    **ESTIMATED_AVG_ROW_LENGTH** 함수는 *table_name*\으로 식별되는 테이블의 추정 평균 행 길이를 바이트 단위로 반환한다. 이 값은 추정치임에 유의한다.
+
+    :param table_name: 테이블 이름
+
+    :rtype: BIGINT
+
+*table_name*\이 **NULL**\이거나, 테이블이 존재하지 않거나 뷰인 경우 **NULL**\을 반환한다.
+
+.. code-block:: sql
+
+    SELECT ESTIMATED_AVG_ROW_LENGTH('game');
+
+::
+
+       estimated_avg_row_length('game')
+    ===================================
+                                     48
+
+ESTIMATED_DATA_FREE
+===================
+
+.. function:: ESTIMATED_DATA_FREE(table_name)
+
+    **ESTIMATED_DATA_FREE** 함수는 *table_name*\으로 식별되는 테이블에 할당된 힙 페이지 내의 추정 여유(미사용) 공간을 바이트 단위로 반환한다. 이 값은 추정치임에 유의한다.
+
+    :param table_name: 테이블 이름
+
+    :rtype: BIGINT
+
+*table_name*\이 **NULL**\이거나, 테이블이 존재하지 않거나 뷰인 경우 **NULL**\을 반환한다.
+
+.. code-block:: sql
+
+    SELECT ESTIMATED_DATA_FREE('game');
+
+::
+
+       estimated_data_free('game')
+    ==============================
+                             91320
+
+ESTIMATED_DATA_LENGTH
+=====================
+
+.. function:: ESTIMATED_DATA_LENGTH(table_name)
+
+    **ESTIMATED_DATA_LENGTH** 함수는 *table_name*\으로 식별되는 테이블에 할당된 힙의 추정 총 데이터 길이를 바이트 단위로 반환한다. 이 값은 추정치임에 유의한다.
+
+    :param table_name: 테이블 이름
+
+    :rtype: BIGINT
+
+*table_name*\이 **NULL**\이거나, 테이블이 존재하지 않거나 뷰인 경우 **NULL**\을 반환한다.
+
+.. code-block:: sql
+
+    SELECT ESTIMATED_DATA_LENGTH('game');
+
+::
+
+       estimated_data_length('game')
+    ================================
+                              506664
+
+ESTIMATED_TABLE_ROWS
+====================
+
+.. function:: ESTIMATED_TABLE_ROWS(table_name)
+
+    **ESTIMATED_TABLE_ROWS** 함수는 *table_name*\으로 식별되는 테이블의 추정 행 수를 반환한다. 이 값은 추정치임에 유의한다.
+
+    :param table_name: 테이블 이름
+
+    :rtype: BIGINT
+
+*table_name*\이 **NULL**\이거나, 테이블이 존재하지 않거나 뷰인 경우 **NULL**\을 반환한다.
+
+.. code-block:: sql
+
+    SELECT ESTIMATED_TABLE_ROWS('game');
+
+::
+
+       estimated_table_rows('game')
+    ===============================
+                               8653
+
 INDEX_CARDINALITY
 =================
 
-.. function:: INDEX_CARDINALITY(table, index, key_pos)
+.. function:: INDEX_CARDINALITY(table_name, index, key_pos)
 
-    **INDEX_CARDINALITY** 함수는 테이블에서 인덱스 카디널리티(cardinality)를 반환한다. 인덱스 카디널리티는 인덱스를 정의하는 고유한 값의 개수이다. 인덱스 카디널리티는 다중 칼럼 인덱스의 부분 키에 대해서도 적용할 수 있는데, 이때 세 번째 인자로 칼럼의 위치를 지정하여 부분 키에 대한 고유 값의 개수를 나타낸다. 이 값은 근사치임에 유의한다.
+    **INDEX_CARDINALITY** 함수는 테이블에서 인덱스 카디널리티(cardinality)를 반환한다. 인덱스 카디널리티는 인덱스를 정의하는 고유한 값의 개수이다. 인덱스 카디널리티는 다중 칼럼 인덱스의 부분 키에 대해서도 적용할 수 있는데, 이때 세 번째 인자로 칼럼의 위치를 지정하여 부분 키에 대한 고유 값의 개수를 나타낸다. 이 값은 추정치임에 유의한다.
 
     갱신된 결과를 얻으려면 반드시 **UPDATE STATISTICS** 문을 먼저 수행해야 한다.
 
-    :param table: 테이블 이름
-    :param index: *table* 내에 존재하는 인덱스 이름
-    :param key_pos: 부분 키의 위치. *key_pos* 는 0부터 시작하여 키를 구성하는 칼럼 개수보다 작은 범위를 갖는다. 즉, 첫 번째 칼럼의 *key_pos* 는 0이다. 단일 칼럼 인덱스의 경우에는 0이다. 다음 타입 중 하나가 될 수 있다.
+    :param table_name: 테이블 이름
+    :param index: *table_name*\으로 식별되는 테이블 내에 존재하는 인덱스 이름
+    :param key_pos: 부분 키의 위치. *key_pos*\는 0부터 시작하여 키를 구성하는 칼럼 개수보다 작은 범위를 갖는다. 즉, 첫 번째 칼럼의 *key_pos*\는 0이다. 단일 칼럼 인덱스의 경우에는 0이다. 다음 타입 중 하나가 될 수 있다.
     
         *   숫자형 타입으로 변환할 수 있는 문자열. 
-        *   정수형으로 변환할 수 있는 숫자형 타입. FLOAT나 DOUBLE 타입은 ROUND 함수로 변환한 값이 된다.
+        *   정수형으로 변환할 수 있는 숫자형 타입. **FLOAT**\나 **DOUBLE** 타입은 **ROUND** 함수로 변환한 값이 된다.
 
     :rtype: INT
     
-리턴 값은 0 또는 양의 정수이며, 입력 인자 중 하나라도 **NULL** 이면 **NULL** 을 반환한다. 입력 인자인 테이블이나 인덱스가 발견되지 않거나 *key_pos* 가 지정된 범위를 벗어나면 **NULL** 을 리턴한다.
+반환 값은 0 또는 양의 정수이며, 입력 인자 중 하나라도 **NULL**\이면 **NULL**\을 반환한다. 입력 인자인 테이블이나 인덱스가 발견되지 않거나 *key_pos*\가 지정된 범위를 벗어나면 **NULL**\을 반환한다.
 
 .. code-block:: sql
 
@@ -342,7 +439,7 @@ INDEX_CARDINALITY
 
       index_cardinality('t123', 'i_t1_i1_s1', 1)
     ============================================
-                                           NULL
+                                            NULL
 
 INET_ATON
 =========
@@ -644,7 +741,7 @@ USER, SYSTEM_USER
 
 .. function:: SYSTEM_USER()
 
-    **USER** 함수와 **SYSTEM_USER** 함수는 동일하며, 사용자 이름을 호스트 이름과 함께 반환한다.
+    **USER** 함수와 **SYSTEM_USER** 함수는 동일하며, 사용자 이름을 CSQL 또는 CAS가 실행된 호스트 이름과 함께 반환한다.
 
     기능이 비슷한 :c:macro:`USER`\ 와 :c:macro:`CURRENT_USER` 의사 칼럼(pseudo column)은 현재 데이터베이스에 로그인한 사용자의 이름을 문자열로 반환한다.
 

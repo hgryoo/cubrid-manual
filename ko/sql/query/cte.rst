@@ -21,7 +21,7 @@ CTE는 **WITH** 절로 시작한다. 부질의 목록과 부질의를 사용하�
     
 
 *  *recursive_cte_name*, *cte_name1*, *cte_name2* : 테이블 표현식(부질의)의 식별자
-*  *recursive_column_names*, *cte1_column_names*, *cte2_column_names* : 각 테이블 표현식 결과 컬럼에 대한 식별자
+*  *recursive_column_names*, *cte1_column_names*, *cte2_column_names* : 각 테이블 표현식 결과 칼럼에 대한 식별자
 *  *sub-query1*, *sub-query2* : 각 테이블 표현식을 정의하는 부질의
 *  *final_query* : 이전에 정의된 테이블 표현식을 사용하는 질의. 일반적으로 **FROM** 절은 CTE 식별자를 포함한다.
 
@@ -107,10 +107,10 @@ CTE는 **WITH** 절로 시작한다. 부질의 목록과 부질의를 사용하�
     '
     Nested WITH clauses are not supported.
 
-CTE 컬럼명 
+CTE 칼럼명 
 ==========
 
-각 CTE 결과의 컬럼명은 CTE 이름 다음에 지정할 수 있다. CTE 컬럼 목록의 요소 수는 CTE 부질의의 컬럼 수와 일치해야 한다.
+각 CTE 결과의 칼럼명은 CTE 이름 다음에 지정할 수 있다. CTE 칼럼 목록의 요소 수는 CTE 부질의의 칼럼 수와 일치해야 한다.
 
 .. code-block:: sql
 
@@ -140,7 +140,7 @@ CTE 컬럼명
      'Wheel'               'cars'                       4700
      'Blade'               'drones'                       50
 
-CTE에 컬럼명이 없으면 CTE의 첫 번째 내부 Select 문에서 컬럼명을 가져온다. 원본 구문에 따라 표현식 결과 컬럼명이 결정된다.
+CTE에 칼럼명이 없으면 CTE의 첫 번째 내부 Select 문에서 칼럼명을 가져온다. 원본 구문에 따라 표현식 결과 칼럼명이 결정된다.
 
 .. code-block:: sql
 
@@ -184,7 +184,7 @@ CTE에 컬럼명이 없으면 CTE의 첫 번째 내부 Select 문에서 컬럼�
       'Frame'                      4700
       'Wheel'                       100
 
-재귀적 CTE는 무한 루프에 빠질수 있다. 이런 경우를 피하기 위해서 시스템 파라미터 **cte_max_recursions** 를 원하는 임계치로 설정해야 한다. 이 파라미터의 기본값은 2,000번 재귀 반복이며, 최대값은 1,000,000 최소값은 2이다.
+재귀적 CTE는 무한 루프에 빠질 수 있다. 이런 경우를 피하기 위해서 시스템 파라미터 **cte_max_recursions** 를 원하는 임계치로 설정해야 한다. 이 파라미터의 기본값은 2,000번 재귀 반복이며, 최대값은 1,000,000 최소값은 2이다.
 
 .. code-block:: sql
 
@@ -206,10 +206,10 @@ CTE에 컬럼명이 없으면 CTE의 첫 번째 내부 Select 문에서 컬럼�
 
 .. warning::
 
-    *    CTE 부질의의 복잡도에 따라, 많은 량의 데이타가 생산되며, 심지어 **cte_max_recursions** 의 기본값만으로도 디스크 공간 부족을 발생할 수 있다.
+    *    CTE 부질의의 복잡도에 따라, 많은 량의 데이터가 생산되며, 심지어 **cte_max_recursions** 의 기본값만으로도 디스크 공간 부족을 발생할 수 있다.
 
 
-재귀적 CTE의 실행 알고리즘은 다음과 같이 요약 될 수 있다:
+재귀적 CTE의 실행 알고리즘은 다음과 같이 요약될 수 있다:
  * CTE의 비재귀적 부분을 수행하고 결과를 최종 결과 셋에 추가
  * 비재귀적 부분에서 얻은 결과 셋을 사용하여 재귀적 부분을 수행하고, 결과를 최종 결과 셋에 추가한 후, 결과 셋 내에서 현재 반복의 시작과 끝을 기억한다
  * 이전 반복의 결과 셋을 사용하여 비재귀적 부분의 수행을 반복하고 해당 결과를 최종 결과 셋에 추가
@@ -235,7 +235,7 @@ DML과 CREATE에서 CTE의 사용
 ============================
 
 **SELECT** 문에 대한 사용 외에도 CTE는 다른 문장에도 사용될 수 있다.
-CTE가 **CREATE TABLE** *table_name* **AS SELECT** 에 사용될 수있다:
+CTE가 **CREATE TABLE** *table_name* **AS SELECT** 에 사용될 수 있다:
 
 .. code-block:: sql
 
@@ -275,7 +275,7 @@ CTE가 **CREATE TABLE** *table_name* **AS SELECT** 에 사용될 수있다:
        WITH cte AS (SELECT * FROM inc)
        SELECT * FROM cte;
 
-또한 **UPDATE** 의 부질의에서도 사용가능하다:
+또한 **UPDATE** 의 부질의에서도 사용 가능하다:
 
 .. code-block:: sql
 

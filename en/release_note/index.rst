@@ -16,7 +16,7 @@ Revision history
 +----------------+---------------------------------------------------+
 | Revision Date  | Description                                       |
 +================+===================================================+
-| December 2019  | CUBRID 10.2 Release (10.2.0.8797-d56a158)         |
+| Mar 2025       | CUBRID 11.4 Release (11.4.0)                      |
 +----------------+---------------------------------------------------+
 
 Bug Reports and User Feedback
@@ -37,7 +37,7 @@ CUBRID welcomes your active participation in bug reporting and looks forward to 
 License
 -------
 
-The GNU GPL v2 license or later applies to the CUBRID server engine, and the BSD license applies to CUBRID MANAGER and interfaces (APIs). For more information, see the License Policy on https://www.cubrid.org/cubrid .
+The Apache license 2.0 applies to the CUBRID server engine, and the BSD license applies to CUBRID MANAGER and interfaces (APIs). For more information, see the License Policy on https://www.cubrid.org/license.
 
 Additional Information
 ----------------------

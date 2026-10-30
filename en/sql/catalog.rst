@@ -2,6 +2,8 @@
 :meta-keywords: cubrid catalog
 :meta-description: With CUBRID you can easily obtain schema information using SQL statements on system catalog virtual classes.
 
+.. _catalog:
+
 **************
 System Catalog
 **************
@@ -10,19 +12,19 @@ You can easily get various schema information from the SQL statement by using th
 
 .. code-block:: sql
 
-    -- Classes that refer to the 'b_user' class
+    -- Classes that refer to the '_db_user' class
     SELECT class_name
     FROM db_attribute
-    WHERE domain_class_name = 'db_user';
+    WHERE domain_class_name = '_db_user';
      
     -- The number of classes that the current user can access
     SELECT COUNT(*)
     FROM db_class;
      
-    -- Attribute of the 'db_user' class
+    -- Attribute of the '_db_user' class
     SELECT attr_name, data_type
     FROM db_attribute
-    WHERE class_name = 'db_user';
+    WHERE class_name = '_db_user';
     
 System Catalog Classes
 ======================
@@ -33,15 +35,51 @@ To define a catalog virtual class, define a catalog class first. The figure belo
 
 Added catalog classes represent information about all classes, attributes and methods in the database. Catalog classes are made up of class composition hierarchy and designed to have OIDs of catalog class instances for cross reference.
 
+================================ =======================================================================
+Class Name                       Description
+================================ =======================================================================
+:ref:`-db-class`                 Class information
+:ref:`-db-attribute`             Attribute information
+:ref:`-db-domain`                Domain information
+:ref:`-db-charset`               Charset information
+:ref:`-db-collation`             Collation information
+:ref:`-db-method`                Method information
+:ref:`-db-meth-sig`              Configuration information of C functions on the method
+:ref:`-db-meth-arg`              Method argument information
+:ref:`-db-meth-file`             File information in which the method is defined
+:ref:`-db-query-spec`            The SQL statement of a virtual class
+:ref:`-db-index`                 Index information
+:ref:`-db-index-key`             Key information on an index
+:ref:`-db-auth`                  User authorization information of classes
+:ref:`-db-data-type`             The data type supported by CUBRID
+:ref:`-db-partition`             Partition information
+:ref:`-db-stored-procedure`      Stored procedure information
+:ref:`-db-stored-procedure-args` Stored procedure argument information
+:ref:`-db-stored-procedure-code` Stored procedure code information
+:ref:`-db-server`                Server information for DBLink
+:ref:`-db-synonym`               Target object information of synonyms
+:ref:`-db-user`                  User information
+:ref:`-db-authorization`         Authorization summary per user
+:ref:`-db-serial`                Serial information
+:ref:`-db-trigger`               Trigger information
+:ref:`-db-ha-apply-info`         The progress status the **applylogdb** utility applies replication logs
+:ref:`dual`                      Dummy table
+================================ =======================================================================
+
+.. _-db-class:
+
 _db_class
 ---------
 
-Represents class information. An index for class_name is created.
+Represents class information. An index for unique_name and an index for class_name and owner are created.
 
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 |   Attribute Name   |   Data Type               |   Description                                                                            |
 +====================+===========================+==========================================================================================+
 | class_of           | object                    | A class object. Represents a meta information object for the class stored in the system. |
+|                    |                           |                                                                                          |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| unique_name        | VARCHAR(255)              | Class name prefixed with schema name                                                     |
 |                    |                           |                                                                                          |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | class_name         | VARCHAR(255)              | Class name                                                                               |
@@ -53,7 +91,7 @@ Represents class information. An index for class_name is created.
 | is_system_class    | INTEGER                   | 0 for a user-defined class, and 1 for a system class                                     |
 |                    |                           |                                                                                          |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
-| owner              | db_user                   | Class owner                                                                              |
+| owner              | _db_user                  | Class owner                                                                              |
 |                    |                           |                                                                                          |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | inst_attr_count    | INTEGER                   | The number of instance attributes                                                        |
@@ -73,6 +111,19 @@ Represents class information. An index for class_name is created.
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | collation_id       | INTEGER                   | Collation id                                                                             |
 |                    |                           |                                                                                          |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| tde_algorithm      | INTEGER                   | TDE encryption algorithm                                                                 |
+|                    |                           | 0: NONE, 1: AES, 2: ARIA                                                                 |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| statistics_strategy| INTEGER                   | Statistics collection strategy                                                           |
+|                    |                           | (0: SAMPLING, 1: FULLSCAN)                                                               |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| flags              | INTEGER                   | Class flags                                                                              |
+|                    |                           |                                                                                          |
+|                    |                           | - **Bit 1**: 1 for a view with WITH CHECK OPTION                                         |
+|                    |                           | - **Bit 2**: 1 for a view with LOCAL CHECK OPTION                                        |
+|                    |                           | - **Bit 3**: 1 for a REUSE_OID class                                                     |
+|                    |                           | - The other bits are not currently used.                                                 |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | sub_classes        | SEQUENCE OF _db_class     | Class one level down                                                                     |
 |                    |                           |                                                                                          |
@@ -95,10 +146,10 @@ Represents class information. An index for class_name is created.
 | class_meths        | SEQUENCE OF _db_method    | Class method                                                                             |
 |                    |                           |                                                                                          |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
-| meth_files         | SEQUENCE OF _db_methfile  | File path in which the function for the method is located                                |
+| meth_files         | SEQUENCE OF _db_meth_file | File path in which the function for the method is located                                |
 |                    |                           |                                                                                          |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
-| query_specs        | SEQUENCE OF _db_queryspec | SQL definition statement for a virtual class                                             |
+| query_specs        | SEQUENCE OF _db_query_spec| SQL definition statement for a virtual class                                             |
 |                    |                           |                                                                                          |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | indexes            | SEQUENCE OF _db_index     | Index created in the class                                                               |
@@ -109,6 +160,12 @@ Represents class information. An index for class_name is created.
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 | partition          | SEQUENCE of _db_partition | Partition information                                                                    |
 |                    |                           |                                                                                          |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| created_time       | DATETIME                  | Class creation time                                                                      |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| updated_time       | DATETIME                  | Class modification time                                                                  |
++--------------------+---------------------------+------------------------------------------------------------------------------------------+
+| checked_time       | DATETIME                  | Class statistics information update time                                                 |
 +--------------------+---------------------------+------------------------------------------------------------------------------------------+
 
 The following example shows how to retrieve all sub classes under the class owned by user '**PUBLIC**' (for the child class *female_event* in the result, see the example in :ref:`add-superclass`).
@@ -127,16 +184,16 @@ The following example shows how to retrieve all sub classes under the class owne
 
 .. note::
 
-    All examples of system catalog classes have been written in the csql utility. In this example, **--no-auto-commit** (inactive mode of auto-commit) and **-u** (specifying user DBA) options are used. ::
+    All examples of system catalog classes have been written in the csql utility. In this example, **\-\-no-auto-commit** (inactive mode of autocommit) and **-u** (specifying user DBA) options are used. ::
     
         % csql --no-auto-commit -u dba demodb
 
-.. _db-attribute:
+.. _-db-attribute:
 
 _db_attribute
 -------------
 
-Represents attribute information. Indexes for class_of, attr_name and attr_type are created.
+Represents attribute information. An index for class_of, attr_name and attr_type is created.
 
 +--------------------+------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |   Attribute Name   |   Data Type            |   Description                                                                                                                                               |
@@ -167,7 +224,7 @@ Represents attribute information. Indexes for class_of, attr_name and attr_type 
 +--------------------+------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | is_nullable        | INTEGER                | 0 if a not null constraint is configured, and 1 otherwise.                                                                                                  |
 +--------------------+------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| comment            | VARCHAR(1024)          | Comment to describe the attribute.                                                                                                                          |
+| comment            | VARCHAR(2048)          | Comment to describe the attribute.                                                                                                                          |
 +--------------------+------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 **Data Types Supported by CUBRID**
@@ -175,16 +232,16 @@ Represents attribute information. Indexes for class_of, attr_name and attr_type 
 +-------+-----------+-------+--------------+
 | Value | Meaning   | Value | Meaning      |
 +=======+===========+=======+==============+
-| 1     | INTEGER   | 22    | NUMERIC      |
+| 1     | INTEGER   | 23    | BIT          |
 |       |           |       |              |
 +-------+-----------+-------+--------------+
-| 2     | FLOAT     | 23    | BIT          |
+| 2     | FLOAT     | 24    | VARBIT       |
 |       |           |       |              |
 +-------+-----------+-------+--------------+
-| 3     | DOUBLE    | 24    | VARBIT       |
+| 3     | DOUBLE    | 25    | CHAR         |
 |       |           |       |              |
 +-------+-----------+-------+--------------+
-| 4     | STRING    | 25    | CHAR         |
+| 4     | STRING    | 27    | VARCHAR      |
 |       |           |       |              |
 +-------+-----------+-------+--------------+
 | 5     | OBJECT    | 31    | BIGINT       |
@@ -210,8 +267,11 @@ Represents attribute information. Indexes for class_of, attr_name and attr_type 
 +-------+-----------+-------+--------------+
 | 12    | DATE      | 38    | DATETIMETZ   |
 |       |           |       |              |
-+-------+-----------+-------+--------------+
++-------+-----------+-------+--------------+ 
 | 18    | SHORT     | 39    | DATETIMELTZ  |
+|       |           |       |              |
++-------+-----------+-------+--------------+
+| 22    | NUMERIC   | 40    | JSON         |
 |       |           |       |              |
 +-------+-----------+-------+--------------+
 
@@ -231,7 +291,7 @@ Represents attribute information. Indexes for class_of, attr_name and attr_type 
 | 5         | UTF8 - UTF8 encoding         |
 +-----------+------------------------------+
 
-The following example shows how to retrieve user classes (from_class_of.is_system_class = 0) among the ones owned by user '**PUBLIC**'.'
+The following example shows how to retrieve user classes (from_class_of.is_system_class = 0) among the ones owned by user '**PUBLIC**' (for the *female_event* class in the result, see the example in :ref:`add-superclass`).
 
 .. code-block:: sql
 
@@ -250,44 +310,50 @@ The following example shows how to retrieve user classes (from_class_of.is_syste
       'female_event'        'gender'
       'female_event'        'players'
 
+.. _-db-domain:
+
 _db_domain
 ----------
 
-Represents domain information. An index for object_of is created.
+Represents domain information. Indexes for object_of and data_type are created.
 
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-|   Attribute Name   |   Data Type            |   Description                                                                                           |
-+====================+========================+=========================================================================================================+
-| object_of          | object                 | Attribute that refers to the domain, which can be a method parameter or domain                          |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| data_type          | INTEGER                | Data type of the domain (a value in the "Value" column of the "Data Types Supported by CUBRID" table in |
-|                    |                        | :ref:`db-attribute`)                                                                                    |
-|                    |                        |                                                                                                         |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| prec               | INTEGER                | Precision of the data type. 0 is used if the precision is not specified.                                |
-|                    |                        |                                                                                                         |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| scale              | INTEGER                | Scale of the data type. 0 is used if the scale is not specified.                                        |
-|                    |                        |                                                                                                         |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| class_of           | _db_class              | Domain class if the data type is an object,                                                             |
-|                    |                        | **NULL** otherwise.                                                                                     |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| code_set           | INTEGER                | Character set (value of table "character sets supported by CUBRID" in                                   |
-|                    |                        | :ref:`db-attribute`)                                                                                    |
-|                    |                        | if it is character data type. 0 otherwise.                                                              |
-|                    |                        |                                                                                                         |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| collation_id       | INTEGER                | Collation id                                                                                            |
-|                    |                        |                                                                                                         |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| enumeration        | SEQUENCE OF STRING     | String printed enumeration type definition                                                              |
-|                    |                        |                                                                                                         |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
-| set_domains        | SEQUENCE OF _db_domain | Domain information about the data type of collection element if it is collection data type.             |
-|                    |                        | **NULL**                                                                                                |
-|                    |                        | otherwise.                                                                                              |
-+--------------------+------------------------+---------------------------------------------------------------------------------------------------------+
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+|   Attribute Name   |   Data Type                                |   Description                                                                                           |
++====================+============================================+=========================================================================================================+
+| object_of          | object                                     | Attribute that refers to the domain, which can be a method parameter or domain                          |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| data_type          | INTEGER                                    | Data type of the domain (a value in the "Value" column of the "Data Types Supported by CUBRID" table in |
+|                    |                                            | :ref:`-db-attribute`)                                                                                   |
+|                    |                                            |                                                                                                         |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| prec               | INTEGER                                    | Precision of the data type. 0 is used if the precision is not specified.                                |
+|                    |                                            |                                                                                                         |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| scale              | INTEGER                                    | Scale of the data type. 0 is used if the scale is not specified.                                        |
+|                    |                                            |                                                                                                         |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| class_of           | _db_class                                  | Domain class if the data type is an object,                                                             |
+|                    |                                            | **NULL** otherwise.                                                                                     |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| code_set           | INTEGER                                    | Character set (value of table "character sets supported by CUBRID" in                                   |
+|                    |                                            | :ref:`-db-attribute`)                                                                                   |
+|                    |                                            | if it is character data type. 0 otherwise.                                                              |
+|                    |                                            |                                                                                                         |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| collation_id       | INTEGER                                    | Collation id                                                                                            |
+|                    |                                            |                                                                                                         |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| enumeration        | SEQUENCE OF CHARACTER VARYING(1073741823)  | String printed enumeration type definition                                                              |
+|                    |                                            |                                                                                                         |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| set_domains        | SEQUENCE OF _db_domain                     | Domain information about the data type of collection element if it is collection data type.             |
+|                    |                                            | **NULL** otherwise.                                                                                     |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| json_schema        | CHARACTER VARYING(1073741823)              | Schema information defining the JSON data structure if it is a JSON data type.                          |
+|                    |                                            | **NULL** otherwise.                                                                                     |
++--------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------+
+
+.. _-db-charset:
 
 _db_charset
 -----------
@@ -302,6 +368,8 @@ charset_name        CHARACTER VARYING(32)    Charset name
 default_collation   INTEGER                  Default collation ID
 char_size           INTEGER                  One character's byte size
 =================== ======================== ==========================
+
+.. _-db-collation:
 
 _db_collation
 -------------
@@ -328,15 +396,19 @@ The information on collation.
 | checksum           | VARCHAR(32)   | Checksum of a collation file                                                |
 +--------------------+---------------+-----------------------------------------------------------------------------+
 
+.. _-db-method:
+
 _db_method
 ----------
 
-Represents method information. Indexes for class_of and meth_name are created.
+Represents method information. An index for class_of and meth_name is created.
 
 +--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 |   Attribute Name   |   Data Type              |   Description                                                                                                                                 |
 +====================+==========================+===============================================================================================================================================+
 | class_of           | _db_class                | Class to which the method belongs                                                                                                             |
++--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| meth_name          | VARCHAR(255)             | Method name                                                                                                                                   |
 +--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | meth_type          | INTEGER                  | Type of the method defined in the class. 0 for an instance method, and 1 for a class method.                                                  |
 +--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
@@ -345,8 +417,6 @@ Represents method information. Indexes for class_of and meth_name are created.
 +--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | from_meth_name     | VARCHAR(255)             | If the method is inherited and its name is changed to resolve a name conflict, the original name defined in the super class is used otherwise |
 |                    |                          | **NULL**                                                                                                                                      |
-+--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
-| meth_name          | VARCHAR(255)             | Method name                                                                                                                                   |
 +--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | signatures         | SEQUENCE OF _db_meth_sig | C function executed when the method is called                                                                                                 |
 +--------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
@@ -366,13 +436,14 @@ The following example shows how to retrieve class methods of the class with a cl
 
       class_name            sequence((select meth_name from _db_method m where m in c.class_meths))
     ============================================
-      'db_serial'           {'change_serial_owner'}
-      'db_authorizations'   {'add_user', 'drop_user', 'find_user', 'print_authorizations', 'info', 'change_owner', 'change_trigg
-    r_owner', 'get_owner'}
-      'db_authorization'    {'check_authorization'}
-      'db_user'             {'add_user', 'drop_user', 'find_user', 'login'}
-      'db_root'             {'add_user', 'drop_user', 'find_user', 'print_authorizations', 'info', 'change_owner', 'change_trigg
-    r_owner', 'get_owner', 'change_sp_owner'}
+      '_db_serial'          {'change_serial_owner'}
+      '_db_user'            {'set_password', 'set_password_encoded', 'set_password_encoded_sha1', 'add_member',
+                             'drop_member', 'print_authorizations', 'add_user', 'drop_user', 'find_user', 'login'}
+      'db_root'             {'add_user', 'drop_user', 'find_user', 'print_authorizations', 'info', 'change_owner',
+                             'change_trigger_owner', 'get_owner', 'change_sp_owner'}
+      'db_user'             {'find_user', 'login'}
+
+.. _-db-meth-sig:
 
 _db_meth_sig
 ------------
@@ -384,14 +455,16 @@ Represents configuration information of C functions on the method. An index for 
 +====================+==========================+===============================================+
 | meth_of            | _db_method               | Method for the function information           |
 +--------------------+--------------------------+-----------------------------------------------+
-| arg_count          | INTEGER                  | The number of input arguments of the function |
-+--------------------+--------------------------+-----------------------------------------------+
 | func_name          | VARCHAR(255)             | Function name                                 |
++--------------------+--------------------------+-----------------------------------------------+
+| arg_count          | INTEGER                  | The number of input arguments of the function |
 +--------------------+--------------------------+-----------------------------------------------+
 | return_value       | SEQUENCE OF _db_meth_arg | Return value of the function                  |
 +--------------------+--------------------------+-----------------------------------------------+
 | arguments          | SEQUENCE OF _db_meth_arg | Input arguments of the function               |
 +--------------------+--------------------------+-----------------------------------------------+
+
+.. _-db-meth-arg:
 
 _db_meth_arg
 ------------
@@ -405,12 +478,14 @@ Represents method argument information. An index for meth_sig_of is created.
 | meth_sig_of        | _db_meth_sig           | Information of the function to which the argument belongs                                                                         |
 +--------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
 | data_type          | INTEGER                | Data type of the argument (a value in the "Value" column of the "Data Types Supported by CUBRID" in                               |
-|                    |                        | :ref:`db-attribute`)                                                                                                              |
+|                    |                        | :ref:`-db-attribute`)                                                                                                             |
 +--------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
 | index_of           | INTEGER                | Order of the argument listed in the function definition. Begins with 0 if it is a return value, and 1 if it is an input argument. |
 +--------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
 | domains            | SEQUENCE OF _db_domain | Domain of the argument                                                                                                            |
 +--------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
+
+.. _-db-meth-file:
 
 _db_meth_file
 -------------
@@ -428,6 +503,8 @@ Represents information of a file in which a function is defined. An index for cl
 | path_name          | VARCHAR(255)  | File path in which the method is located                                                        |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------+
 
+.. _-db-query-spec:
+
 _db_query_spec
 --------------
 
@@ -444,41 +521,67 @@ The data type of attribute 'spec' is VARCHAR (4096) for prior versions including
 + spec               +---------------------+ SQL definition statement of the virtual class +-------------------------------+
 |                    | VARCHAR(4096)       |                                               | 10.1 Patch 3 or earlier       |
 +--------------------+---------------------+-----------------------------------------------+-------------------------------+
+| invalidated_time   | DATETIME            | Time when the view query was invalidated      |                               |
++--------------------+---------------------+-----------------------------------------------+-------------------------------+
 
-.. _db-index:
+.. _-db-index:
 
 _db_index
 ---------
 
 Represents index information. An index for class_of is created.
 
-+--------------------+---------------------------+------------------------------------------------+
-|   Attribute Name   |   Data Type               |   Description                                  |
-+====================+===========================+================================================+
-| class_of           | _db_class                 | Class to which to index belongs                |
-+--------------------+---------------------------+------------------------------------------------+
-| index_name         | varchar(255)              | Index name                                     |
-+--------------------+---------------------------+------------------------------------------------+
-| is_unique          | INTEGER                   | 1 if the index is unique, and 0 otherwise.     |
-+--------------------+---------------------------+------------------------------------------------+
-| key_count          | INTEGER                   | The number of attributes that comprise the key |
-+--------------------+---------------------------+------------------------------------------------+
-| key_attrs          | SEQUENCE OF _db_index_key | Attributes that comprise the key               |
-+--------------------+---------------------------+------------------------------------------------+
-| is_reverse         | INTEGER                   | 1 for a reverse index, and 0 otherwise.        |
-+--------------------+---------------------------+------------------------------------------------+
-| is_primary_key     | INTEGER                   | 1 for a primary key, and 0 otherwise.          |
-+--------------------+---------------------------+------------------------------------------------+
-| is_foreign_key     | INTEGER                   | 1 for a foreign key, and 0 otherwise.          |
-+--------------------+---------------------------+------------------------------------------------+
-| filter_expression  | VARCHAR(255)              | The conditions of filtered indexes             |
-+--------------------+---------------------------+------------------------------------------------+
-| have_function      | INTEGER                   | 1 for a function index, and 0 otherwise.       |
-+--------------------+---------------------------+------------------------------------------------+
-| comment            | VARCHAR (1024)            | Comment to describe the index                  |
-+--------------------+---------------------------+------------------------------------------------+
-| status             | INTEGER                   | Index status                                   |
-+--------------------+---------------------------+------------------------------------------------+
++--------------------------+---------------------------+----------------------------------------------------------------------+
+|   Attribute Name         |   Data Type               |   Description                                                        |
++==========================+===========================+======================================================================+
+| class_of                 | _db_class                 | Class to which the index belongs                                     |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| index_name               | VARCHAR(255)              | Index name                                                           |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| is_unique                | INTEGER                   | 1 if the index is unique, and 0 otherwise.                           |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| key_count                | INTEGER                   | The number of attributes that comprise the key                       |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| key_attrs                | SEQUENCE OF _db_index_key | Attributes that comprise the key                                     |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| is_reverse               | INTEGER                   | 1 for a reverse index, and 0 otherwise.                              |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| is_primary_key           | INTEGER                   | 1 for a primary key, and 0 otherwise.                                |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| is_foreign_key           | INTEGER                   | 1 for a foreign key, and 0 otherwise.                                |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| filter_expression        | VARCHAR(1073741823)       | The conditions of filtered indexes                                   |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| have_function            | INTEGER                   | 1 for a function index, and 0 otherwise.                             |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| status                   | INTEGER                   | Index status                                                         |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| referential_index        | _db_index                 | The index referenced by a foreign key (NULL if not a foreign key)    |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| delete_rule              | INTEGER                   | The delete rule for a foreign key constraint                         |
+|                          |                           | (0: CASCADE, 1: RESTRICT, 2: NO ACTION, 3: SET NULL)                 |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| update_rule              | INTEGER                   | The update rule for a foreign key constraint                         |
+|                          |                           | (1: RESTRICT, 2: NO ACTION, 3: SET NULL)                             |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| referential_match_option | INTEGER                   | The match option for a foreign key constraint (0: NONE)              |
+|                          |                           |                                                                      |
+|                          |                           | - NONE: Does not check if any NULL exists                            |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| index_type               | INTEGER                   | Index type (0: BTREE)                                                |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| options                  | INTEGER                   | Index options                                                        |
+|                          |                           |                                                                      |
+|                          |                           | - **Bit 0 ~ Bit 3**: Represents the **deduplicate level** of the     |
+|                          |                           |   index. For more details, refer to :ref:`deduplicate_overview`.     |
+|                          |                           | - The other bits are not currently used.                             |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| comment                  | VARCHAR (1024)            | Comment to describe the index                                        |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| created_time             | DATETIME                  | Index creation time                                                  |
++--------------------------+---------------------------+----------------------------------------------------------------------+
+| updated_time             | DATETIME                  | Index modification time                                              |
++--------------------------+---------------------------+----------------------------------------------------------------------+
 
 The following example shows how to retrieve names of indexes that belong to the class.
 
@@ -492,11 +595,19 @@ The following example shows how to retrieve names of indexes that belong to the 
     
       class_of.class_name   index_name
     ============================================
-      '_db_attribute'       'i__db_attribute_class_of_attr_name'
+      '_db_attribute'       'i__db_attribute_class_of_attr_name_attr_type'
       '_db_auth'            'i__db_auth_grantee'
-      '_db_class'           'i__db_class_class_name'
+      '_db_auth'            'i__db_auth_object_of'
+      '_db_class'           'i__db_class_unique_name'
+      '_db_class'           'i__db_class_class_name_owner'
+      '_db_class'           'i__db_class_class_of'
+      '_db_collation'       'pk__db_collation_coll_id'
+      '_db_data_type'       'pk__db_data_type_type_id_type_name'
       '_db_domain'          'i__db_domain_object_of'
+      '_db_domain'          'i__db_domain_data_type'
+      '_db_ha_apply_info'   'u__db_ha_apply_info_db_name_copied_log_path'
       '_db_index'           'i__db_index_class_of'
+      '_db_index'           'i__db_index_index_name'
       '_db_index_key'       'i__db_index_key_index_of'
       '_db_meth_arg'        'i__db_meth_arg_meth_sig_of'
       '_db_meth_file'       'i__db_meth_file_class_of'
@@ -504,11 +615,17 @@ The following example shows how to retrieve names of indexes that belong to the 
       '_db_method'          'i__db_method_class_of_meth_name'
       '_db_partition'       'i__db_partition_class_of_pname'
       '_db_query_spec'      'i__db_query_spec_class_of'
-      '_db_stored_procedure'  'u__db_stored_procedure_sp_name'
-      '_db_stored_procedure_args'  'i__db_stored_procedure_args_sp_name'
+      '_db_serial'          'pk_db_serial_unique_name'
+      '_db_serial'          'u__db_serial_name_owner'
+      '_db_server'          'pk__db_server_link_name_owner'
+      '_db_stored_procedure'  'pk_db_stored_procedure_unique_name'
+      '_db_stored_procedure_args'  'i__db_stored_procedure_args_sp_of'
+      '_db_stored_procedure_code'  'pk__db_stored_procedure_code_name'
+      '_db_synonym'         'pk__db_synonym_unique_name'
+      '_db_synonym'         'i__db_synonym_name_owner_is_public'
       'athlete'             'pk_athlete_code'
-      'db_serial'           'pk_db_serial_name'
-      'db_user'             'i_db_user_name'
+      'code'                'pk_code'
+      '_db_user'            'u__db_user_name'
       'event'               'pk_event_code'
       'game'                'pk_game_host_year_event_code_athlete_code'
       'game'                'fk_game_event_code'
@@ -522,26 +639,28 @@ The following example shows how to retrieve names of indexes that belong to the 
       'record'              'pk_record_host_year_event_code_athlete_code_medal'
       'stadium'             'pk_stadium_code'
 
+.. _-db-index-key:
+
 _db_index_key
 -------------
 
 Represents key information on an index. An index for index_of is created.
 
-+--------------------+---------------+--------------------------------------------------------------------+
-|   Attribute Name   |   Data Type   |   Description                                                      |
-+====================+===============+====================================================================+
-| index_of           | _db_index     | Index to which the key attribute belongs                           |
-+--------------------+---------------+--------------------------------------------------------------------+
-| key_attr_name      | VARCHAR(255)  | Name of the attribute that comprises the key                       |
-+--------------------+---------------+--------------------------------------------------------------------+
-| key_order          | INTEGER       | Order of the attribute in the key. Begins with 0.                  |
-+--------------------+---------------+--------------------------------------------------------------------+
-| asc_desc           | INTEGER       | 1 if the order of attribute values is descending, and 0 otherwise. |
-+--------------------+---------------+--------------------------------------------------------------------+
-| key_prefix_length  | INTEGER       | Length of prefix to be used as a key                               |
-+--------------------+---------------+--------------------------------------------------------------------+
-| func               | VARCHAR(255)  | Functional expression of function based index                      |
-+--------------------+---------------+--------------------------------------------------------------------+
++--------------------+----------------+--------------------------------------------------------------------+
+|   Attribute Name   |   Data Type    |   Description                                                      |
++====================+================+====================================================================+
+| index_of           | _db_index      | Index to which the key attribute belongs                           |
++--------------------+----------------+--------------------------------------------------------------------+
+| key_attr_name      | VARCHAR(255)   | Name of the attribute that comprises the key                       |
++--------------------+----------------+--------------------------------------------------------------------+
+| key_order          | INTEGER        | Order of the attribute in the key. Begins with 0.                  |
++--------------------+----------------+--------------------------------------------------------------------+
+| asc_desc           | INTEGER        | 1 if the order of attribute values is descending, and 0 otherwise. |
++--------------------+----------------+--------------------------------------------------------------------+
+| key_prefix_length  | INTEGER        | Length of prefix to be used as a key                               |
++--------------------+----------------+--------------------------------------------------------------------+
+| func               | VARCHAR(1023)  | Functional expression of function based index                      |
++--------------------+----------------+--------------------------------------------------------------------+
 
 The following example shows how to retrieve the names of index that belongs to the class.
 
@@ -558,32 +677,46 @@ The following example shows how to retrieve the names of index that belongs to t
       class_of.class_name   sequence((select key_attr_name from _db_index_key k where k in
     i.key_attrs))
     ============================================
+      '_db_server'          {'link_name', 'owner'}
+      '_db_synonym'         {'name', 'owner', 'is_public'}
+      '_db_ha_apply_info'   {'db_name', 'copied_log_path'}
+      '_db_serial'          {'name', 'owner'}
+      '_db_data_type'       {'type_id', 'type_name'}
       '_db_partition'       {'class_of', 'pname'}
       '_db_method'          {'class_of', 'meth_name'}
-      '_db_attribute'       {'class_of', 'attr_name'}
+      '_db_attribute'       {'class_of', 'attr_name', 'attr_type'}
+      '_db_class'           {'class_name', 'owner'}
       'participant'         {'host_year', 'nation_code'}
       'game'                {'host_year', 'event_code', 'athlete_code'}
       'record'              {'host_year', 'event_code', 'athlete_code', 'medal'}
       'history'             {'event_code', 'athlete'}
 
+.. _-db-auth:
+
 _db_auth
 --------
 
-Represents user authorization information of the class. An index for the grantee is created.
+Represents user authorization information for objects. An index for grantee and an index for object_of are created.
 
-+--------------------+---------------+----------------------------------------------------------------------------------+
-|   Attribute Name   |   Data Type   |   Description                                                                    |
-+====================+===============+==================================================================================+
-| grantor            | db_user       | Authorization grantor                                                            |
-+--------------------+---------------+----------------------------------------------------------------------------------+
-| grantee            | db_user       | Authorization grantee                                                            |
-+--------------------+---------------+----------------------------------------------------------------------------------+
-| class_of           | _db_class     | Class object to which authorization is to be granted                             |
-+--------------------+---------------+----------------------------------------------------------------------------------+
-| auth_type          | VARCHAR(7)    | Type name of the authorization granted                                           |
-+--------------------+---------------+----------------------------------------------------------------------------------+
-| is_grantable       | INTEGER       | 1 if authorization for the class can be granted to other users, and 0 otherwise. |
-+--------------------+---------------+----------------------------------------------------------------------------------+
++--------------------+---------------+--------------------------------------------------------------------------------------+
+|   Attribute Name   |   Data Type   |   Description                                                                        |
++====================+===============+======================================================================================+
+| grantor            | _db_user      | Authorization grantor                                                                |
++--------------------+---------------+--------------------------------------------------------------------------------------+
+| grantee            | _db_user      | Authorization grantee                                                                |
++--------------------+---------------+--------------------------------------------------------------------------------------+
+| object_type        | INTEGER       | Type of the object for which authorization is granted (0: class, 5: stored procedure)|
++--------------------+---------------+--------------------------------------------------------------------------------------+
+| object_of          | object        | Object for which authorization is granted                                            |
++--------------------+---------------+--------------------------------------------------------------------------------------+
+| auth_type          | VARCHAR(7)    | Type name of the authorization granted                                               |
++--------------------+---------------+--------------------------------------------------------------------------------------+
+| is_grantable       | INTEGER       | 1 if authorization for the object can be granted to other users, and 0 otherwise.    |
++--------------------+---------------+--------------------------------------------------------------------------------------+
+| created_time       | DATETIME      | Time when authorization was granted                                                  |
++--------------------+---------------+--------------------------------------------------------------------------------------+
+| updated_time       | DATETIME      | Time when authorization was updated                                                  |
++--------------------+---------------+--------------------------------------------------------------------------------------+
 
 Authorization types supported by CUBRID are as follows:
 
@@ -595,13 +728,13 @@ Authorization types supported by CUBRID are as follows:
 *   **INDEX**
 *   **EXECUTE**
 
-The following example shows how to retrieve authorization information defined in the class *db_trig*.
+The following example shows how to retrieve authorization information defined in the view *db_trigger*.
 
 .. code-block:: sql
 
-    SELECT grantor.name, grantee.name, auth_type
-    FROM _db_auth
-    WHERE class_of.class_name = 'db_trig';
+    SELECT a.grantor.name, a.grantee.name, a.auth_type
+    FROM _db_auth a JOIN _db_class c ON a.object_of = c.class_of
+    WHERE c.class_name = 'db_trigger';
 
 ::
 
@@ -609,17 +742,19 @@ The following example shows how to retrieve authorization information defined in
     ==================================================================
       'DBA'                 'PUBLIC'              'SELECT'
 
+.. _-db-data-type:
+
 _db_data_type
 -------------
 
-Represents the data type supported by CUBRID (see the "Data Types Supported by CUBRID" table in :ref:`db-attribute`).
+Represents the data type supported by CUBRID (see the "Data Types Supported by CUBRID" table in :ref:`-db-attribute`).
 
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------+
 |   Attribute Name   |   Data Type   |   Description                                                                                          |
 +====================+===============+========================================================================================================+
 | type_id            | INTEGER       | Data type identifier. Corresponds to the "Value" column in the "Data Types Supported by CUBRID" table. |
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------+
-| type_name          | VARCHAR(9)    | Data type name. Corresponds to the "Meaning" column in the "Data Types Supported by CUBRID" table.     |
+| type_name          | VARCHAR(16)   | Data type name. Corresponds to the "Meaning" column in the "Data Types Supported by CUBRID" table.     |
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------+
 
 The following example shows how to retrieve attributes and type names of the *event* class.
@@ -641,105 +776,285 @@ The following example shows how to retrieve attributes and type names of the *ev
       'gender'              'CHAR'
       'players'             'INTEGER'
 
+.. _-db-partition:
+
 _db_partition
 -------------
 
-Represents partition information. Indexes for class_of and pname are created.
+Represents partition information. An index for class_of and pname is created.
 
-+--------------------+---------------+-----------------------------------+
-|   Attribute Name   |   Data Type   |   Description                     |
-+====================+===============+===================================+
-| class_of           | _db_class     | OID of the parent class           |
-+--------------------+---------------+-----------------------------------+
-| pname              | VARCHAR(255)  | Parent -                          |
-|                    |               | **NULL**                          |
-+--------------------+---------------+-----------------------------------+
-| ptype              | INTEGER       | 0 - HASH                          |
-|                    |               | 1 - RANGE                         |
-|                    |               | 2 - LIST                          |
-+--------------------+---------------+-----------------------------------+
-| pexpr              | VARCHAR(255)  | Parent only                       |
-+--------------------+---------------+-----------------------------------+
-| pvalues            | SEQUENCE OF   | Parent - Column name, Hash size   |
-|                    |               | RANGE - MIN/MAX value :           |
-|                    |               | - Infinite MIN/MAX is stored as   |
-|                    |               | **NULL**                          |
-|                    |               | LIST - value list                 |
-+--------------------+---------------+-----------------------------------+
-| comment            | VARCHAR(1024) | Comment to describe the partition |
-+--------------------+---------------+-----------------------------------+
++----------------------+---------------+--------------------------------------+
+|   Attribute Name     |   Data Type   |   Description                        |
++======================+===============+======================================+
+| class_of             | _db_class     | OID of the parent class              |
++----------------------+---------------+--------------------------------------+
+| pname                | VARCHAR(255)  | Parent -                             |
+|                      |               | **NULL**                             |
++----------------------+---------------+--------------------------------------+
+| ptype                | INTEGER       | - 0 - HASH                           |
+|                      |               | - 1 - RANGE                          |
+|                      |               | - 2 - LIST                           |
++----------------------+---------------+--------------------------------------+
+| pexpr                | VARCHAR(2048) | Parent only                          |
++----------------------+---------------+--------------------------------------+
+| pvalues              | SEQUENCE OF   | - HASH - Column name, Hash size      |
+|                      |               | - RANGE - MIN/MAX value :            |
+|                      |               |   Infinite MIN/MAX is stored as      |
+|                      |               |   **NULL**                           |
+|                      |               | - LIST - value list                  |
++----------------------+---------------+--------------------------------------+
+| class_partition_type | INTEGER       | Partition type of partition class    |
+|                      |               | (1: PARTITIONED CLASS,               |
+|                      |               | 2: PARTITION CLASS)                  |
+|                      |               |                                      |
+|                      |               | - PARTITIONED CLASS: Parent table    |
+|                      |               |   that has partitions                |
+|                      |               | - PARTITION CLASS: Individual        |
+|                      |               |   partition table that stores data   |
++----------------------+---------------+--------------------------------------+
+| comment              | VARCHAR(1024) | Comment to describe the partition    |
++----------------------+---------------+--------------------------------------+
+
+.. _-db-stored-procedure:
 
 _db_stored_procedure
 --------------------
 
-Represents Java stored procedure information. An index for sp_name is created.
+Represents Stored procedure information. An index for unique_name is created.
 
-+--------------------+---------------------------------------+-------------------------------------------+
-|   Attribute Name   |   Data Type                           |   Description                             |
-+====================+=======================================+===========================================+
-| sp_name            | VARCHAR(255)                          | Stored procedure name                     |
-+--------------------+---------------------------------------+-------------------------------------------+
-| sp_type            | INTEGER                               | Stored procedure type                     |
-|                    |                                       | (function or procedure)                   |
-+--------------------+---------------------------------------+-------------------------------------------+
-| return_type        | INTEGER                               | Return value type                         |
-+--------------------+---------------------------------------+-------------------------------------------+
-| arg_count          | INTEGER                               | The number of arguments                   |
-+--------------------+---------------------------------------+-------------------------------------------+
-| args               | SEQUENCE OF _db_stored_procedure_args | Argument list                             |
-+--------------------+---------------------------------------+-------------------------------------------+
-| lang               | INTEGER                               | Implementation language (currently, Java) |
-+--------------------+---------------------------------------+-------------------------------------------+
-| target             | VARCHAR(4096)                         | Name of the Java method to be executed    |
-+--------------------+---------------------------------------+-------------------------------------------+
-| owner              | db_user                               | Owner                                     |
-+--------------------+---------------------------------------+-------------------------------------------+
-| comment            | VARCHAR (1024)                        | Comment to describe the stored procedure  |
-+--------------------+---------------------------------------+-------------------------------------------+
+==================== ===================================== =========================================================
+Attribute Name       Data Type                             Description
+==================== ===================================== =========================================================
+unique_name          VARCHAR(255)                          Stored procedure name prefixed with the schema name
+sp_name              VARCHAR(255)                          Stored procedure name
+sp_type              INTEGER                               Stored procedure type (function or procedure)
+return_type          INTEGER                               Return value type
+arg_count            INTEGER                               The number of arguments
+args                 SEQUENCE OF _db_stored_procedure_args Argument list
+lang                 INTEGER                               Implementation language
+pkg_name             VARCHAR(255)                          Package name containing the stored procedure
+is_system_generated  INTEGER                               Indicates whether the stored procedure is system-generated
+directive            INTEGER                               Execution behavior attributes of the stored procedure
+sql_data_access      INTEGER                               SQL data access attribute (0: NO SQL, 1: CONTAINS SQL, 2: READS SQL DATA, 3: MODIFIES SQL DATA)
+target_class         VARCHAR(1024)                         Class name of the stored procedure to execute
+target_method        VARCHAR(4096)                         Method name of the stored procedure to execute
+owner                _db_user                              Owner
+comment              VARCHAR(1024)                         Comment to describe the stored procedure
+created_time         DATETIME                              Stored procedure creation time
+updated_time         DATETIME                              Stored procedure modification time
+==================== ===================================== =========================================================
+
+        .. note::
+
+            - **sp_type**: A value of **1** indicates a stored procedure, and **2** indicates a stored function.
+
+            - **return_type**: The return type is one of the following values:
+
+                ::
+
+                        NULL = 0, INTEGER = 1, FLOAT = 2, DOUBLE = 3, STRING = 4, 
+                        SET = 6, MULTISET = 7, SEQUENCE = 8, TIME = 10, 
+                        TIMESTAMP = 11, DATE = 12, SHORT = 18, NUMERIC = 22, CHAR = 25, 
+                        CURSOR = 28, BIGINT = 31, DATETIME = 32
+
+                - Java stored procedures support all the data types listed above.
+                - PL/CSQL supports the data types listed above except for SET, MULTISET, SEQUENCE, and CURSOR.
+                - Data types not listed above are not supported.
+
+            - **lang**: A value of **0** indicates PL/CSQL, and **1** indicates Java.
+
+            - **pkg_name**: Package name. Currently, the package name is only used in the **DBMS_OUTPUT** system package.
+
+            - **is_system_generated**: A value of **1** indicates a system-generated stored procedure, while **0** indicates a user-created stored procedure.
+
+            - **directive**: The value uses bits from **Bit 0** to **Bit 31**, starting from the rightmost bit.
+
+                - **Bit 0**: Represents the **execution rights (AUTHID)** of the stored procedure.  
+                        - A value of **0** indicates owner's rights (also referred to as definer's rights), and **1** indicates caller's rights (also referred to as invoker's rights).
+                - **Bit 1**: Represents the **deterministic** property of the stored procedure.  
+                        - A value of **1** indicates deterministic, and **0** indicates non-deterministic.
+                - **Bit 2**: Represents the **PARALLEL_ENABLE** property of the stored function.
+                        - A value of **1** indicates a declared function, and **0** indicates a function without the declaration.
+                - The other bits (**Bit 3** ~ **Bit 31**) are not currently used.
+
+.. _-db-stored-procedure-args:
 
 _db_stored_procedure_args
 -------------------------
 
-Represents Java stored procedure argument information. An index for sp_name is created.
+Represents Stored procedure argument information. An index for sp_of is created.
 
-+--------------------+----------------+----------------------------------+
-|   Attribute Name   |   Data Type    |   Description                    |
-+====================+================+==================================+
-| sp_name            | VARCHAR(255)   | Stored procedure name            |
-+--------------------+----------------+----------------------------------+
-| index_of           | INTEGER        | Order of the arguments           |
-+--------------------+----------------+----------------------------------+
-| arg_name           | VARCHAR(255)   | Argument name                    |
-+--------------------+----------------+----------------------------------+
-| data_type          | INTEGER        | Data type of the argument        |
-+--------------------+----------------+----------------------------------+
-| mode               | INTEGER        | Mode (IN, OUT, INOUT)            |
-+--------------------+----------------+----------------------------------+
-| comment            | VARCHAR (1024) | Comment to describe the argument |
-+--------------------+----------------+----------------------------------+
+==================== =========================== =========================================================
+Attribute Name       Data Type                   Description
+==================== =========================== =========================================================
+sp_of                _db_stored_procedure        Stored procedure object
+index_of             INTEGER                     Order of the arguments
+is_system_generated  INTEGER                     Indicates whether the stored procedure is system-generated
+arg_name             CHARACTER VARYING(255)      Argument name
+data_type            INTEGER                     Argument data type
+mode                 INTEGER                     Arguemnt mode (IN, OUT, INOUT)
+default_value        CHARACTER VARYING(255)      Default value of the argument
+is_optional          INTEGER                     Whether the parameter is optional
+comment              CHARACTER VARYING(1024)     Comment to describe the argument
+==================== =========================== =========================================================
 
-db_user
--------
+        .. note::
 
-+--------------------+---------------------+---------------------------------------------------------+
-|   Attribute Name   |   Data Type         |   Description                                           |
-+====================+=====================+=========================================================+
-| name               | VARCHAR(1073741823) | User name                                               |
-+--------------------+---------------------+---------------------------------------------------------+
-| id                 | INTEGER             | User identifier                                         |
-+--------------------+---------------------+---------------------------------------------------------+
-| password           | db_password         | User password. Not displayed to the user.               |
-+--------------------+---------------------+---------------------------------------------------------+
-| direct_groups      | SET OF db_user      | Groups to which the user belongs directly               |
-+--------------------+---------------------+---------------------------------------------------------+
-| groups             | SET OF db_user      | Groups to which the user belongs directly or indirectly |
-+--------------------+---------------------+---------------------------------------------------------+
-| authorization      | db_authorization    | Information of the authorization owned by the user      |
-+--------------------+---------------------+---------------------------------------------------------+
-| triggers           | SEQUENCE OF object  | Triggers that occur due to user actions                 |
-+--------------------+---------------------+---------------------------------------------------------+
-| comment            | VARCHAR (1024)      | Comment to describe the user                            |
-+--------------------+---------------------+---------------------------------------------------------+
+            - **index_of**: The order of the arguments starts from 0.
+
+            - **is_system_generated**: A value of **1** indicates a system-generated stored procedure argument, while **0** indicates a user-created stored procedure argument.
+
+            - **data_type**: The data type of the argument is one of the following values
+
+                ::
+
+                        NULL = 0, INTEGER = 1, FLOAT = 2, DOUBLE = 3, STRING = 4, 
+                        SET = 6, MULTISET = 7, SEQUENCE = 8, TIME = 10, 
+                        TIMESTAMP = 11, DATE = 12, SHORT = 18, NUMERIC = 22, CHAR = 25, 
+                        CURSOR = 28, BIGINT = 31, DATETIME = 32
+
+                - Java stored procedures support all the data types listed above.
+                - PL/CSQL supports the data types listed above except for SET, MULTISET, SEQUENCE, and CURSOR.
+                - Data types not listed above are not supported.
+
+            - **mode**: The argument mode is one of the following values
+
+                ::
+
+                        IN = 0, OUT = 1, INOUT = 2
+
+            - **default_value**: The default value of the argument. For more details, refer to :ref:`pl-arg-default`.
+
+            - **is_optional**: A value of **1** indicates the argument is optional, while **0** indicates it is required.
+
+.. _-db-stored-procedure-code:
+
+_db_stored_procedure_code
+-------------------------
+
+Represents Stored procedure code information. An index for name is created.
+
+==================== ============================= =================================================================
+Attribute Name       Data Type                      Description
+==================== ============================= =================================================================
+name                 CHARACTER VARYING(1024)       Name of the stored procedure code
+created_time         CHARACTER VARYING(16)         Creation time
+owner                _db_user                      Owner
+is_static            INTEGER                       Indicates whether the stored procedure code is loaded statically
+is_system_generated  INTEGER                       Indicates whether the stored procedure code is system-generated
+stype                INTEGER                       Type of the source code
+scode                CHARACTER VARYING(1073741823) Source code
+otype                INTEGER                       Type of the object code
+ocode                CHARACTER VARYING(1073741823) Object code
+==================== ============================= =================================================================
+
+        .. note::
+
+            - **is_static**
+
+                - A value of **1** indicates that the stored procedure code is loaded only once and changes to the procedure code are not applied until the server restarts.
+                - A value of **0** indicates that the stored procedure code is loaded every time, and changes are applied immediately using DDL or procedure load utilities.
+
+                - Used in :ref:`jsp-jni`.
+
+            - **is_system_generated**: A value of **1** indicates that the code is system-generated, while **0** indicates it is user-written code.
+
+            - **stype**: Represents the type of the source code. Currently, only PL/CSQL code is supported, and the value is **0**.
+
+            - **scode**: Stores the source code of the stored procedure entered by the user.
+
+            - **otype**: Represents the type of the object code compiled from the source code of the stored procedure.
+
+                - A value of **0** indicates a Java class file.
+                - A value of **1** indicates a Java archive file (Jar).
+
+                - Other values are not currently supported.
+
+            - **ocode**: Stores the object code compiled from the source code of the stored procedure, which can be executed on the PL execution server.
+
+.. _-db-server:
+
+_db_server
+----------
+
+================ =================== ===================================================================
+Attribute Name   Data Type           Description
+================ =================== ===================================================================
+link_name        VARCHAR(255)        Connection name
+host             VARCHAR(255)        Hostname of a server
+port             INTEGER             Connection port of a server
+db_name          VARCHAR(255)        Database name of a server
+user_name        VARCHAR(255)        Database username of a server
+password         VARCHAR(1073741823) Database user password of a server
+properties       VARCHAR(2048)       Property information used for connection
+owner            _db_user            The owner of this connection information
+comment          VARCHAR(1024)       Comment to describe the server
+created_time     DATETIME            Server creation time
+updated_time     DATETIME            Server modification time
+invalidated_time DATETIME            Time when the external server connection was invalidated
+================ =================== ===================================================================
+
+.. _-db-synonym:
+
+_db_synonym
+-----------
+
+Represents target object information of synonyms. An index for unique_name and an index for name owner, and is_public are created.
+
+================== ============= =======================================================
+Attribute Name     Data Type     Description
+================== ============= =======================================================
+unique_name        VARCHAR(255)  Name prefixed with the schema name of the synonym
+name               VARCHAR(255)  The name of the synonym
+owner              _db_user      The owner of the synonym
+is_public          INTEGER       1 for a public synonym, and 0 for a private synonym.
+target_unique_name VARCHAR(255)  Name prefixed with the schema name of the target object
+target_name        VARCHAR(255)  The name of the target object
+target_owner       _db_user      The owner name of the target object
+comment            VARCHAR(2048) Comment to describe the synonym
+created_time       DATETIME      Synonym creation time
+updated_time       DATETIME      Synonym modification time
+================== ============= =======================================================
+
+.. warning::
+    
+    It does not support public synonym yet.
+
+.. _-db-user:
+
+_db_user
+--------
+
+Represents user information. An index for name is created.
+
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+|   Attribute Name   |   Data Type         |   Description                                                                     |
++====================+=====================+===================================================================================+
+| name               | VARCHAR(32)         | User name                                                                         |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| id                 | INTEGER             | User identifier                                                                   |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| password           | _db_password        | User password. Not displayed to the user.                                         |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| direct_groups      | SET OF _db_user     | Groups to which the user belongs directly                                         |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| groups             | SET OF _db_user     | Groups to which the user belongs directly or indirectly                           |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| authorization      | _db_authorization   | Information of the authorization owned by the user                                |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| triggers           | SEQUENCE OF object  | Triggers that occur due to user actions                                           |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| is_loginable       | INTEGER             | 1 if the user is allowed to log in, 0 otherwise                                   |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| is_system_created  | INTEGER             | 1 if the user is created by the system (for example, **DBA** and **PUBLIC**),     |
+|                    |                     | 0 otherwise                                                                       |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| comment            | VARCHAR(1024)       | Comment to describe the user                                                      |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| created_time       | DATETIME            | User creation time                                                                |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
+| updated_time       | DATETIME            | User modification time                                                            |
++--------------------+---------------------+-----------------------------------------------------------------------------------+
 
 **Function Names**
 
@@ -754,28 +1069,82 @@ db_user
 *   **find_user** ()
 *   **login** ()
 
-db_authorization
-----------------
+.. _-db-authorization:
 
-+--------------------+--------------------+--------------------------------------------------------------------------------------------------------------------+
-|   Attribute Name   |   Data Type        |   Description                                                                                                      |
-+====================+====================+====================================================================================================================+
-| owner              | db_user            | User information                                                                                                   |
-+--------------------+--------------------+--------------------------------------------------------------------------------------------------------------------+
-| grants             | SEQUENCE OF object | Sequence of {object for which the user has authorization, authorization grantor of the object, authorization type} |
-+--------------------+--------------------+--------------------------------------------------------------------------------------------------------------------+
+_db_authorization
+-----------------
+
+Represents authorization summary per user.
+
++--------------------+--------------------+----------------------------------------------------------------------------------------------------------------------------------+
+|   Attribute Name   |   Data Type        |   Description                                                                                                                    |
++====================+====================+==================================================================================================================================+
+| owner              | _db_user           | Owner of this authorization object                                                                                               |
++--------------------+--------------------+----------------------------------------------------------------------------------------------------------------------------------+
+| grants             | SEQUENCE           | Sequence of {object for which the user has authorization, authorization grantor of the object, authorization type} for each grant|
++--------------------+--------------------+----------------------------------------------------------------------------------------------------------------------------------+
+
+.. _-db-serial:
+
+_db_serial
+----------
+
+Represents serial information. An index for unique_name and an index for name and owner are created.
+
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+|   Attribute Name  |   Data Type          |   Description                                                                                       |
++===================+======================+=====================================================================================================+
+| unique_name       | VARCHAR(1073741823)  | Serial name prefixed with schema name.                                                              |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| name              | VARCHAR(1073741823)  | Serial name.                                                                                        |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| owner             | _db_user             | Serial owner.                                                                                       |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| current_val       | NUMERIC(38,0)        | Current serial value. Default is 1.                                                                 |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| increment_val     | NUMERIC(38,0)        | Interval of serial values. Default is 1.                                                            |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| max_val           | NUMERIC(38,0)        | The maximum value of the serial. Default is 99999999999999999999999999999999999999.                 |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| min_val           | NUMERIC(38,0)        | The minimum value of the cereal. Default is 1.                                                      |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| start_val         | NUMERIC(38,0)        | The start value of the serial. Default is 1.                                                        |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| cyclic            | INTEGER              | 1 (CYCLE) if a value can be generated by cycling after reaching the maximum                         |
+|                   |                      | or minimum value of the serial; 0 (NOCYCLE) if not.                                                 |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| started           | INTEGER              | 1 if the value has been created at least once after creation, otherwise 0.                          |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| class_name        | VARCHAR(1073741823)  | AUTO_INCREMENT In case of serial, the table name is stored. or **NULL**.                            |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| attr_name         | VARCHAR(1073741823)  | AUTO_INCREMENT In case of serial, the column name is stored. or **NULL**.                           |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| cached_num        | INTEGER              | The number of serial values to pre-create in memory to improve performance. Default is 0.           |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| comment           | VARCHAR (1024)       | Comment to describe the serial.                                                                     |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| created_time      | DATETIME             | Serial creation time.                                                                               |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
+| updated_time      | DATETIME             | Serial modification time.                                                                           |
++-------------------+----------------------+-----------------------------------------------------------------------------------------------------+
 
 **Method Name**
 
-*   **check_authorization** (varchar(255), integer)
+*   **change_serial_owner** ()
 
-db_trigger
-----------
+.. _-db-trigger:
+
+_db_trigger
+-----------
+
+Represents trigger information.
 
 +------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |   Attribute Name       |   Data Type         |   Description                                                                                                                                              |
 +========================+=====================+============================================================================================================================================================+
-| owner                  | db_user             | Trigger owner                                                                                                                                              |
+| unique_name            | VARCHAR(1073741823) | Trigger name prefixed with schema name                                                                                                                     |
++------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| owner                  | _db_user            | Trigger owner                                                                                                                                              |
 +------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | name                   | VARCHAR(1073741823) | Trigger name                                                                                                                                               |
 +------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -806,9 +1175,15 @@ db_trigger
 +------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | comment                | VARCHAR (1024)      | Comment to describe the trigger                                                                                                                            |
 +------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| created_time           | DATETIME            | Trigger creation time                                                                                                                                      |
++------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| updated_time           | DATETIME            | Trigger modification time                                                                                                                                  |
++------------------------+---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-db_ha_apply_info
-----------------
+.. _-db-ha-apply-info:
+
+_db_ha_apply_info
+-----------------
 
 A table that stores the progress status every time the **applylogdb** utility applies replication logs. This table is updated at every point the **applylogdb** utility commits, and the accumulative count of operations are stored in the \*_counter column. The meaning of each column is as follows:
 
@@ -863,7 +1238,7 @@ A table that stores the progress status every time the **applylogdb** utility ap
 +----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
 | log_commit_time      | DATETIME        | The time of reflecting the last commit log                                                                                                         |
 +----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
-| last_access_time     | DATETIME        | The final update time of the db_ha_apply_info catalog                                                                                              |
+| last_access_time     | DATETIME        | The final update time of the _db_ha_apply_info catalog                                                                                             |
 +----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
 | status               | INTEGER         | Progress status (0: IDLE, 1: BUSY)                                                                                                                 |
 +----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -882,10 +1257,82 @@ A table that stores the progress status every time the **applylogdb** utility ap
 | start_time           | DATETIME        | Time when the applylogdb process accessed the slave database                                                                                       |
 +----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
 
+.. _dual:
+
+dual
+----
+
+The dual class is a one-row, one-column table that is used as a dummy table. It is used to select a constant, expression, or pseudo column such as SYS_DATE or USER. Pseudo columns can be provided as functions in CUBRID. More details and examples are in :ref:`operators-and-functions`. However, it is not mandatory to have FROM clause when selecting a constant, expression, or pseudo column because dual class will be referenced automatically. Like other system catalog classes, dual class is created to be owned by dba but dba can only execute SELECT operation. Unlike other system catalog classes, however, any user can execute SELECT operation on dual class.
+
++--------------------+---------------+----------------------------------------------------------+
+|   Attribute Name   |   Data Type   |   Description                                            |
++====================+===============+==========================================================+
+| dummy              | VARCHAR(1)    | Value used for dummy purpose only                        |
++--------------------+---------------+----------------------------------------------------------+
+
+The following example shows the result which ran the query that select pseudo column after inputting ";plan detail" or "SET OPTIMIZATION LEVEL 513;" in CSQL (:ref:`viewing-query-plan`). This shows the dual class is referenced automatically even if there is no FROM clause.
+
+.. code-block:: sql
+
+  SET OPTIMIZATION LEVEL 513;
+  SELECT SYS_DATE;
+
+::
+
+  Join graph segments (f indicates final):
+  seg[0]: [0]
+  Join graph nodes:
+  node[0]: dual dual(1/1) (loc -1)
+
+  Query plan:
+
+    sscan
+      class: dual node[0]
+      cost:  1 card 1
+
+  Query stmt:
+
+  select  SYS_DATE  from dual dual
+
+  === <Result of SELECT Command in Line 1> ===
+
+          SYS_DATE
+        ============
+          11/26/2020
+
 System Catalog Virtual Class
 ============================
 
 General users can only see information of classes for which they have authorization through system catalog virtual classes. This section explains which information each system catalog virtual class represents, and virtual class definition statements.
+
+================================ ==============================================================================
+Virtual Class Name               Description
+================================ ==============================================================================
+:ref:`db-class`                  Class information
+:ref:`db-direct-super-class`     Super class information
+:ref:`db-vclass`                 The SQL statement of a virtual class
+:ref:`db-attribute`              Attribute information
+:ref:`db-attr-setdomain-elm`     Data type for elements of collection type (SET, MULTISET, SEQUENCE) attributes
+:ref:`db-charset`                Charset information
+:ref:`db-collation`              Collation information
+:ref:`db-method`                 Method information
+:ref:`db-meth-arg`               Method argument information
+:ref:`db-meth-arg-setdomain-elm` Data type for elements of collection type (SET, MULTISET, SEQUENCE) argument
+:ref:`db-meth-file`              File information in which the method is defined
+:ref:`db-index`                  Index information
+:ref:`db-index-key`              Key information on an index
+:ref:`db-auth`                   User authorization information of classes
+:ref:`db-serial`                 Serial information
+:ref:`db-trigger`                Trigger information
+:ref:`db-ha-apply-info`          The progress status the **applylogdb** utility applies replication logs
+:ref:`db-partition`              Partition information
+:ref:`db-stored-procedure`       Stored procedure information
+:ref:`db-stored-procedure-args`  Stored procedure argument information
+:ref:`db-server`                 Server information for DBLink
+:ref:`db-synonym`                Target object information of synonyms
+================================ ==============================================================================
+
+.. _db-class:
 
 DB_CLASS
 --------
@@ -897,11 +1344,16 @@ Represents information of classes for which the current user has access authoriz
 +====================+===============+==========================================================+
 | class_name         | VARCHAR(255)  | Class name                                               |
 +--------------------+---------------+----------------------------------------------------------+
-| owner_name         | VARCHAR(255)  | Name of class owner                                      |
+| owner_name         | VARCHAR(32)   | Owner Name of class                                      |
 +--------------------+---------------+----------------------------------------------------------+
 | class_type         | VARCHAR(6)    | 'CLASS' for a class, and 'VCLASS' for a virtual class    |
 +--------------------+---------------+----------------------------------------------------------+
 | is_system_class    | VARCHAR(3)    | 'YES' for a system class, and 'NO' otherwise.            |
++--------------------+---------------+----------------------------------------------------------+
+| tde_algorithm      | VARCHAR(32)   | TDE encryption algorithm                                 |
++--------------------+---------------+----------------------------------------------------------+
+| statistics_strategy| VARCHAR(8)    | Statistics collection strategy                           |
+|                    |               | ('SAMPLING', 'FULLSCAN')                                 |
 +--------------------+---------------+----------------------------------------------------------+
 | partitioned        | VARCHAR(3)    | 'YES' for a partitioned group class, and 'NO' otherwise. |
 +--------------------+---------------+----------------------------------------------------------+
@@ -911,32 +1363,37 @@ Represents information of classes for which the current user has access authoriz
 +--------------------+---------------+----------------------------------------------------------+
 | comment            | VARCHAR(2048) | Comment to describe the class                            |
 +--------------------+---------------+----------------------------------------------------------+
+| created_time       | DATETIME      | Class creation time                                      |
++--------------------+---------------+----------------------------------------------------------+
+| updated_time       | DATETIME      | Class modification time                                  |
++--------------------+---------------+----------------------------------------------------------+
+| checked_time       | DATETIME      | Class statistics information update time                 |
++--------------------+---------------+----------------------------------------------------------+
 
 The following example shows how to retrieve classes owned by the current user.
 
 .. code-block:: sql
 
-    SELECT class_name
+    /* CURRENT_USER: PUBLIC */
+    SELECT class_name, owner_name
     FROM db_class
     WHERE owner_name = CURRENT_USER;
 
 ::
 
-      class_name
-    ======================
-      'stadium'
-      'code'
-      'nation'
-      'event'
-      'athlete'
-      'participant'
-      'olympic'
-      'game'
-      'record'
-      'history'
-      'female_event'
+      class_name            owner_name
+    ============================================
+      'stadium'             'PUBLIC'
+      'code'                'PUBLIC'
+      'nation'              'PUBLIC'
+      'event'               'PUBLIC'
+      'athlete'             'PUBLIC'
+      'participant'         'PUBLIC'
+      'olympic'             'PUBLIC'
+      'game'                'PUBLIC'
+      'record'              'PUBLIC'
+      'history'             'PUBLIC'
 
-	  
 The following example shows how to retrieve virtual classes that can be accessed by the current user.
 
 .. code-block:: sql
@@ -949,10 +1406,14 @@ The following example shows how to retrieve virtual classes that can be accessed
 
       class_name
     ======================
+      'db_synonym'
+      'db_server'
+      'db_charset'
+      'db_collation'
       'db_stored_procedure_args'
       'db_stored_procedure'
       'db_partition'
-      'db_trig'
+      'db_trigger'
       'db_auth'
       'db_index_key'
       'db_index'
@@ -966,39 +1427,42 @@ The following example shows how to retrieve virtual classes that can be accessed
       'db_direct_super_class'
       'db_class'
 
-The following example shows how to retrieve system classes that can be accessed by the current user(**PUBLIC** user).
+The following example shows how to retrieve system classes that can be accessed by the current user.
 
 .. code-block:: sql
 
     SELECT class_name
     FROM db_class
     WHERE is_system_class = 'YES' AND class_type = 'CLASS'
-    ORDER BY 1;
+    ORDER BY class_name;
 
 ::
     
       class_name
     ======================
-      'db_authorization'
-      'db_authorizations'
       'db_root'
-      'db_serial'
-      'db_user'
+      'dual'
+
+.. _db-direct-super-class:
 
 DB_DIRECT_SUPER_CLASS
 ---------------------
 
 Represents the names of super classes (if any) of the class for which the current user has access authorization to a database.
 
-+--------------------+---------------+------------------+
-|   Attribute Name   |   Data Type   |   Description    |
-+====================+===============+==================+
-| class_name         | VARCHAR(255)  | Class name       |
-+--------------------+---------------+------------------+
-| super_class_name   | VARCHAR(255)  | super class name |
-+--------------------+---------------+------------------+
++--------------------+---------------+---------------------------+
+|   Attribute Name   |   Data Type   |   Description             |
++====================+===============+===========================+
+| class_name         | VARCHAR(255)  | Class name                |
++--------------------+---------------+---------------------------+
+| owner_name         | VARCHAR(32)   | Owner Name of class       |
++--------------------+---------------+---------------------------+
+| super_class_name   | VARCHAR(255)  | Super class name          |
++--------------------+---------------+---------------------------+
+| super_owner_name   | VARCHAR(32)   | Owner Name of super class |
++--------------------+---------------+---------------------------+
 
-The following example shows how to retrieve super classes of the *female_event* class (see :ref:`add-superclass`).
+The following example shows how to retrieve super classes of the *female_event* class. (see :ref:`add-superclass`)
 
 .. code-block:: sql
 
@@ -1012,20 +1476,23 @@ The following example shows how to retrieve super classes of the *female_event* 
     ======================
       'event'
 
-The following example shows how to retrieve super classes of the class owned by the current user (**PUBLIC** user).
+The following example shows how to retrieve super classes of the class owned by the current user. (see :ref:`add-superclass`)
 
 .. code-block:: sql
 
-    SELECT c.class_name, s.super_class_name
-    FROM db_class c, db_direct_super_class s
-    WHERE c.class_name = s.class_name AND c.owner_name = user
-    ORDER BY 1;
+    /* CURRENT_USER: PUBLIC */
+    SELECT class_name, super_class_name
+    FROM  db_direct_super_class
+    WHERE owner_name = CURRENT_USER
+    ORDER BY class_name;
     
 ::
 
       class_name            super_class_name
     ============================================
       'female_event'        'event'
+
+.. _db-vclass:
 
 DB_VCLASS
 ---------
@@ -1039,11 +1506,19 @@ The data type of attribute 'vclass_def' is VARCHAR (4096) for prior versions inc
 +====================+=====================+===============================================+===============================+
 | vclass_name        | VARCHAR(255)        | Virtual class name                            |                               |
 +--------------------+---------------------+-----------------------------------------------+-------------------------------+
+| owner_name         | VARCHAR(32)         | Owner name of virtual class                   |                               |
++--------------------+---------------------+-----------------------------------------------+-------------------------------+
 |                    | VARCHAR(1073741823) |                                               | 10.1 Patch 4 or later         | 
 + vclass_def         +---------------------+ SQL definition statement of the virtual class +-------------------------------+
 |                    | VARCHAR(4096)       |                                               | 10.1 Patch 3 or earlier       | 
 +--------------------+---------------------+-----------------------------------------------+-------------------------------+
 | comment            | VARCHAR(2048)       | Comment to describe the virtual class         |                               |
++--------------------+---------------------+-----------------------------------------------+-------------------------------+
+| created_time       | DATETIME            | Virtual class creation time                   |                               |
++--------------------+---------------------+-----------------------------------------------+-------------------------------+
+| updated_time       | DATETIME            | Virtual class modification time               |                               |
++--------------------+---------------------+-----------------------------------------------+-------------------------------+
+| invalidated_time   | DATETIME            | Time when the view query was invalidated      |                               |
 +--------------------+---------------------+-----------------------------------------------+-------------------------------+
 
 The following example shows how to retrieve SQL definition statements of the *db_class* virtual class.
@@ -1058,7 +1533,9 @@ The following example shows how to retrieve SQL definition statements of the *db
     
       vclass_def
     ======================
-      'SELECT [c].[class_name], CAST([c].[owner].[name] AS VARCHAR(255)), CASE [c].[class_type] WHEN 0 THEN 'CLASS' WHEN 1 THEN 'VCLASS' ELSE 'UNKNOW' END, CASE WHEN MOD([c].[is_system_class], 2) = 1 THEN 'YES' ELSE 'NO' END, CASE WHEN [c].[sub_classes] IS NULL THEN 'NO' ELSE NVL((SELECT 'YES' FROM [_db_partition] [p] WHERE [p].[class_of] = [c] and [p].[pname] IS NULL), 'NO') END, CASE WHEN MOD([c].[is_system_class] / 8, 2) = 1 THEN 'YES' ELSE 'NO' END FROM [_db_class] [c] WHERE CURRENT_USER = 'DBA' OR {[c].[owner].[name]} SUBSETEQ (  SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{[t].[g].[name]}), SET{})  FROM [db_user] [u], TABLE([groups]) AS [t]([g])  WHERE [u].[name] = CURRENT_USER) OR {[c]} SUBSETEQ (  SELECT SUM(SET{[au].[class_of]}) FROM [_db_auth] [au]  WHERE {[au].[grantee].[name]} SUBSETEQ (  SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{[t].[g].[name]}), SET{})  FROM [db_user] [u], TABLE([groups]) AS [t]([g])  WHERE [u].[name] = CURRENT_USER) AND  [au].[auth_type] = 'SELECT')'
+      'SELECT [c].[class_name] AS [class_name], [c].[owner].[name] AS [owner_name], CASE [c].[class_type] WHEN 0 THEN 'CLASS' WHEN 1 THEN 'VCLASS' ELSE 'UNKNOWN' END AS [class_type], CASE WHEN [c].[is_system_class] = 1 THEN 'YES' ELSE 'NO' END AS [is_system_class], CASE [c].[tde_algorithm] WHEN 0 THEN 'NONE' WHEN 1 THEN 'AES' WHEN 2 THEN 'ARIA' END AS [tde_algorithm], CASE [c].[statistics_strategy] WHEN 0 THEN 'SAMPLING' WHEN 1 THEN 'FULLSCAN' ELSE NULL END AS [statistics_strategy], CASE WHEN [c].[sub_classes] IS NULL THEN 'NO' ELSE NVL ((SELECT 'YES' FROM [_db_partition] AS [p] WHERE [p].[class_of] = [c] AND [p].[pname] IS NULL), 'NO') END AS [partitioned], CASE WHEN ([c].[flags] & 8) <> 0 THEN 'YES' ELSE 'NO' END AS [is_reuse_oid_class], [coll].[coll_name] AS [collation], [c].[comment] AS [comment], [c].[created_time] AS [created_time], [c].[updated_time] AS [updated_time], [c].[checked_time] AS [checked_time] FROM [_db_class] AS [c], [_db_collation] AS [coll] WHERE [c].[collation_id] = [coll].[coll_id] AND ({'DBA'} SUBSETEQ (SELECT SET {CURRENT_USER} + COALESCE (SUM (SET {[t].[g].[name]}), SET {}) FROM [_db_user] AS [u], TABLE ([u].[groups]) AS [t] ([g]) WHERE [u].[name] = CURRENT_USER) OR {[c].[owner].[name]} SUBSETEQ (SELECT SET {CURRENT_USER} + COALESCE (SUM (SET {[t].[g].[name]}), SET {}) FROM [_db_user] AS [u], TABLE ([u].[groups]) AS [t] ([g]) WHERE [u].[name] = CURRENT_USER) OR {[c].[class_of]} SUBSETEQ (SELECT SUM (SET {[au].[object_of]}) FROM [_db_auth] AS [au] WHERE {[au].[grantee].[name]} SUBSETEQ (SELECT SET {CURRENT_USER} + COALESCE (SUM (SET {[t].[g].[name]}), SET {}) FROM [_db_user] AS [u], TABLE ([u].[groups]) AS [t] ([g]) WHERE [u].[name] = CURRENT_USER) AND [au].[auth_type] = 'SELECT'))'
+
+.. _db-attribute:
 
 DB_ATTRIBUTE
 ------------
@@ -1072,6 +1549,8 @@ Represents the attribute information of a class for which the current user has a
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | class_name        | VARCHAR(255)  | Name of the class to which the attribute belongs                                                              |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
+| owner_name        | VARCHAR(32)   | Owner name of the class to which the attribute belongs                                                        |
++-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | attr_type         | VARCHAR(8)    | 'INSTANCE' for an instance attribute, 'CLASS' for a class attribute, and 'SHARED' for a shared attribute.     |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | def_order         | INTEGER       | Order of attributes in the class. Begins with 0. If the attribute is inherited, the order is the one defined  |
@@ -1079,12 +1558,14 @@ Represents the attribute information of a class for which the current user has a
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | from_class_name   | VARCHAR(255)  | If the attribute is inherited, the super class in which it is defined is used. Otherwise, **NULL**.           |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
+| from_owner_name   | VARCHAR(32)   | If the attribute is inherited, the owner name of the super class in which it is defined is used.              |
+|                   |               | Otherwise, **NULL**.                                                                                          |
++-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | from_attr_name    | VARCHAR(255)  | If the attribute is inherited and its name is changed to resolve a name conflict, the original name           |
 |                   |               | defined in the super class is used. Otherwise, **NULL**.                                                      |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | data_type         | VARCHAR(9)    | Data type of the attribute (one in the "Meaning" column of the "Data Types Supported by CUBRID" table in      |
-|                   |               | :ref:`db-attribute`)                                                                                          |
-|                   |               |                                                                                                               |
+|                   |               | :ref:`-db-attribute`)                                                                                         |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | prec              | INTEGER       | Precision of the data type. 0 is used if the precision is not specified.                                      |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
@@ -1095,6 +1576,8 @@ Represents the attribute information of a class for which the current user has a
 | collation         | VARCHAR (32)  | collation name                                                                                                |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | domain_class_name | VARCHAR(255)  | Domain class name if the data type is an object.  **NULL** otherwise.                                         |
++-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
+| domain_owner_name | VARCHAR(32)   | Owner name of the domain class if the data type is an object.  **NULL** otherwise.                            |
 +-------------------+---------------+---------------------------------------------------------------------------------------------------------------+
 | default_value     | VARCHAR(255)  | Saved as a character string by default, regardless of data types. If no default value is specified,           |
 |                   |               | **NULL** is stored. If a default value is  **NULL**, it is displayed as 'NULL'.                               |
@@ -1125,7 +1608,7 @@ The following example shows how to retrieve attributes and data types of the *ev
       'gender'              'CHAR'                NULL
       'players'             'INTEGER'             NULL
 
-The following example shows how to retrieve attributes of the *female_event* class and its super class.
+The following example shows how to retrieve attributes of the *female_event* class and its super class. (see :ref:`add-superclass`)
 
 .. code-block:: sql
 
@@ -1148,10 +1631,11 @@ The following example shows how to retrieve classes whose attribute names are si
 
 .. code-block:: sql
 
-    SELECT a.class_name, a.attr_name
-    FROM db_class c join db_attribute a ON c.class_name = a.class_name
-    WHERE c.owner_name = CURRENT_USER AND attr_name like '%name%'
-    ORDER BY 1;
+    /* CURRENT_USER: PUBLIC */
+    SELECT class_name, attr_name
+    FROM db_attribute
+    WHERE owner_name = CURRENT_USER AND attr_name like '%name%'
+    ORDER BY class_name;
     
 ::
 
@@ -1161,9 +1645,10 @@ The following example shows how to retrieve classes whose attribute names are si
       'code'                'f_name'
       'code'                's_name'
       'event'               'name'
-      'female_event'        'name'
       'nation'              'name'
       'stadium'             'name'
+
+.. _db-attr-setdomain-elm:
 
 DB_ATTR_SETDOMAIN_ELM
 ---------------------
@@ -1177,6 +1662,8 @@ Among attributes of the class to which the current user has access authorization
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------+
 | class_name         | VARCHAR(255)  | Name of the class to which the attribute belongs                                                          |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------+
+| owner_name         | VARCHAR(32)   | Owner name of the class to which the attribute belongs                                                    |
++--------------------+---------------+-----------------------------------------------------------------------------------------------------------+
 | attr_type          | VARCHAR(8)    | 'INSTANCE' for an instance attribute, 'CLASS' for a class attribute, and 'SHARED' for a shared attribute. |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------+
 | data_type          | VARCHAR(9)    | Data type of the element                                                                                  |
@@ -1188,6 +1675,8 @@ Among attributes of the class to which the current user has access authorization
 | code_set           | INTEGER       | Character set if the data type of the element is a character                                              |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------+
 | domain_class_name  | VARCHAR(255)  | Domain class name if the data type of the element is an object                                            |
++--------------------+---------------+-----------------------------------------------------------------------------------------------------------+
+| domain_owner_name  | VARCHAR(32)   | Owner name of the domain class if the data type of the element is an object                               |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------+
 
 If the set_attr attribute of class D is of a SET (A, B, C) type, the following three records exist.
@@ -1214,8 +1703,9 @@ The following example shows how to retrieve collection type attributes and data 
 
       attr_name             attr_type             data_type             domain_class_name
     ==============================================================================
-     
-    'sports'              'INSTANCE'            'STRING'              NULL
+      'sports'              'INSTANCE'            'STRING'              NULL
+
+.. _db-charset:
 
 DB_CHARSET
 ----------
@@ -1231,6 +1721,8 @@ default_collation   CHARACTER VARYING(32)    Default collation name
 char_size           INTEGER                  One character's byte size
 =================== ======================== ==========================
 
+.. _db-collation:
+
 DB_COLLATION
 ------------
 
@@ -1241,9 +1733,9 @@ The information on collation.
 +====================+===============+===============================================================================+
 | coll_id            | INTEGER       | Collation ID                                                                  |
 +--------------------+---------------+-------------------------------------------------------------------------------+
-| coll_name          | VARCHAR(255)  | Collation name                                                                |
+| coll_name          | VARCHAR(32)   | Collation name                                                                |
 +--------------------+---------------+-------------------------------------------------------------------------------+
-| charset_name       | VARCHAR(255)  | Charset name                                                                  |
+| charset_name       | VARCHAR(32)   | Charset name                                                                  |
 +--------------------+---------------+-------------------------------------------------------------------------------+
 | is_builtin         | VARCHAR(3)    | Built-in or not while installing the product(Yes, No)                         |
 +--------------------+---------------+-------------------------------------------------------------------------------+
@@ -1254,6 +1746,8 @@ The information on collation.
 | uca_strength       | VARCHAR(255)  | Weight strength                                                               |
 |                    |               | (Not applicable, Primary, Secondary, Tertiary, Quaternary, Identity, Unknown) |
 +--------------------+---------------+-------------------------------------------------------------------------------+
+
+.. _db-method:
 
 DB_METHOD
 ---------
@@ -1267,9 +1761,14 @@ Represents method information of a class for which the current user has access a
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | class_name         | VARCHAR(255)  | Name of the class to which the method belongs                                                                                                 |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| owner_name         | VARCHAR(32)   | Owner name of the class to which the method belongs                                                                                           |
++--------------------+---------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | meth_type          | VARCHAR(8)    | 'INSTANCE' for an instance method, and 'CLASS' for a class method.                                                                            |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | from_class_name    | VARCHAR(255)  | If the method is inherited, the super class in which it is defined is used otherwise                                                          |
+|                    |               | **NULL**                                                                                                                                      |
++--------------------+---------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| from_owner_name    | VARCHAR(32)   | If the method is inherited, the owner name of the superclass in which the method is defined is used otherwise                                 |
 |                    |               | **NULL**                                                                                                                                      |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | from_meth_name     | VARCHAR(255)  | If the method is inherited and its name is changed to resolve a name conflict, the original name defined in the super class is used otherwise |
@@ -1278,29 +1777,31 @@ Represents method information of a class for which the current user has access a
 | func_name          | VARCHAR(255)  | Name of the C function for the method                                                                                                         |
 +--------------------+---------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 
-The following example shows how to retrieve methods of the *db_user* class.
+The following example shows how to retrieve methods of the *_db_user* class.
 
 .. code-block:: sql
 
     SELECT meth_name, meth_type, func_name
     FROM db_method
-    WHERE class_name = 'db_user'
+    WHERE class_name = '_db_user'
     ORDER BY meth_type, meth_name;
     
 ::
     
-      meth_name             meth_type             func_name
-    ==================================================================
-      'add_user'            'CLASS'               'au_add_user_method'
-      'drop_user'           'CLASS'               'au_drop_user_method'
-      'find_user'           'CLASS'               'au_find_user_method'
-      'login'               'CLASS'               'au_login_method'
-      'add_member'          'INSTANCE'            'au_add_member_method'
-      'drop_member'         'INSTANCE'            'au_drop_member_method'
-      'print_authorizations'  'INSTANCE'            'au_describe_user_method'
-      'set_password'        'INSTANCE'            'au_set_password_method'
-      'set_password_encoded'  'INSTANCE'            'au_set_password_encoded_method'
-      'set_password_encoded_sha1'  'INSTANCE'            'au_set_password_encoded_sha1_method'
+      meth_name                    meth_type   func_name
+    ==================================================================================
+      'add_user'                   'CLASS'     'au_add_user_method'
+      'drop_user'                  'CLASS'     'au_drop_user_method'
+      'find_user'                  'CLASS'     'au_find_user_method'
+      'login'                      'CLASS'     'au_login_method'
+      'add_member'                 'INSTANCE'  'au_add_member_method'
+      'drop_member'                'INSTANCE'  'au_drop_member_method'
+      'print_authorizations'       'INSTANCE'  'au_describe_user_method'
+      'set_password'               'INSTANCE'  'au_set_password_method'
+      'set_password_encoded'       'INSTANCE'  'au_set_password_encoded_method'
+      'set_password_encoded_sha1'  'INSTANCE'  'au_set_password_encoded_sha1_method'
+
+.. _db-meth-arg:
 
 DB_METH_ARG
 -----------
@@ -1313,6 +1814,8 @@ Represents the input/output argument information of the method of the class for 
 | meth_name          | VARCHAR(255)  | Method name                                                                                                                              |
 +--------------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+
 | class_name         | VARCHAR(255)  | Name of the class to which the method belongs                                                                                            |
++--------------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+
+| owner_name         | VARCHAR(32)   | Owner name of the class to which the method belongs                                                                                      |
 +--------------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+
 | meth_type          | VARCHAR(8)    | 'INSTANCE' for an instance method, and 'CLASS' for a class method.                                                                       |
 +--------------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+
@@ -1328,20 +1831,24 @@ Represents the input/output argument information of the method of the class for 
 +--------------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+
 | domain_class_name  | VARCHAR(255)  | Domain class name if the data type of the argument is an object.                                                                         |
 +--------------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+
+| domain_owner_name  | VARCHAR(32)   | Owner name of the domain class if the data type of the argument is an object.                                                            |
++--------------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+
 
-The following example shows how to retrieve input arguments of the method of the *db_user* class.
+The following example shows how to retrieve input arguments of the method of the *_db_user* class.
 
 .. code-block:: sql
 
     SELECT meth_name, data_type, prec
     FROM db_meth_arg
-    WHERE class_name = 'db_user';
+    WHERE class_name = '_db_user';
     
 ::
 
       meth_name             data_type                    prec
     =========================================================
       'append_data'         'STRING'               1073741823
+
+.. _db-meth-arg-setdomain-elm:
 
 DB_METH_ARG_SETDOMAIN_ELM
 -------------------------
@@ -1354,6 +1861,8 @@ If the data type of the input/output argument of the method of the class is a se
 | meth_name          | VARCHAR(255)  | Method name                                                                                                                    |
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------+
 | class_name         | VARCHAR(255)  | Name of the class to which the method belongs                                                                                  |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------+
+| owner_name         | VARCHAR(32)   | Owner name of the class to which the method belongs                                                                            |
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------+
 | meth_type          | VARCHAR(8)    | 'INSTANCE' for an instance method, and 'CLASS' for a class method.                                                             |
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------+
@@ -1369,6 +1878,10 @@ If the data type of the input/output argument of the method of the class is a se
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------+
 | domain_class_name  | VARCHAR(255)  | Domain class name if the data type of the element is an object                                                                 |
 +--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------+
+| domain_owner_name  | VARCHAR(32)   | Owner name of the domain class if the data type of the element is an object                                                    |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------+
+
+.. _db-meth-file:
 
 DB_METH_FILE
 ------------
@@ -1380,40 +1893,75 @@ Represents information of a file in which the method of the class for which the 
 +====================+===============+=======================================================================================================+
 | class_name         | VARCHAR(255)  | Name of the class to which the method file belongs                                                    |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------+
+| owner_name         | VARCHAR(32)   | Owner name of the class to which the method file belongs                                              |
++--------------------+---------------+-------------------------------------------------------------------------------------------------------+
 | path_name          | VARCHAR(255)  | File path in which the C function is defined                                                          |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------+
-| from_class_name    | VARCHAR(255)  | Name of the super class in which the method file is defined if the method is inherited, and otherwise |
-|                    |               | **NULL**                                                                                              |
+| from_class_name    | VARCHAR(255)  | Name of the super class in which the method file is defined if the method is inherited,               |
+|                    |               | and otherwise **NULL**                                                                                |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------+
+| from_owner_name    | VARCHAR(32)   | Owner Name of the super class in which the method file is defined if the method is inherited,         |
+|                    |               | and otherwise **NULL**                                                                                |
++--------------------+---------------+-------------------------------------------------------------------------------------------------------+
+
+.. _db-index:
 
 DB_INDEX
 --------
 
 Represents information of indexes created for the class for which the current user has access authorization to a database.
 
-+--------------------+---------------+-------------------------------------------------+
-|   Attribute Name   |   Data Type   |   Description                                   |
-+====================+===============+=================================================+
-| index_name         | VARCHAR(255)  | Index name                                      |
-+--------------------+---------------+-------------------------------------------------+
-| is_unique          | VARCHAR(3)    | 'YES' for a unique index, and 'NO' otherwise.   |
-+--------------------+---------------+-------------------------------------------------+
-| is_reverse         | VARCHAR(3)    | 'YES' for a reversed index, and 'NO' otherwise. |
-+--------------------+---------------+-------------------------------------------------+
-| class_name         | VARCHAR(255)  | Name of the class to which the index belongs    |
-+--------------------+---------------+-------------------------------------------------+
-| key_count          | INTEGER       | The number of attributes that comprise the key  |
-+--------------------+---------------+-------------------------------------------------+
-| is_primary_key     | VARCHAR(3)    | 'YES' for a primary key, and 'NO' otherwise.    |
-+--------------------+---------------+-------------------------------------------------+
-| is_foreign_key     | VARCHAR(3)    | 'YES' for a foreign key, and 'NO' otherwise.    |
-+--------------------+---------------+-------------------------------------------------+
-| filter_expression  | VARCHAR(255)  | Conditions of filtered indexes                  |
-+--------------------+---------------+-------------------------------------------------+
-| have_function      | VARCHAR(3)    | 'YES' for function based and 'NO' otherwise.    |
-+--------------------+---------------+-------------------------------------------------+
-| comment            | VARCHAR(1024) | Comment to describe the index                   |
-+--------------------+---------------+-------------------------------------------------+
++------------------------------------+----------------------+-----------------------------------------------------+
+|   Attribute Name                   |   Data Type          |   Description                                       |
++====================================+======================+=====================================================+
+| index_name                         | VARCHAR(255)         | Index name                                          |
++------------------------------------+----------------------+-----------------------------------------------------+
+| is_unique                          | VARCHAR(3)           | 'YES' for a unique index, and 'NO' otherwise.       |
++------------------------------------+----------------------+-----------------------------------------------------+
+| is_reverse                         | VARCHAR(3)           | 'YES' for a reversed index, and 'NO' otherwise.     |
++------------------------------------+----------------------+-----------------------------------------------------+
+| class_name                         | VARCHAR(255)         | Name of the class to which the index belongs        |
++------------------------------------+----------------------+-----------------------------------------------------+
+| owner_name                         | VARCHAR(32)          | Owner name of the class to which the index belongs  |
++------------------------------------+----------------------+-----------------------------------------------------+
+| key_count                          | INTEGER              | The number of attributes that comprise the key      |
++------------------------------------+----------------------+-----------------------------------------------------+
+| is_primary_key                     | VARCHAR(3)           | 'YES' for a primary key, and 'NO' otherwise.        |
++------------------------------------+----------------------+-----------------------------------------------------+
+| is_foreign_key                     | VARCHAR(3)           | 'YES' for a foreign key, and 'NO' otherwise.        |
++------------------------------------+----------------------+-----------------------------------------------------+
+| filter_expression                  | VARCHAR(1073741823)  | Conditions of filtered indexes                      |
++------------------------------------+----------------------+-----------------------------------------------------+
+| have_function                      | VARCHAR(3)           | 'YES' for function based and 'NO' otherwise.        |
++------------------------------------+----------------------+-----------------------------------------------------+
+| status                             | VARCHAR(255)         | Index status                                        |
++------------------------------------+----------------------+-----------------------------------------------------+
+| referential_index_class_owner_name | VARCHAR(32)          | Owner name of the class referenced by foreign key   |
++------------------------------------+----------------------+-----------------------------------------------------+
+| referential_index_class_name       | VARCHAR(255)         | Class name of the index referenced by foreign key   |
++------------------------------------+----------------------+-----------------------------------------------------+
+| referential_index_name             | VARCHAR(255)         | Index name referenced by foreign key                |
++------------------------------------+----------------------+-----------------------------------------------------+
+| delete_rule                        | VARCHAR(32)          | Delete rule for foreign key constraint              |
+|                                    |                      | (CASCADE, RESTRICT, NO ACTION, SET NULL)            |
++------------------------------------+----------------------+-----------------------------------------------------+
+| update_rule                        | VARCHAR(32)          | Update rule for foreign key constraint              |
+|                                    |                      | (RESTRICT, NO ACTION, SET NULL)                     |
++------------------------------------+----------------------+-----------------------------------------------------+
+| referential_match_option           | VARCHAR(7)           | Match option for foreign key constraint (NONE)      |
+|                                    |                      |                                                     |
+|                                    |                      | - NONE: Does not check if any NULL exists           |
++------------------------------------+----------------------+-----------------------------------------------------+
+| index_type                         | VARCHAR(32)          | Index type (BTREE)                                  |
++------------------------------------+----------------------+-----------------------------------------------------+
+| deduplicate_key_level              | INTEGER              | Deduplication level of the index                    |
++------------------------------------+----------------------+-----------------------------------------------------+
+| comment                            | VARCHAR(1024)        | Comment to describe the index                       |
++------------------------------------+----------------------+-----------------------------------------------------+
+| created_time                       | DATETIME             | Index creation time                                 |
++------------------------------------+----------------------+-----------------------------------------------------+
+| updated_time                       | DATETIME             | Index modification time                             |
++------------------------------------+----------------------+-----------------------------------------------------+
 
 The following example shows how to retrieve index information of the class.
 
@@ -1421,30 +1969,28 @@ The following example shows how to retrieve index information of the class.
 
     SELECT class_name, index_name, is_unique
     FROM db_index
-    ORDER BY 1;
+    ORDER BY owner_name, class_name;
     
 ::
 
-      class_name            index_name            is_unique
-    ==================================================================
-      'athlete'             'pk_athlete_code'     'YES'
-      'city'                'pk_city_city_name'   'YES'
-      'db_serial'           'pk_db_serial_name'   'YES'
-      'db_user'             'i_db_user_name'      'NO'
-      'event'               'pk_event_code'       'YES'
-      'female_event'        'pk_event_code'       'YES'
-      'game'                'pk_game_host_year_event_code_athlete_code'  'YES'
-      'game'                'fk_game_event_code'  'NO'
-      'game'                'fk_game_athlete_code'  'NO'
-      'history'             'pk_history_event_code_athlete'  'YES'
-      'nation'              'pk_nation_code'      'YES'
-      'olympic'             'pk_olympic_host_year'  'YES'
-      'participant'         'pk_participant_host_year_nation_code'  'YES'
-      'participant'         'fk_participant_host_year'  'NO'
-      'participant'         'fk_participant_nation_code'  'NO'
+      class_name            index_name                                           is_unique
+    ========================================================================================
+      '_db_user'            'u__db_user_name'                                    'YES'
+      'athlete'             'pk_athlete_code'                                    'YES'
+      'event'               'pk_event_code'                                      'YES'
+      'game'                'pk_game_host_year_event_code_athlete_code'          'YES'
+      'game'                'fk_game_event_code'                                 'NO'
+      'game'                'fk_game_athlete_code'                               'NO'
+      'history'             'pk_history_event_code_athlete'                      'YES'
+      'nation'              'pk_nation_code'                                     'YES'
+      'olympic'             'pk_olympic_host_year'                               'YES'
+      'participant'         'pk_participant_host_year_nation_code'               'YES'
+      'participant'         'fk_participant_host_year'                           'NO'
+      'participant'         'fk_participant_nation_code'                         'NO'
       'record'              'pk_record_host_year_event_code_athlete_code_medal'  'YES'
-      'stadium'             'pk_stadium_code'     'YES'
-    ...
+      'stadium'             'pk_stadium_code'                                    'YES'
+
+.. _db-index-key:
 
 DB_INDEX_KEY
 ------------
@@ -1458,6 +2004,8 @@ Represents the key information of indexes created for the class for which the cu
 +--------------------+---------------+-----------------------------------------------------------------------------+
 | class_name         | VARCHAR(255)  | Name of the class to which the index belongs                                |
 +--------------------+---------------+-----------------------------------------------------------------------------+
+| owner_name         | VARCHAR(32)   | Owner name of the class to which the index belongs                          |
++--------------------+---------------+-----------------------------------------------------------------------------+
 | key_attr_name      | VARCHAR(255)  | Name of attributes that comprise the key                                    |
 +--------------------+---------------+-----------------------------------------------------------------------------+
 | key_order          | INTEGER       | Order of attributes in the key. Begins with 0.                              |
@@ -1466,7 +2014,7 @@ Represents the key information of indexes created for the class for which the cu
 +--------------------+---------------+-----------------------------------------------------------------------------+
 | key_prefix_length  | INTEGER       | The length of prefix to be used as a key                                    |
 +--------------------+---------------+-----------------------------------------------------------------------------+
-| func               | VARCHAR(255)  | Functional expression of function based index                               |
+| func               | VARCHAR(1023) | Functional expression of function based index                               |
 +--------------------+---------------+-----------------------------------------------------------------------------+
 
 The following example shows how to retrieve index key information of the class.
@@ -1475,63 +2023,185 @@ The following example shows how to retrieve index key information of the class.
 
     SELECT class_name, key_attr_name, index_name
     FROM db_index_key
-    ORDER BY class_name, key_order;
+    ORDER BY owner_name, class_name, key_order
+    LIMIT 20;
     
 ::
 
+      class_name            key_attr_name         index_name
+    ==================================================================
+      '_db_user'            'name'                'u__db_user_name'
       'athlete'             'code'                'pk_athlete_code'
-      'city'                'city_name'           'pk_city_city_name'
-      'db_serial'           'name'                'pk_db_serial_name'
-      'db_user'             'name'                'i_db_user_name'
+      'code'                's_name'              'pk_code'
       'event'               'code'                'pk_event_code'
-      'female_event'        'code'                'pk_event_code'
+      'game'                'athlete_code'        'fk_game_athlete_code'
       'game'                'host_year'           'pk_game_host_year_event_code_athlete_code'
       'game'                'event_code'          'fk_game_event_code'
-      'game'                'athlete_code'        'fk_game_athlete_code'
-     ...
+      'game'                'event_code'          'pk_game_host_year_event_code_athlete_code'
+      'game'                'athlete_code'        'pk_game_host_year_event_code_athlete_code'
+      'history'             'event_code'          'pk_history_event_code_athlete'
+      'history'             'athlete'             'pk_history_event_code_athlete'
+      'nation'              'code'                'pk_nation_code'
+      'olympic'             'host_year'           'pk_olympic_host_year'
+      'participant'         'host_year'           'pk_participant_host_year_nation_code'
+      'participant'         'nation_code'         'fk_participant_nation_code'
+      'participant'         'host_year'           'fk_participant_host_year'
+      'participant'         'nation_code'         'pk_participant_host_year_nation_code'
+      'record'              'host_year'           'pk_record_host_year_event_code_athlete_code_medal'
+      'record'              'event_code'          'pk_record_host_year_event_code_athlete_code_medal'
+
+.. _db-auth:
 
 DB_AUTH
 -------
 
-Represents authorization information of classes for which the current user has access authorization to a database.
+Represents authorization information for objects the current user is authorized to access.
 
-+--------------------+---------------+-----------------------------------------------------------------------------------------+
-|   Attribute Name   |   Data Type   |   Description                                                                           |
-+====================+===============+=========================================================================================+
-| grantor_name       | VARCHAR(255)  | Name of the user who grants authorization                                               |
-+--------------------+---------------+-----------------------------------------------------------------------------------------+
-| grantee_name       | VARCHAR(255)  | Name of the user who is granted authorization                                           |
-+--------------------+---------------+-----------------------------------------------------------------------------------------+
-| class_name         | VARCHAR(255)  | Name of the class for which authorization is to be granted                              |
-+--------------------+---------------+-----------------------------------------------------------------------------------------+
-| auth_type          | VARCHAR(7)    | Name of the authorization type granted                                                  |
-+--------------------+---------------+-----------------------------------------------------------------------------------------+
-| is_grantable       | VARCHAR(3)    | 'YES' if authorization for the class can be granted to other users, and 'NO' otherwise. |
-+--------------------+---------------+-----------------------------------------------------------------------------------------+
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+|   Attribute Name   |   Data Type   |   Description                                                                             |
++====================+===============+===========================================================================================+
+| grantor_name       | VARCHAR(32)   | Name of the user who grants authorization                                                 |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| grantee_name       | VARCHAR(32)   | Name of the user who is granted authorization                                             |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| object_type        | VARCHAR(16)   | Type of the object for which authorization is granted (CLASS, VCLASS, PROCEDURE, FUNCTION)|
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| object_name        | VARCHAR(255)  | Name of the object for which authorization is granted                                     |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| owner_name         | VARCHAR(32)   | Owner name of the object for which authorization is granted                               |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| auth_type          | VARCHAR(7)    | Name of the authorization type granted                                                    |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| is_grantable       | VARCHAR(3)    | 'YES' if authorization for the object can be granted to other users, and 'NO' otherwise.  |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| created_time       | DATETIME      | Time when authorization was granted                                                       |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
+| updated_time       | DATETIME      | Time when authorization was updated                                                       |
++--------------------+---------------+-------------------------------------------------------------------------------------------+
 
-The following example how to retrieve authorization information of the classes whose names begin with *db_a*.
+The following example show how to retrieve authorization information for objects whose names begin with *db_a*.
 
 .. code-block:: sql
 
-    SELECT class_name, auth_type, grantor_name
+    SELECT object_name, auth_type, grantor_name
     FROM db_auth
-    WHERE class_name like 'db_a%'
+    WHERE object_name like 'db_a%'
     ORDER BY 1;
     
 ::
 
-      class_name            auth_type             grantor_name
-    ==================================================================
-      'db_attr_setdomain_elm'  'SELECT'             'DBA'
-      'db_attribute'           'SELECT'             'DBA'
-      'db_auth'                'SELECT'             'DBA'
-      'db_authorization'       'EXECUTE'            'DBA'
-      'db_authorization'       'SELECT'             'DBA'
-      'db_authorizations'      'EXECUTE'            'DBA'
-      'db_authorizations'      'SELECT'             'DBA'
+      object_name              auth_type             grantor_name
+    ===============================================================
+      'db_attr_setdomain_elm'  'SELECT'              'DBA'
+      'db_attribute'           'SELECT'              'DBA'
+      'db_auth'                'SELECT'              'DBA'
+      'db_authorization'       'SELECT'              'DBA'
 
-DB_TRIG
+.. _db-user:
+
+DB_USER
 -------
+
+Represents information of users for which the current user has access authorization to a database.
+
++--------------------+---------------------+----------------------------------------------------------------------------------+
+|   Attribute Name   |   Data Type         |   Description                                                                    |
++====================+=====================+==================================================================================+
+| name               | VARCHAR(32)         | User name                                                                        |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| id                 | INTEGER             | User identifier                                                                  |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| password           | _db_password        | Always **NULL** (kept for backward compatibility)                                |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| direct_groups      | SET OF VARCHAR(32)  | Names of groups to which the user belongs directly                               |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| groups             | SET OF VARCHAR(32)  | Names of groups to which the user belongs directly or indirectly                 |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| authorization      | _db_authorization   | Always **NULL** (kept for backward compatibility)                                |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| triggers           | SEQUENCE OF object  | Triggers that occur due to user actions                                          |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| is_loginable       | VARCHAR(3)          | 'YES' if the user is allowed to log in, 'NO' otherwise                           |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| is_system_created  | VARCHAR(3)          | 'YES' if the user is a system-created account (for example, **DBA** and          |
+|                    |                     | **PUBLIC**), 'NO' otherwise                                                      |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| comment            | VARCHAR(1024)       | Comment to describe the user                                                     |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| created_time       | DATETIME            | User creation time                                                               |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+| updated_time       | DATETIME            | User modification time                                                           |
++--------------------+---------------------+----------------------------------------------------------------------------------+
+
+**Function Names**
+
+*   **find_user** ()
+*   **login** ()
+
+.. _db-authorization:
+
+DB_AUTHORIZATION
+----------------
+
+Represents user authorization information of classes for which the current user has access authorization to a database.
+
++--------------------+--------------------+-----------------------------------------------------------------------------------+
+|   Attribute Name   |   Data Type        |   Description                                                                     |
++====================+====================+===================================================================================+
+| owner              | VARCHAR(32)        | Owner of this authorization object                                                |
++--------------------+--------------------+-----------------------------------------------------------------------------------+
+| grants             | SEQUENCE           | Sequence of {object for which the user has authorization, authorization grantor   |
+|                    |                    | of the object, authorization type} for each grant                                 |
++--------------------+--------------------+-----------------------------------------------------------------------------------+
+
+.. _db-serial:
+
+DB_SERIAL
+---------
+
+Represents information of serials for which the current user has access authorization to a database.
+
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| Attribute Name | Data Type           | Description                                                                               |
++================+=====================+===========================================================================================+
+| unique_name    | VARCHAR(255)        | Serial name prefixed with schema name.                                                    |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| name           | VARCHAR(255)        | Serial name.                                                                              |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| owner          | VARCHAR(32)         | Serial owner.                                                                             |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| current_val    | NUMERIC(38,0)       | Current serial value.                                                                     |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| increment_val  | NUMERIC(38,0)       | Interval of serial values.                                                                |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| max_val        | NUMERIC(38,0)       | The maximum value of the serial.                                                          |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| min_val        | NUMERIC(38,0)       | The minimum value of the cereal.                                                          |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| start_val      | NUMERIC(38,0)       | The starting value of the serial.                                                         |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| cyclic         | INTEGER             | 1 (CYCLE) if a value can be generated by cycling after reaching the maximum               |
+|                |                     | or minimum value of the serial; 0 (NOCYCLE) if not.                                       |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| started        | INTEGER             | 1 if the value has been created at least once after creation, otherwise 0.                |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| class_name     | VARCHAR(255)        | AUTO_INCREMENT In case of serial, the table name is stored. or **NULL**.                  |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| attr_name      | VARCHAR(255)        | AUTO_INCREMENT In case of serial, the column name is stored. or **NULL**.                 |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| cached_num     | INTEGER             | The number of serial values to pre-create in memory to improve performance. Default is 0. |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| comment        | VARCHAR (1024)      | Comment to describe the serial.                                                           |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| created_time   | DATETIME            | Serial creation time                                                                      |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+| updated_time   | DATETIME            | Serial modification time                                                                  |
++----------------+---------------------+-------------------------------------------------------------------------------------------+
+
+.. _db-trigger:
+
+DB_TRIGGER
+----------
 
 Represents information of a trigger that has the class for which the current user has access authorization to a database, or its attribute as the target.
 
@@ -1540,7 +2210,11 @@ Represents information of a trigger that has the class for which the current use
 +====================+===============+===============================================================================================================================+
 | trigger_name       | VARCHAR(255)  | Trigger name                                                                                                                  |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
-| target_class_name  | VARCHAR(255)  | Target class                                                                                                                  |
+| owner_name         | VARCHAR(32)   | Owner name of trigger                                                                                                         |
++--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
+| target_class_name  | VARCHAR(255)  | Target class name                                                                                                             |
++--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
+| target_owner_name  | VARCHAR(32)   | Target class owner name                                                                                                       |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
 | target_attr_name   | VARCHAR(255)  | Target attribute. If not specified in the trigger, **NULL**                                                                   |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
@@ -1552,124 +2226,372 @@ Represents information of a trigger that has the class for which the current use
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
 | comment            | VARCHAR(1024) | Comment to describe the trigger.                                                                                              |
 +--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
+| created_time       | DATETIME      | Trigger creation time                                                                                                         |
++--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
+| updated_time       | DATETIME      | Trigger modification time                                                                                                     |
++--------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------+
+
+.. _db-ha-apply-info:
+
+DB_HA_APPLY_INFO
+----------------
+
+Represents information indicating the replication log application process and its progress status in the database.
+
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+|   Column Name        |   Column Type   |   Description                                                                                                                                      |
++======================+=================+====================================================================================================================================================+
+| db_name              | VARCHAR(255)    | Name of the database stored in the log                                                                                                             |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| db_creation_time     | DATETIME        | Creation time of the source database for the log to be applied                                                                                     |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| copied_log_path      | VARCHAR(4096)   | Path to the log file to be applied                                                                                                                 |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| committed_lsa_pageid | BIGINT          | The page id of commit log lsa reflected last.                                                                                                      |
+|                      |                 | Although applylogdb is restarted, the logs before last_committed_lsa are not reflected again.                                                      |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| committed_lsa_offset | INTEGER         | The offset of commit log lsa reflected last.                                                                                                       |
+|                      |                 | Although applylogdb is restarted, the logs before last_committed_lsa are not reflected again.                                                      |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| committed_rep_pageid | BIGINT          | The page id of the replication log lsa reflected last.                                                                                             |
+|                      |                 | Check whether the reflection of replication has been delayed or not.                                                                               |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| committed_rep_offset | INTEGER         | The offset of the replication log lsa reflected last.                                                                                              |
+|                      |                 | Check whether the reflection of replication has been delayed or not.                                                                               |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| append_lsa_page_id   | BIGINT          | The page id of the last replication log lsa at the last reflection.                                                                                |
+|                      |                 | Saves append_lsa of the replication log header that is being processed by applylogdb at the time of reflecting the replication.                    |
+|                      |                 | Checks whether the reflection of replication has been delayed or not at the time of reflecting the replication log.                                |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| append_lsa_offset    | INTEGER         | The offset of the last replication log lsa at the last reflection.                                                                                 |
+|                      |                 | Saves append_lsa of the replication log header that is being processed by applylogdb at the time of reflecting the replication.                    |
+|                      |                 | Checks whether the reflection of replication has been delayed or not at the time of reflecting the replication log.                                |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| eof_lsa_page_id      | BIGINT          | The page id of the replication log EOF lsa at the last reflection.                                                                                 |
+|                      |                 | Saves eof_lsa of the replication log header that is being processed by applylogdb at the time of reflecting the replication.                       |
+|                      |                 | Checks whether the reflection of replication has been delayed or not at the time of reflecting the replication log.                                |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| eof_lsa_offset       | INTEGER         | The offset of the replication log EOF lsa at the last reflection.                                                                                  |
+|                      |                 | Saves eof_lsa of the replication log header that is being processed by applylogdb at the time of reflecting the replication.                       |
+|                      |                 | Checks whether the reflection of replication has been delayed or not at the time of reflecting the replication log.                                |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| final_lsa_pageid     | BIGINT          | The pageid of replication log lsa processed last by applylogdb.                                                                                    |
+|                      |                 | Checks whether the reflection of replication has been delayed or not.                                                                              |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| final_lsa_offset     | INTEGER         | The offset of replication log lsa processed last by applylogdb.                                                                                    |
+|                      |                 | Checks whether the reflection of replication has been delayed or not.                                                                              |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| required_page_id     | BIGINT          | The smallest page which should not be deleted by the log_max_archives parameter. The log page number from which the replication will be reflected. |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| required_page_offset | INTEGER         | The offset of the log page from which the replication will be reflected.                                                                           |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| log_record_time      | DATETIME        | Timestamp included in replication log committed in the slave database, i.e. the creation time of the log                                           |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| log_commit_time      | DATETIME        | The time of reflecting the last commit log                                                                                                         |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| last_access_time     | DATETIME        | The final update time of the _db_ha_apply_info catalog                                                                                             |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| status               | INTEGER         | Progress status (0: IDLE, 1: BUSY)                                                                                                                 |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| insert_counter       | BIGINT          | Number of times that applylogdb was inserted                                                                                                       |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| update_counter       | BIGINT          | Number of times that applylogdb was updated                                                                                                        |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| delete_counter       | BIGINT          | Number of times that applylogdb was deleted                                                                                                        |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| schema_counter       | BIGINT          | Number of times that applylogdb changed the schema                                                                                                 |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| commit_counter       | BIGINT          | Number of times that applylogdb was committed                                                                                                      |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| fail_counter         | BIGINT          | Number of times that applylogdb failed to be inserted/updated/deleted/committed and to change the schema                                           |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+| start_time           | DATETIME        | Time when the applylogdb process accessed the slave database                                                                                       |
++----------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. _db-partition:
 
 DB_PARTITION
 ------------
 
 Represents information of partitioned classes for which the current user has access authorization to a database.
 
-+----------------------+---------------+-----------------------------------+
-|   Attribute Name     |   Data Type   |   Description                     |
-+======================+===============+===================================+
-| class_name           | VARCHAR(255)  | Class name                        |
-+----------------------+---------------+-----------------------------------+
-| partition_name       | VARCHAR(255)  | Partition name                    |
-+----------------------+---------------+-----------------------------------+
-| partition_class_name | VARCHAR(255)  | Partitioned class name            |
-+----------------------+---------------+-----------------------------------+
-| partition_type       | VARCHAR(32)   | Partition type                    |
-|                      |               | (HASH, RANGE, LIST)               |
-+----------------------+---------------+-----------------------------------+
-| partition_expr       | VARCHAR(255)  | Partition expression              |
-+----------------------+---------------+-----------------------------------+
-| partition_values     | SEQUENCE OF   | RANGE - MIN/MAX value             |
-|                      |               | - For infinite MIN/MAX,           |
-|                      |               | **NULL**                          |
-|                      |               | LIST - value list                 |
-+----------------------+---------------+-----------------------------------+
-| comment              | VARCHAR(1024) | Comment to describe the partition |
-+----------------------+---------------+-----------------------------------+
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| Attribute Name       | Data Type     | Description                                                                                |
++======================+===============+============================================================================================+
+| class_name           | VARCHAR(255)  | Class name                                                                                 |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| owner_name           | VARCHAR(32)   | Owner name                                                                                 |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| partition_name       | VARCHAR(255)  | Partition name                                                                             |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| partition_class_name | VARCHAR(255)  | Partitioned class name                                                                     |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| partition_type       | VARCHAR(32)   | Partition type (HASH, RANGE, LIST)                                                         |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| partition_expr       | VARCHAR(2048) | Partition expression                                                                       |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| partition_values     | SEQUENCE OF   | MIN and MAX values if the partition type is RANGE, **NULL** if MIN and MAX are infinite    |
+|                      |               | If the partition type is LIST, List of values                                              |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| class_partition_type | VARCHAR(32)   | Partition type of partition class (PARTITION CLASS)                                        |
+|                      |               |                                                                                            |
+|                      |               | - PARTITION CLASS: Individual partition table that stores data                             |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| comment              | VARCHAR(1024) | Comment to describe the partition                                                          |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| created_time         | DATETIME      | Class creation time (from parent class)                                                    |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
+| updated_time         | DATETIME      | Class modification time (from parent class)                                                |
++----------------------+---------------+--------------------------------------------------------------------------------------------+
 
 The following example shows how to retrieve the partition information currently configured for the :ref:`participant2 <range-participant2-table>` class.
 
 .. code-block:: sql
 
-    SELECT * from db_partition where class_name = 'participant2';
+    SELECT *
+    FROM db_partition
+    WHERE class_name = 'participant2';
     
 ::
 
-      class_name            partition_name        partition_class_name         partition_type   partition_expr        partition_values
-    ====================================================================================================================================
-      'participant2'        'before_2000'         'participant2__p__before_2000'  'RANGE'       'host_year'           {NULL, 2000}
-      'participant2'        'before_2008'         'participant2__p__before_2008'  'RANGE'       'host_year'           {2000, 2008}
+      class_name      owner_name  partition_name  partition_class_name            partition_type  partition_expr  partition_values  comment
+    =========================================================================================================================================
+      'participant2'  'PUBLIC'    'before_2000'   'participant2__p__before_2000'  'RANGE'         '[host_year]'   {NULL, 2000}      NULL
+      'participant2'  'PUBLIC'    'before_2008'   'participant2__p__before_2008'  'RANGE'         '[host_year]'   {2000, 2008}      NULL
+
+.. _db-stored-procedure:
 
 DB_STORED_PROCEDURE
 -------------------
 
-Represents information of Java stored procedure for which the current user has access authorization to a database.
+Represents information of Stored procedure for which the current user has access authorization to a database.
 
-+--------------------+---------------+-----------------------------------------------+
-|   Attribute Name   |   Data Type   |   Description                                 |
-+====================+===============+===============================================+
-| sp_name            | VARCHAR(255)  | Stored procedure name                         |
-+--------------------+---------------+-----------------------------------------------+
-| sp_type            | VARCHAR(16)   | Stored procedure type (function or procedure) |
-+--------------------+---------------+-----------------------------------------------+
-| return_type        | VARCHAR(16)   | Return value type                             |
-+--------------------+---------------+-----------------------------------------------+
-| arg_count          | INTEGER       | The number of arguments                       |
-+--------------------+---------------+-----------------------------------------------+
-| lang               | VARCHAR(16)   | Implementing language (currently, Java)       |
-+--------------------+---------------+-----------------------------------------------+
-| target             | VARCHAR(4096) | Name of the Java method to be executed        |
-+--------------------+---------------+-----------------------------------------------+
-| owner              | VARCHAR(256)  | Owner                                         |
-+--------------------+---------------+-----------------------------------------------+
-| comment            | VARCHAR(1024) | Comment to describe the stored procedure      |
-+--------------------+---------------+-----------------------------------------------+
+==================== =========================== =========================================================
+Attribute Name       Data Type                    Description
+==================== =========================== =========================================================
+sp_name              VARCHAR(255)                Stored procedure name
+pkg_name             VARCHAR(255)                Package name containing the stored procedure
+sp_type              VARCHAR(16)                 Stored procedure type (function or procedure)
+return_type          VARCHAR(16)                 Return value type name
+arg_count            INTEGER                     The number of arguments
+lang                 VARCHAR(16)                 Implementation language name
+authid               VARCHAR(16)                 Execution privileges of the stored procedure
+is_deterministic     VARCHAR(3)                  Indicates whether the function is deterministic
+is_parallel_enabled  VARCHAR(3)                  Whether PARALLEL_ENABLE is declared
+target               VARCHAR(4096)               Name of the target stored procedure code to execute (NULL for PL/CSQL procedures and functions)
+owner                VARCHAR(32)                 Owner
+code                 VARCHAR(1073741823)         Source code of the stored procedure
+sql_data_access      VARCHAR(17)                 SQL data-access mode (NO SQL, CONTAINS SQL, READS SQL DATA, MODIFIES SQL DATA)
+comment              VARCHAR(1024)               Comment to describe the stored procedure
+created_time         DATETIME                    Stored procedure creation time
+updated_time         DATETIME                    Stored procedure modification time
+==================== =========================== =========================================================
 
-The following example shows how to retrieve Java stored procedures owned by the current user.
+        .. note::
+
+                - **sp_type**
+                        - **PROCEDURE** or **FUNCTION**.
+
+                - **pkg_name**: Package name. Currently, the package name is only used in the **DBMS_OUTPUT** system package.
+                        - **dbms_output** or **NULL**.
+
+                - **return_type**: The return type can be one of the following values:
+                        
+                        ::
+
+                                        NULL, INTEGER, FLOAT, DOUBLE, STRING, 
+                                        SET, MULTISET, SEQUENCE, TIME, 
+                                        TIMESTAMP, DATE, SHORT, NUMERIC, CHAR, 
+                                        CURSOR, BIGINT, DATETIME
+                        
+                        - Other values are not currently supported.
+
+                - **lang**: The implementation language of the stored procedure, which can be one of the following values:
+                        - **PLCSQL**: PL/CSQL
+                        - **JAVA**: Java stored procedure
+
+                - **authid**: Indicates the **execution rights (AUTHID)** of the stored procedure.
+                        - **DEFINER**: Owner rights (or definer rights)
+                        - **CURRENT_USER**: Invoker rights
+
+                - **is_deterministic**: Indicates whether the function is deterministic.
+                        - **YES**: Deterministic function
+                        - **NO**: Non-deterministic function
+
+                - **is_parallel_enabled**: Indicates whether the stored function is declared with **PARALLEL_ENABLE**. For details, refer to :ref:`pl-parallel-enable`.
+                        - **YES**: Declared function
+                        - **NO**: Function without the declaration
+
+The following example retrieves the two stored functions owned by the current user.
 
 .. code-block:: sql
 
-    SELECT sp_name, target from db_stored_procedure
-    WHERE sp_type = 'FUNCTION' AND owner = CURRENT_USER;
+    -- Show the two stored functions owned by the current user.
+    CREATE OR REPLACE FUNCTION hello RETURN VARCHAR AS BEGIN RETURN 'Hello'; END;
+
+    CREATE OR REPLACE FUNCTION sp_int(p_int INTEGER) RETURN INTEGER AS BEGIN RETURN p_int; END;
+
+    ;line on
+    SELECT * FROM db_stored_procedure
+    WHERE sp_type = 'FUNCTION' AND owner = CURRENT_USER
+      AND sp_name IN ('hello', 'sp_int')
+    ORDER BY sp_name;
 
 ::
 
-      sp_name               target             
-    ============================================
-      'hello'               'SpCubrid.HelloCubrid() return java.lang.String'
-      'sp_int'              'SpCubrid.SpInt(int) return int'
+    <00001> sp_name            : 'hello'
+            pkg_name           : NULL
+            sp_type            : 'FUNCTION'
+            return_type        : 'STRING'
+            arg_count          : 0
+            lang               : 'PLCSQL'
+            authid             : 'DEFINER'
+            is_deterministic   : 'NO'
+            is_parallel_enabled: 'NO'
+            target             : NULL
+            owner              : 'DBA'
+            code               : 'CREATE OR REPLACE FUNCTION hello() RETURN character varying AUTHID OWNER AS
+    BEGIN RETURN 'Hello'; END'
+            sql_data_access    : 'NO SQL'
+            comment            : NULL
+            created_time       : 10:10:06.113 AM 09/11/2026
+            updated_time       : 10:10:06.113 AM 09/11/2026
+    <00002> sp_name            : 'sp_int'
+            pkg_name           : NULL
+            sp_type            : 'FUNCTION'
+            return_type        : 'INTEGER'
+            arg_count          : 1
+            lang               : 'PLCSQL'
+            authid             : 'DEFINER'
+            is_deterministic   : 'NO'
+            is_parallel_enabled: 'NO'
+            target             : NULL
+            owner              : 'DBA'
+            code               : 'CREATE OR REPLACE FUNCTION sp_int(p_int IN integer) RETURN integer AUTHID OWNER AS
+    BEGIN RETURN p_int; END'
+            sql_data_access    : 'NO SQL'
+            comment            : NULL
+            created_time       : 10:10:06.158 AM 09/11/2026
+            updated_time       : 10:10:06.158 AM 09/11/2026
+
+.. _db-stored-procedure-args:
 
 DB_STORED_PROCEDURE_ARGS
 ------------------------
 
-Represents argument information of Java stored procedure for which the current user has access authorization to a database.
+Represents argument information of Stored procedure for which the current user has access authorization to a database.
 
-+--------------------+---------------+----------------------------------+
-|   Attribute Name   |   Data Type   |   Description                    |
-+====================+===============+==================================+
-| sp_name            | VARCHAR(255)  | Stored procedure name            |
-+--------------------+---------------+----------------------------------+
-| index_of           | INTEGER       | Order of the arguments           |
-+--------------------+---------------+----------------------------------+
-| arg_name           | VARCHAR(256)  | Argument name                    |
-+--------------------+---------------+----------------------------------+
-| data_type          | VARCHAR(16)   | Data type of the argument        |
-+--------------------+---------------+----------------------------------+
-| mode               | VARCHAR(6)    | Mode (IN, OUT, INOUT)            |
-+--------------------+---------------+----------------------------------+
-| comment            | VARCHAR(1024) | Comment to describe the argument |
-+--------------------+---------------+----------------------------------+
+==================== =========================== =========================================================
+Attribute Name       Data Type                    Description
+==================== =========================== =========================================================
+sp_name              VARCHAR(255)                Stored procedure name
+owner_name           VARCHAR(32)                 Owner
+pkg_name             VARCHAR(255)                Package name containing the stored procedure
+index_of             INTEGER                     Order of the arguments
+arg_name             VARCHAR(255)                Argument name
+data_type            VARCHAR(16)                 Data type of the argument
+mode                 VARCHAR(6)                  Mode (IN, OUT, INOUT)
+is_optional          VARCHAR(3)                  Whether the parameter is optional
+default_value        VARCHAR(255)                Default value of the argument
+comment              VARCHAR(1024)               Comment to describe the argument
+==================== =========================== =========================================================
 
-The following example shows how to retrieve arguments the 'phone_info' Java stored procedure in the order of the arguments.
+        .. note::
+
+                - **index_of**: The order of the arguments starts from 0.
+
+                - **data_type**: The data type of the argument is one of the following values
+                        
+                        ::
+        
+                                        NULL, INTEGER, FLOAT, DOUBLE, STRING, 
+                                        SET, MULTISET, SEQUENCE, TIME, 
+                                        TIMESTAMP, DATE, SHORT, NUMERIC, CHAR, 
+                                        CURSOR, BIGINT, DATETIME
+                        
+                        - Other values are not currently supported.
+
+                - **mode**: The argument mode is one of the following values
+                        
+                        ::
+                        
+                                        IN, OUT, INOUT
+
+                - **is_optional**: A value of **YES** indicates the argument is optional, while **NO** indicates it is required.
+
+                - **default_value**: The default value of the argument. For more details, refer to :ref:`pl-arg-default`.
+
+The following example shows how to retrieve arguments the 'process_order' Stored procedure in the order of the arguments.
 
 .. code-block:: sql
 
-    SELECT index_of, arg_name, data_type, mode 
+    CREATE OR REPLACE PROCEDURE process_order(
+      p_order_id IN NUMBER,
+      p_status IN VARCHAR2 DEFAULT 'NEW'
+    )
+    AS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Processing Order ID: ' || p_order_id);
+        DBMS_OUTPUT.PUT_LINE('Order Status: ' || p_status);
+    END;
+
+    SELECT index_of, arg_name, data_type, mode, is_optional, default_value
     FROM db_stored_procedure_args
-    WHERE sp_name = 'phone_info'
+    WHERE sp_name = 'process_order'
     ORDER BY index_of;
 
-::
+        ::
 
-         index_of  arg_name              data_type             mode
-    ===============================================================
-                0  'name'                'STRING'              'IN'
-                1  'phoneno'             'STRING'              'IN'
+                index_of  arg_name              data_type             mode       is_optional  default_value
+        ====================================================================================================
+                        0  'p_order_id'          'NUMBER'              'IN'       'NO'         NULL
+                        1  'p_status'            'VARCHAR2'            'IN'       'YES'        'NEW'
 
 
+.. _db-server:
+
+DB_SERVER
+---------
+
+================ ============= ====================================================================
+Attribute Name   Data Type     Description
+================ ============= ====================================================================
+link_name        VARCHAR(255)  Connection name
+host             VARCHAR(255)  Hostname of a server
+port             INTEGER       Connection port of a server
+db_name          VARCHAR(255)  Database name of a server
+user_name        VARCHAR(255)  Database username of a server
+properties       VARCHAR(2048) Property information used for connection
+owner            VARCHAR(32)   The name of the owner of this connection information
+comment          VARCHAR(1024) Comment to describe the server
+created_time     DATETIME      Server creation time
+updated_time     DATETIME      Server modification time
+invalidated_time DATETIME      Time when the external server connection was invalidated
+================ ============= ====================================================================
+
+.. _db-synonym:
+
+DB_SYNONYM
+----------
+
+Represents target object information for the synonym to which the current user has access authorization in the database.
+
+================== ============= ==========================================================
+Attribute Name     Data Type     Description
+================== ============= ==========================================================
+synonym_name       VARCHAR(255)  The name of the synonym
+synonym_owner_name VARCHAR(32)   The owner of the synonym
+is_public_synonym  VARCHAR(3)    "YES" for a public synonym, and "NO" for a private synonym
+target_name        VARCHAR(255)  The name of the target object
+target_owner_name  VARCHAR(32)   The owner name of the target object
+comment            VARCHAR(2048) Comment to describe the synonym
+created_time       DATETIME      Synonym creation time
+updated_time       DATETIME      Synonym modification time
+================== ============= ==========================================================
+
+.. warning::
+    
+    It does not support public synonym yet.
 
 Catalog Class/Virtual Class Authorization
 =========================================
@@ -1683,7 +2605,7 @@ Updating catalog classes/virtual classes is automatically performed by the syste
 Querying on Catalog
 ===================
 
-To query on catalog classes, you must convert identifiers such as class, virtual class, attribute, trigger, method and index names to lowercases, and create them. Therefore, you must use lowercases when querying on catalog classes. But, DB user name is changed as uppercases and stored into db_user system catalog table.
+To query on catalog classes, you must convert identifiers such as class, virtual class, attribute, trigger, method and index names to lowercases, and create them. Therefore, you must use lowercases when querying on catalog classes. But, DB username is changed as uppercases and stored into _db_user system catalog table.
 
 .. code-block:: sql
 
@@ -1707,7 +2629,7 @@ To query on catalog classes, you must convert identifiers such as class, virtual
 .. code-block:: sql
 
     CREATE USER tester PASSWORD 'testpwd';
-    SELECT name, password FROM db_user;
+    SELECT name, password FROM _db_user;
     
 ::
 
@@ -1715,4 +2637,4 @@ To query on catalog classes, you must convert identifiers such as class, virtual
     ============================================
       'DBA'                 NULL
       'PUBLIC'              NULL
-      'TESTER'              db_password
+      'TESTER'              _db_password

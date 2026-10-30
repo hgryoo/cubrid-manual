@@ -29,9 +29,11 @@ CUBRID is an object-relational database management system (DBMS) consisting of t
 
 *   The CUBRID Manager is a GUI tool that allows users to remotely manage the database and the broker. It also provides the Query Editor, a convenient tool that allows users to execute SQL queries on the database server. 
 
+*   The CUBRID procedural langauge (PL) server is a server that compiles and executes stored procedures and functions requested from the database server.
+
 .. FIXME: For more information about CUBRID Manager, see http://www.cubrid.org/wiki_tools/entry/cubrid-manager.
 
-.. image:: /images/image1.png
+.. image:: images/process_structure.png
 
 .. _database-volume-structure:
 
@@ -40,7 +42,7 @@ Database Volume Structure
 
 The following diagram illustrates the CUBRID database volume structure. As you can see, the database is divided into three volumes: permanent, temporary and backup. This chapter will examine each volume and its characteristics.
 
-.. image:: /images/image2.png
+.. image:: images/database_volume_structure.png
 
 For commands to create, add or delete the database volume, see :ref:`creating-database`, :ref:`adding-database-volume` and :ref:`deleting-database`.
 
@@ -79,19 +81,13 @@ Control files include the information about locations of database volumes, backu
 
 Active log is a log that contains recent changes to the database. If a problem occurs, you can use active and archive logs to restore the database completely up to the point of the last commit before the occurrence of the fault.
 
-**Archive Log**
-
-Archive log is a volume to store logs continuously created after exhausting available active log space that contains recent changes. If the value of system parameter **log_max_archives** is larger than 0, the archive log volume will be generated only after exhausting available active log volume space. The initial value is set to 0 when installing CUBRID. The number of archive log files is kept on the storage by setting the value of **log_max_archives**. The unnecessary archive log files should be deleted for getting the free space by the configuration of log_max_archives, but this value should be set properly to use for restoring the database.
-
-To get more information on the above, see :ref:`managing-archive-logs`.
-
-**Background Archive Log**
-
-Background archive log is a volume used in the background with log archiving temporarily before creating archive logs. It is created as the same volume size as active log and stored.
-
 **Double Write Buffer File**
 
 Double write buffer file stores copies of data pages being flushed to disk as a protection against I/O errors. A detailed description of this file can be found in :ref:`database-volume` section.
+
+**TDE Key File**
+
+TDE (Transparent Data Encryption) key file contains keys for database encryption. The keys in the file are managed using the TDE utility. For more information on this, see :ref:`tde-file-based-key` and :ref:`TDE Utility<tde-utility>`.
 
 .. _temporary-volumes:
 
@@ -119,7 +115,7 @@ To have complete control on the disk space used for temporary data and to preven
 
 Once temporary temp volume is created, it is maintained until a database restarts and its size cannot be reduced. It is recommended to make temporary temp volume automatically delete by restarting a database if its size is too big.
 
-*   **File name of the temporary volumes**: The file name format of a temporary volume is *db_name*\ **_t**\ *num*, where *db_name* is the database name and *num* is the volume identifier. The volume identifier is decremented by 1 from 32766.
+*   **File name of the temporary volumes**: The filename format of a temporary volume is *db_name*\ **_t**\ *num*, where *db_name* is the database name and *num* is the volume identifier. The volume identifier is decremented by 1 from 32766.
 
 *   **Configuring the temporary volume size**: The number of temporary volumes to be created is determined by the system depending on the space size needed for processing transactions. However, users can limit the total temporary volume size by configuring the **temp_file_max_size_in_pages** parameter value in the system parameter configuration file (**cubrid.conf**). The default value is -1, which means it can be created as long as free space is available. If the **temp_file_max_size_in_pages** parameter value is configured to 0, no temporary volumes will be created, and the system will have to rely exclusively on permanent volumes assigned for temporary data.
 
@@ -130,6 +126,16 @@ Once temporary temp volume is created, it is maintained until a database restart
 .. note::
 
     Normally, permanent volumes are used to store permanent data, and temporary volumes are used to store temporary data. You can assign permanent volumes to store temporary data, but temporary volumes will never store permanent data!
+
+**Archive Log**
+
+Archive log is a volume to store logs continuously created after exhausting available active log space that contains recent changes. If the value of system parameter **log_max_archives** is larger than 0, the archive log volume will be generated only after exhausting available active log volume space. The initial value is set to 0 when installing CUBRID. The number of archive log files is kept on the storage by setting the value of **log_max_archives**. The unnecessary archive log files should be deleted for getting the free space by the configuration of log_max_archives, but this value should be set properly to use for restoring the database.
+
+To get more information on the above, see :ref:`managing-archive-logs`.
+
+**Background Archive Log**
+
+Background archive log is a volume used in the background with log archiving temporarily before creating archive logs. It is created as the same volume size as active log and stored.
 
 Backup Volume
 ^^^^^^^^^^^^^
@@ -242,15 +248,12 @@ CUBRID provides High Availability(HA) feature to minimize system down time while
 *   A transaction log multiplication step where the transaction log created in the database server is replicated in real time to another node
 *   A transaction log reflection step where data is applied to the slave database server through the analysis of the transaction log being replicated in real time
 
-**Java Stored Procedure**
+**Stored Procedure**
 
-A stored procedure is a method to decrease the complexity of applications and to improve the reusability, security and performance through the separation of database logic and middleware logic. A stored procedure is written in Java (generic language), and provides Java stored procedures running on the Java Virtual Machine (JVM). To execute Java stored procedures in CUBRID, the following steps should be performed:
-
-*   Install and configure the Java Virtual Machine
-*   Create Java source files
-*   Compile the files and load Java resources
-*   Publish the loaded Java classes so they can be called from the database
-*   Call the Java stored procedures
+A stored procedure is a method to decrease the complexity of applications and to improve the reusability, security and performance through the separation of database logic and middleware logic.
+CUBRID supports the SQL extension language PL/CSQL and can also be written in the general-purpose language Java.
+To use the stored procedure feature, the procedural langauge server must be running. (See :ref:`cubrid-pl-server`\)
+For more details on stored procedures, refer to :doc:`/pl/index`.
 
 **Click Counter**
 
@@ -272,7 +275,10 @@ To address this issue, CUBRID introduces the new concept of the Click Counter th
     *   **MULTISET**: A collection type that allows the duplication of elements. The order of entry is not considered.
     *   **LIST**: A collection type that allows the duplication of elements. Unlike with **SET** and **MULTISET**, the order of entry is maintained.
 
+*   **JSON**
+
+    JavaScript Object Notation (JSON) has become the de facto standard for data-interchanging. JSON, one of the semi-structured data, is not allowed to reside in the relational data model. In CUBRID, however, you can create and query JSON documents using :ref:`SQL functions for JSON<json-fn>`. you can define a :ref:`JSON data type<json-data-type>` column and stores a JSON document into the column.
+
 *   **Inheritance**
 
     Inheritance is a concept to reuse columns and methods of a super class (table) in those of a sub class. CUBRID supports reusability through inheritance. By using inheritance provided by CUBRID, you can create a super class with some common columns and then create a sub class inherited from the super class with some unique columns added. In this way, you can create a database model which can minimize the number of columns.
-

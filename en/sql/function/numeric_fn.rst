@@ -85,7 +85,7 @@ ATAN
     
                        atan(1)                  atan(-1)              atan2(1, -1)
     ==============================================================================
-         7.853981633974483e-01    -7.853981633974483e-01     2.356194490192345e+000
+         7.853981633974483e-01    -7.853981633974483e-01     2.356194490192345e+00
 
 ATAN2
 =====
@@ -443,6 +443,28 @@ LN
     =====================================================
          0.000000000000000e+00     1.000631880307906e+00
 
+LOG
+====
+
+.. function:: LOG ( x , y )
+
+    The **LOG** function returns the logarithm of *x* with base *y*, and its return type is **DOUBLE**. If either *x* or *y* is 0 or a negative number, the function returns an error.
+    When a non-numeric string is provided as input, the function's behavior depends on the value of the **return_null_on_function_errors** parameter in **cubrid.conf**.
+
+    :param x: The base of the logarithm; it must be an expression that evaluates to a positive value other than 1.
+    :param y: The antilogarithm of the logarithm expression; it must be an expression that evaluates to a positive value.
+    :rtype: DOUBLE
+
+.. code-block:: sql
+
+    SELECT log(2,1), log(2,8), log(10,1), log(10,1000);
+    
+::
+
+         log(2,1)                   log(2,8)                  log(10, 1)                log(10, 1000)
+    =======================================================================================================
+         0.000000000000000e+00     3.000000000000000e+00    0.000000000000000e+00     3.000000000000000e+00
+
 LOG2
 ====
 
@@ -488,7 +510,7 @@ MOD
 
 .. function:: MOD (m, n)
 
-    The **MOD** function returns the remainder of the first parameter *m* divided by the second parameter *n*. If *n* is 0, *m* is returned without the division operation being performed. When you input the string which cannot be transformed into the number, it returns an error if the value of **return_null_on_function_errors** in **cubrid.conf** is no(the default), or returns NULL if it is yes.
+    The **MOD** function returns the remainder of the first parameter *m* divided by the second parameter *n*. If *n* is 0 or greater than *m*, *m* is returned without the division operation being performed. When you input the string which cannot be transformed into the number, it returns an error if the value of **return_null_on_function_errors** in **cubrid.conf** is no(the default), or returns NULL if it is yes.
     
     Note that if the dividend, the parameter m of the **MOD** function, is a negative number, the function operates differently from a typical operation (classical modulus) method. 
 
@@ -511,7 +533,7 @@ MOD
 
     :param m: Represents a dividend. It is an expression that returns a numeric value.
     :param n: Represents a divisor. It is an expression that returns a numeric value.
-    :rtype: INT
+    :rtype: Result type of m/n
 
 .. code-block:: sql
 
@@ -610,7 +632,7 @@ RANDOM, RAND
 .. function:: RANDOM ( [seed] )
 .. function:: RAND ( [seed] )
 
-    The function **RANDOM** or **RAND** returns any integer value, which is greater than or equal to 0 and less than 2 31, and a *seed* argument that is **INTEGER** type can be specified. It rounds up real numbers and an error is returned when it exceeds the range of **INTEGER**. 
+    The function **RANDOM** or **RAND** returns any integer value, which is greater than or equal to 0 and less than 2^31, and a *seed* argument that is **INTEGER** type can be specified. It rounds up real numbers and an error is returned when it exceeds the range of **INTEGER**. 
 
     When *seed* value is not given, the **RAND** function performs the operation only once to produce only one random number regardless of the number of rows where the operation is output, but the **RANDOM** function performs the operation every time the statement is repeated to produce a different random value for each row. Therefore, to output rows in a random order, you must use the **RANDOM** function. 
 

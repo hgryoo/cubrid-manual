@@ -11,7 +11,7 @@ JDBC 드라이버
 JDBC 개요
 =========
 
-CUBRID JDBC 드라이버(cubrid_jdbc.jar)를 사용하면 Java로 작성된 응용 프로그램에서 CUBRID 데이터베이스에 접속할 수 있다. CUBRID JDBC 드라이버는 <*CUBRID 설치 디렉터리*> **/jdbc** 디렉터리에 위치한다. CUBRID JDBC 드라이버는 JDBC 2.0 스펙을 기준으로 개발되었으며, JDK 1.6에서 컴파일한 것을 기본으로 제공한다.
+CUBRID JDBC 드라이버(cubrid_jdbc.jar)를 사용하면 Java로 작성된 응용 프로그램에서 CUBRID 데이터베이스에 접속할 수 있다. CUBRID JDBC 드라이버는 <*CUBRID 설치 디렉터리*> **/jdbc** 디렉터리에 위치한다. CUBRID JDBC 드라이버는 JDBC 2.0 스펙을 기준으로 개발되었으며, JDK 1.8에서 컴파일한 것을 기본으로 제공한다.
 
 .. FIXME: 별도로 JDBC 드라이버를 다운로드하거나 JDBC 드라이버에 대한 최신 정보를 확인하려면 http://www.cubrid.org/wiki_apis/entry/cubrid-jdbc-driver\ 에 접속한다.
 
@@ -29,7 +29,7 @@ JDBC 드라이버 버전은 다음과 같은 방법으로 확인할 수 있다. 
     cubrid/sql/
     cubrid/jdbc/driver/CUBRIDBlob.class
     ...
-    CUBRID-JDBC-8.3.1.1032
+    CUBRID-JDBC-11.3.0.0047
 
 **CUBRID JDBC 드라이버 등록**
 
@@ -55,19 +55,19 @@ JDBC 설치 및 설정
 
 **기본 환경**
 
-*   JDK 1.6 이상
+*   JDK 1.8 이상
 *   CUBRID 2008 R2.0(8.2.0) 이상
 *   CUBRID JDBC 드라이버 2008 R1.0 이상
 
 **Java 설치 및 환경 변수 설정**
 
-시스템에 Java가 설치되어 있고 **JAVA_HOME** 환경 변수가 등록되어 있어야 한다. Java는 Developer Resources for Java Technology 사이트( https://www.oracle.com/java/technologies/ )에서 다운로드할 수 있다. 이에 대한 자세한 설명은 :ref:`jsp-environment-configuration` 절을 참고한다.
+시스템에 Java가 설치되어 있고 **JAVA_HOME** 환경 변수가 등록되어 있어야 한다. Java는 Developer Resources for Java Technology 사이트( https://www.oracle.com/java/technologies/downloads/#java8 )에서 다운로드할 수 있다.
 
 **Windows 환경에서 환경 변수 설정**
 
-Java 설치 후 [내 컴퓨터]를 마우스 오른쪽 버튼 클릭하여 [속성]을 선택하면 [시스템 등록 정보] 대화 상자가 나타난다. [고급] 탭의 [환경 변수]를 클릭하면 나타나는 [환경 변수] 대화 상자가 나타난다.
+Java 설치 후 [내 PC]를 마우스 오른쪽 버튼 클릭하여 [속성]을 선택한 후, 관련 설정의 [고급 시스템 설정]을 클릭하면 시스템 속성의 대화 상자가 나타난다. [고급]탭의 [환경 변수]를 클릭하면 [환경 변수] 대화 상자가 나타난다.
 
-[시스템 변수]에서 [새로 만들기]를 선택한다. [변수 이름]에 **JAVA_HOME** 을 입력하고, 변수 값으로 Java 설치 경로(예: C:\Program Files\Java\jdk1.6.0_16)를 입력한 후 [확인]을 클릭한다.
+[시스템 변수]에서 [새로 만들기]를 선택한다. [변수 이름]에 **JAVA_HOME** 을 입력하고, 변수 값으로 Java 설치 경로(예: C:\\Program Files\\Java\\jdk1.8.0_421)를 입력한 후 [확인]을 클릭한다.
 
 .. image:: /images/image51.png
 
@@ -77,17 +77,17 @@ Java 설치 후 [내 컴퓨터]를 마우스 오른쪽 버튼 클릭하여 [속�
 
 위의 방법을 사용하지 않고 다음과 같이 셸에서 **JAVA_HOME** 과 **PATH** 환경 변수를 설정할 수도 있다. ::
 
-    set JAVA_HOME= C:\Program Files\Java\jdk1.6.0_16
+    set JAVA_HOME= C:\Program Files\Java\jdk1.8.0_421
     set PATH=%PATH%;%JAVA_HOME%\bin
 
 **Linux 환경에서 환경 변수 설정**
 
-다음과 같이 Java가 설치된 **JAVA_HOME** 환경 변수로 디렉터리 경로(예: /usr/java/jdk1.6.0_16)를 설정하고, **PATH** 환경 변수에 **$JAVA_HOME/bin** 을 추가한다. ::
+다음과 같이 Java가 설치된 **JAVA_HOME** 환경 변수로 디렉터리 경로(예: /usr/java/jdk1.8.0_421)를 설정하고, **PATH** 환경 변수에 **$JAVA_HOME/bin** 을 추가한다. ::
 
-    export JAVA_HOME=/usr/java/jdk1.6.0_16     #bash
+    export JAVA_HOME=/usr/java/jdk1.8.0_421    #bash
     export PATH=$JAVA_HOME/bin:$PATH           #bash
      
-    setenv JAVA_HOME /usr/java/jdk1.6.0_16     #csh
+    setenv JAVA_HOME /usr/java/jdk1.8.0_421    #csh
     set path = ($JAVA_HOME/bin $path)          #csh
 
 **JDBC 드라이버 설정**
@@ -129,21 +129,27 @@ JDBC 프로그래밍
      
     <property> ::= altHosts=<alternative_hosts>
                  | rcTime=<second>
-                 | loadBalance=<bool_type>
+                 | loadBalance=<balance_mode>
                  | connectTimeout=<second>
                  | queryTimeout=<second>
                  | charSet=<character_set>
                  | zeroDateTimeBehavior=<behavior_type>
-                 | logFile=<file_name>
                  | logOnException=<bool_type>
                  | logSlowQueries=<bool_type>&slowQueryThresholdMillis=<millisecond>
                  | useLazyConnection=<bool_type>
                  | useSSL=<bool_type>
-                 
+                 | clientCacheSize=<unit_size>
+                 | usePreparedStmtCache=<bool_type>
+                 | preparedStmtCacheSize=<unit_size>
+                 | preparedStmtCacheSqlLimit=<unit_size>
+                 | hold_cursor=<bool_type>
+
         <alternative_hosts> ::=
         <standby_broker1_host>:<port> [,<standby_broker2_host>:<port>]
         <behavior_type> ::= exception | round | convertToNull
         <bool_type> ::= true | false
+        <unit_size> ::= multiple of mega byte
+        <balance_mode> ::= true | false | rr | sh
 
 *   *host*: CUBRID 브로커가 동작하고 있는 서버의 IP 주소 또는 호스트 이름
 *   *port*: CUBRID 브로커의 포트 번호(기본값: 33000)
@@ -159,7 +165,13 @@ JDBC 프로그래밍
         .. note:: 메인 호스트와 **altHosts** 브로커들의 **ACCESS_MODE**\ 설정에 **RW**\ 와 **RO**\ 가 섞여 있다 하더라도, 응용 프로그램은 **ACCESS_MODE**\ 와 무관하게 접속 대상 호스트를 결정한다. 따라서 사용자는 접속 대상 브로커의 **ACCESS_MODE**\ 를 감안해서 메인 호스트와 **altHosts**\ 를 정해야 한다.
 
     *   **rcTime**: 첫 번째로 접속했던 브로커에 장애가 발생한 이후 altHosts 에 명시한 브로커로 접속한다(failover). 이후, rcTime만큼 시간이 경과할 때마다 원래의 브로커에 재접속을 시도한다(기본값 600초). 입력 방법은 아래 URL 예제를 참고한다.
-    *   **loadBalance**: 이 값이 true면 응용 프로그램이 메인 호스트와 altHosts에 지정한 호스트들에 랜덤한 순서로 연결한다(기본값: false). 
+    *   **loadBalance**: 클라이언트가 접속 가능한 다수의 호스트가 있는 경우, 접속 대상 호스트를 결정하는 알고리즘을 선택하는 속성이다. 로드 밸런싱을 통해 클라이언트의 연결 요청이 특정 서버에 집중되지 않도록 분산할 수 있다.(기본값: false)
+
+        설정값에 따른 동작은 다음과 같다.
+
+        *   **false**: 해당 속성이 적용하지 않는다.
+        *   **true 또는 rr**: 지정한 호스트들을 **Round-Robin** 방식으로 연결한다.
+        *   **sh**: 지정한 호스트들을 **무작위(Shuffle)** 방식으로 연결한다.
 
     *   **connectTimeout**: 데이터베이스 접속에 대한 타임아웃 시간을 초 단위로 설정한다.  기본값은 30초이다. 이 값이 0인 경우 무한 대기를 의미한다. 이 값은 최초 접속 이후 내부적인 재접속이 발생하는 경우에도 적용된다. **DriverManger.setLoginTimeout** () 메서드로 설정할 수도 있으나, 연결 URL에 이 값을 설정하면 메서드로 설정한 값은 무시된다.
 
@@ -176,11 +188,12 @@ JDBC 프로그래밍
         *   **round**: 반환할 타입의 최소값으로 변환한다. 단, TIMESTAMP 타입은 '1970-01-01 00:00:00'(GST)를 반환한다.
         *   **convertToNull**: **NULL** 로 변환한다.
 
-    *   **logFile**: 디버깅용 로그 파일 이름(기본값: cubrid_jdbc.log). 별도의 경로 설정이 없으면 응용 프로그램을 실행하는 위치에 저장된다.
-    *   **logOnException**: 디버깅용 예외 처리 로깅 여부(기본값: false)
-    *   **logSlowQueries**: 디버깅용 슬로우 쿼리 로깅 여부(기본값: false)
+    *   **logOnException**: 디버깅용 예외 처리 로깅 여부(기본값: true). 출력 위치와 레벨은 :ref:`jdbc-logging-conf`\ 을 참고한다.
+    *   **logSlowQueries**: 디버깅용 슬로우쿼리 로깅 여부(기본값: false). 출력 위치와 레벨은 :ref:`jdbc-logging-conf`\ 을 참고한다.
 
-        *   **slowQueryThresholdMillis**: 디버깅용 슬로우 쿼리 로깅 시 슬로우 쿼리 제한 시간(기본값: 60000). 단위는 밀리 초이다.
+        *   **slowQueryThresholdMillis**: 디버깅용 슬로우쿼리 로깅 시 슬로우쿼리 제한 시간(기본값: 60000). 단위는 밀리 초이다.
+
+    .. note:: **logFile** 속성은 더 이상 사용되지 않는다. 연결 URL에 이 속성이 남아 있어도 오류 없이 무시되며, 드라이버 로그의 출력 위치는 응용 프로그램의 **java.util.logging** 설정이 결정한다(:ref:`jdbc-logging-conf` 참고).
 
     *   **useLazyConnection**: 이 값이 true이면 사용자의 연결 요청 시 브로커 연결 없이 성공을 반환(기본값: false)하고, prepare나 execute 등의 함수를 호출할 때 브로커에 연결한다. 이 값을 true로 설정하면 많은 응용 클라이언트가 동시에 재시작되면서 연결 풀(connection pool)을 생성할 때 접속이 지연되거나 실패하는 현상을 피할 수 있다. 
 
@@ -189,6 +202,17 @@ JDBC 프로그래밍
        *   패킷 암호화: useSSL = true
        *   일반 평문: useSSL = false
 
+    *  **clientCacheSize**: 결과를 캐시할 크기
+       *   단위는 메가 바이트
+       *   범위는 1 ~ 1024 (1메가 바이트에서 1기가 바이트)
+       *   기본 값은 1 (메가 바이트)
+
+    *  **usePreparedStmtCache**: Prepared Statement 캐시 여부 (기본값: false)
+    *  **preparedStmtCacheSize**: usePreparedStmtCache가 TRUE일 경우, 캐싱할 수 있는 개수  (기본:25, 최소:1, 최대:2147483647)
+    *  **preparedStmtCacheSqlLimit**: usePreparedStmtCache가 TRUE일 경우, 캐싱할 수 있는 SQL의 길이 (기본:256, 최소:1, 최대:2147483647)
+    *  **hold_cursor**: 커서 유지 기능 설정(기본값: true). 이 값이 false 이면 CLOSE_CURSORS_AT_COMMIT이 설정되고, true 이면 HOLD_CURSORS_OVER_COMMIT이 설정된다. 자세한 내용은 :ref:`cursor-holding`\ 을 참고한다.
+
+		
 **예제 1** ::
 
     --connection URL string when user name and password omitted
@@ -217,6 +241,15 @@ JDBC 프로그래밍
 
     --connection URL string when useSSL property specified for encrypted connection
     URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?useSSL=true
+
+    --connection URL string when clientCacheSize property specified for result-cache
+    URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?clientCacheSize=1
+
+    --connection URL string when usePreparedStmtCache property specified for prepared stament cache
+    URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?usePreparedStmtCache=true&preparedStmtCacheSize=100&preparedStmtCacheSqlLimit=1024"
+	
+    --connection URL string when hold_cursor property specified for cursor holdability
+    URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?hold_cursor=true
 
 **예제 2**
 
@@ -252,6 +285,54 @@ JDBC 프로그래밍
  
        *   useSSL=true, 브로커 '일반 모드' 일 때 연결 불가 (**cubrid_broker.conf**: SSL = OFF)
        *   useSSL=false, 브로커 '암호화 모드' 일때 연결 불가 (**cubrid_broker.conf**: SSL = ON)
+
+    * **clientCacheSize** 는 브로커 파라미터인 **JDBC_CACHE** 혹은 **JDBC_CACHE_ONLY_HINT** 가 **ON** 으로 설정되어 있어야 유효하다.
+
+.. _jdbc-logging-conf:
+
+드라이버 로그 설정
+------------------
+
+**logOnException** 과 **logSlowQueries** 로 기록되는 드라이버 로그는 **java.util.logging** 을 통해 출력된다. 로그를 어디에 남길지는 응용 프로그램의 **java.util.logging** 설정이 결정하며, 드라이버는 로그 파일을 직접 만들지 않는다.
+
+로그는 **cubrid.jdbc.jci.UConnection** 로거로 출력되며, 설정은 상위 로거인 **cubrid.jdbc** 에 한다. 로그 종류에 따라 레벨이 다르다.
+
+============ ========== ==============================================================
+로그         레벨       내용
+============ ========== ==============================================================
+예외 덤프    FINE       예외 클래스와 스택 트레이스
+슬로우쿼리   FINEST     CAS 정보, 수행 시간, SQL 문장, 바인딩된 값
+============ ========== ==============================================================
+
+두 레벨은 모두 JDK의 기본 임계값인 **INFO** 보다 낮으므로, **cubrid.jdbc** 의 레벨을 설정하지 않으면 아무것도 출력되지 않는다.
+
+예외 덤프는 **logOnException** 의 기본값이 **true** 이므로 레벨만 설정하면 출력된다. 출력하지 않으려면 연결 URL에 **logOnException=false** 를 지정한다. 반면 슬로우쿼리는 드라이버가 매 질의의 수행 시간을 측정해야 하므로, **logSlowQueries** 를 **true** 로 설정해야 출력된다.
+
+::
+
+    handlers = java.util.logging.FileHandler
+    cubrid.jdbc.level = FINEST
+    java.util.logging.FileHandler.pattern = /var/log/myapp/cubrid_jdbc%g.log
+    java.util.logging.FileHandler.limit = 10485760
+    java.util.logging.FileHandler.count = 10
+    java.util.logging.FileHandler.append = true
+    java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
+
+**%g** 는 로그 파일의 세대 번호이다. 위 설정에서는 파일이 cubrid_jdbc0.log부터 cubrid_jdbc9.log까지 생성되며, 가장 최근 로그는 항상 **cubrid_jdbc0.log** 이다. **limit** 를 지정하지 않으면 로그 파일의 크기가 제한되지 않는다.
+
+위와 같이 작성한 설정 파일은 다음과 같이 지정한다.
+
+::
+
+    java -Djava.util.logging.config.file=logging.properties -jar app.jar
+
+**cubrid.jdbc.level** 을 **FINE** 으로 설정하면 예외 덤프만 출력되고, **FINEST** 로 설정하면 슬로우쿼리까지 출력된다.
+
+.. note::
+
+    *   **FileHandler** 의 기본 포매터는 **XMLFormatter** 이다. 위 예제와 달리 **formatter** 를 지정하지 않으면 로그가 한 줄 단위 텍스트가 아닌 XML 형식으로 기록된다.
+    *   슬로우쿼리 로그에는 SQL 문장과 바인딩된 값이 그대로 포함된다. **cubrid.jdbc.level** 을 **FINEST** 로 설정할 때에는 로그 파일의 접근 권한을 확인해야 한다.
+    *   드라이버 로그를 응용 프로그램의 로그와 분리하려면 **cubrid.jdbc.handlers** 를 지정하고 **cubrid.jdbc.useParentHandlers** 를 **false** 로 설정한다.
 
 .. _jdbc-conn-datasource:
 
@@ -316,7 +397,7 @@ DataSource 객체를 생성하려면 다음과 같이 호출한다.
     ... 
     CUBRIDDataSource ds = null;
     ds = new CUBRIDDataSource(); 
-    ds.setUrl("jdbc:cubrid:10.113.153.144:55300:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000&logTraceApi=true&logTraceNetwork=true"); 
+    ds.setUrl("jdbc:cubrid:192.168.0.1:55300:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000"); 
 
 DataSource로부터 연결 객체를 얻기 위해서는 getConnection 메서드를 호출한다.
 
@@ -406,26 +487,153 @@ cubrid.jdbc.driver.CUBRIDConnection 클래스의 toString() 메서드를 사용�
 
 .. code-block:: java
 
-    ResultSet rs = null;
-    DatabaseMetaData dbmd = conn.getMetaData();
+	import java.sql.*;
+	import java.lang.*;
+	import cubrid.jdbc.driver.*;
 
-    System.out.println("\n===== Test getImportedKeys");
-    System.out.println("=====");
-    rs = dbmd.getImportedKeys(null, null, "pk_table");
-    Test.printFkInfo(rs);
-    rs.close();
-     
-    System.out.println("\n===== Test getExportedKeys");
-    System.out.println("=====");
-    rs = dbmd.getExportedKeys(null, null, "fk_table");
-    Test.printFkInfo(rs);
-    rs.close();
-     
-    System.out.println("\n===== Test getCrossReference");
-    System.out.println("=====");
-    rs = dbmd.getCrossReference(null, null, "pk_table", null, null, "fk_table");
-    Test.printFkInfo(rs);
-    rs.close();
+
+	public class Metadata_Sample
+	{
+		public static String getRuleName(String rule) {
+			int r = Integer.parseInt(rule);
+			switch(r) {
+				case DatabaseMetaData.importedKeyCascade:
+					return "cascade (" + rule + ")";
+				case DatabaseMetaData.importedKeyRestrict:
+					return "restrict (" + rule + ")";
+				case DatabaseMetaData.importedKeySetNull:
+					return "set null (" + rule + ")";
+				case DatabaseMetaData.importedKeyNoAction:
+					return "no action (" + rule + ")";
+				case DatabaseMetaData.importedKeySetDefault:
+					return "set default (" + rule + ")";
+				default:
+					return "unknown (" + rule + ")";
+			}
+		}
+
+		public static String getDeferrabilityName(String deferrability) {
+			int d = Integer.parseInt(deferrability);
+			switch(d) {
+				case DatabaseMetaData.importedKeyInitiallyDeferred:
+					return "initially deferred (" + deferrability + ")";
+				case DatabaseMetaData.importedKeyInitiallyImmediate:
+					return "initially immediate (" + deferrability + ")";
+				case DatabaseMetaData.importedKeyNotDeferrable:
+					return "not deferrable (" + deferrability + ")";
+				default:
+					return "unknown (" + deferrability + ")";
+			}
+		}
+
+		public static void printFkInfo(ResultSet rs) throws Exception {
+			while(rs.next()) {
+				System.out.println("\n<" + rs.getString("FK_NAME") + ">");
+				System.out.println("01. PKTABLE_CAT   : " + rs.getString("PKTABLE_CAT"));
+				System.out.println("02. PKTABLE_SCHEM : " + rs.getString("PKTABLE_SCHEM"));
+				System.out.println("03. PKTABLE_NAME  : " + rs.getString("PKTABLE_NAME"));
+				System.out.println("04. PKCOLUMN_NAME : " + rs.getString("PKCOLUMN_NAME"));
+				System.out.println("05. FKTABLE_CAT   : " + rs.getString("FKTABLE_CAT"));
+				System.out.println("06. FKTABLE_SCHEM : " + rs.getString("FKTABLE_SCHEM"));
+				System.out.println("07. FKTABLE_NAME  : " + rs.getString("FKTABLE_NAME"));
+				System.out.println("08. FKCOLUMN_NAME : " + rs.getString("FKCOLUMN_NAME"));
+				System.out.println("09. KEY_SEQ       : " + rs.getString("KEY_SEQ"));
+				System.out.println("10. UPDATE_RULE   : " + getRuleName(rs.getString("UPDATE_RULE")));
+				System.out.println("11. DELETE_RULE   : " + getRuleName(rs.getString("DELETE_RULE")));
+				System.out.println("12. FK_NAME       : " + rs.getString("FK_NAME"));
+				System.out.println("13. PK_NAME       : " + rs.getString("PK_NAME"));
+				System.out.println("14. DEFERRABILITY : " + getDeferrabilityName(rs.getString("DEFERRABILITY")));
+			}
+		}
+		public static void main (String args []) {
+			Connection conn = null;
+			Statement stmt;
+			DatabaseMetaData dbmd;
+			ResultSet rs;
+
+			try {
+				conn = (CUBRIDConnection)DriverManager.getConnection("jdbc:cubrid:localhost:33000:demodb:::", "dba", "");
+
+				stmt = conn.createStatement();
+
+				dbmd = conn.getMetaData();
+
+				stmt.executeUpdate("drop table if exists refer_1");
+				stmt.executeUpdate("drop table if exists refer_2");
+				stmt.executeUpdate("drop table if exists referred_1");
+				stmt.executeUpdate("drop table if exists referred_2");
+
+				stmt.executeUpdate("create table referred_1 ("
+						+ "pk1 int,"
+						+ "pk2 int,"
+						+ "primary key (pk1, pk2))");
+
+				stmt.executeUpdate("create table referred_2 ("
+						+ "pk int primary key)");
+
+				stmt.executeUpdate("create table refer_1 ("
+						+ "pk int primary key,"
+						+ "fk1 int,"
+						+ "fk2 int,"
+						+ "fk3 int,"
+						+ "constraint refer_1_fk1_2_fk foreign key (fk1, fk2) references referred_1(pk1, pk2),"
+						+ "constraint refer_1_fk3_fk foreign key (fk3) references referred_2(pk))");
+
+				stmt.executeUpdate("create table refer_2 ("
+						+ "pk int primary key,"
+						+ "fk1 int,"
+						+ "fk2 int,"
+						+ "fk3 int,"
+						+ "constraint refer_2_fk1_2_fk foreign key (fk1, fk2) references referred_1(pk1, pk2) "
+						+ "on update set null on delete no action,"
+						+ "constraint refer_2_fk3_fk foreign key (fk3) references referred_2(pk) "
+						+ "on update restrict on delete cascade)");
+
+				System.out.println("\n============== getImportedKeys() ==================");
+
+				rs = dbmd.getImportedKeys(null, null, "refer_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getImportedKeys(null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+
+				System.out.println("\n=============== getExportedKeys() =================");
+				rs = dbmd.getExportedKeys(null, null, "referred_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getExportedKeys(null, null, "referred_2");
+				printFkInfo(rs);
+				rs.close();
+
+				System.out.println("\n=============== getCrossReference() =================");
+				rs = dbmd.getCrossReference(null, null, "referred_1", null, null, "refer_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "referred_1", null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "referred_2", null, null, "refer_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "referred_2", null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "refer_1", null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+			} catch (Exception e) {
+			   e.printStackTrace();
+			}
+		}
+	}
+
 
 OID와 컬렉션 사용
 -----------------
@@ -607,7 +815,7 @@ OID를 사용할 때 다음의 규칙을 지켜야 한다.
                Connection con = DriverManager.getConnection(url,user,passwd);
                Statement stmt = con.createStatement();
                CUBRIDResultSet rs = (CUBRIDResultSet) stmt.executeQuery(sql);
-               CUBRIDResultSetMetaData rsmd = (CUBRIDResultSetMetaData) rs.getMeta Data();
+               CUBRIDResultSetMetaData rsmd = (CUBRIDResultSetMetaData) rs.getMetaData();
                int numbOfColumn = rsmd.getColumnCount();
                while (rs.next ()) {
                    for (int j=1; j<=numbOfColumn; j++ ) {
@@ -636,7 +844,7 @@ OID를 사용할 때 다음의 규칙을 지켜야 한다.
     import java.lang.*;
     import cubrid.sql.*;
     import cubrid.jdbc.driver.*;
-     
+
     // create class collection_test(
     // settest set(integer),
     // multisettest multiset(integer),
@@ -646,45 +854,42 @@ OID를 사용할 때 다음의 규칙을 지켜야 한다.
     // insert into collection_test values({1,2,3},{1,2,3},{1,2,3});
     // insert into collection_test values({2,3,4},{2,3,4},{2,3,4});
     // insert into collection_test values({3,4,5},{3,4,5},{3,4,5});
-     
-    class SetOP_Sample
-    {
-       public static void main (String args [])
-       {
-           String url = "jdbc:cubrid:127.0.0.1:33000:demodb:public::";
-           String user = "";
-           String passwd = "";
-           String sql = "select collection_test from collection_test";
-           try {
-               Class.forName("cubrid.jdbc.driver.CUBRIDDriver");
-           } catch(Exception e){
-               e.printStackTrace();
-           }
-           try {
-               CUBRIDConnection con =(CUBRIDConnection)
-               DriverManager.getConnection(url,user,passwd);
-               Statement stmt = con.createStatement();
-               CUBRIDResultSet rs = (CUBRIDResultSet)stmt.executeQuery(sql);
-               while (rs.next ()) {
-                   CUBRIDOID oid = rs.getOID(1);
-                   oid.addToSet("settest",new Integer(10));
-                   oid.addToSet("multisettest",new Integer(20));
-                   oid.addToSequence("listtest",1,new Integer(30));
-                   oid.addToSequence("listtest",100,new Integer(100));
-                   oid.putIntoSequence("listtest",99,new Integer(99));
-                   oid.removeFromSet("settest",new Integer(1));
-                   oid.removeFromSet("multisettest",new Integer(2));
-                   oid.removeFromSequence("listtest",99);
-                   oid.removeFromSequence("listtest",1);
-               }
-               con.commit();
-               rs.close();
-               stmt.close();
-               con.close();
-           } catch(SQLException e) {
-               e.printStackTrace();
-           }
-       }
+
+    class SetOP_Sample {
+	    public static void main(String args[]) {
+		    String url = "jdbc:cubrid:127.0.0.1:33000:demodb:public::";
+		    String user = "";
+		    String passwd = "";
+		    String sql = "select collection_test from collection_test";
+		    try {
+			    Class.forName("cubrid.jdbc.driver.CUBRIDDriver");
+		    } catch (Exception e) {
+			    e.printStackTrace();
+		    }
+		    try {
+			    CUBRIDConnection con = (CUBRIDConnection) DriverManager.getConnection(url, user, passwd);
+			    Statement stmt = con.createStatement();
+			    CUBRIDResultSet rs = (CUBRIDResultSet) stmt.executeQuery(sql);
+			    while (rs.next()) {
+				    CUBRIDOID oid = rs.getOID(1);
+				    oid.addToSet("settest", Integer.valueOf(10));
+				    oid.addToSet("multisettest", Integer.valueOf(20));
+				    oid.addToSequence("listtest", 1, Integer.valueOf(30));
+				    oid.addToSequence("listtest", 100, Integer.valueOf(100));
+				    oid.putIntoSequence("listtest", 99, Integer.valueOf(99));
+				    oid.removeFromSet("settest", Integer.valueOf(1));
+				    oid.removeFromSet("multisettest", Integer.valueOf(2));
+				    oid.removeFromSequence("listtest", 99);
+				    oid.removeFromSequence("listtest", 1);
+			    }
+			    con.commit();
+			    rs.close();
+			    stmt.close();
+			    con.close();
+		    } catch (SQLException e) {
+			    e.printStackTrace();
+		    }
+	    }
     }
 
 자동 증가 특성의 칼럼 값 검색
@@ -692,7 +897,7 @@ OID를 사용할 때 다음의 규칙을 지켜야 한다.
 
 자동 증가 특성(**AUTO_INCREMENT**)은 자동으로 각 행의 숫자 값을 증가 생성하는 칼럼에 대한 특성으로서, 보다 자세한 사항은 :ref:`column-definition` 절을 참고한다. 수치형 도메인(**SMALLINT**, **INTEGER**, **DECIMAL** (*p*, 0), **NUMERIC** (*p*, 0))에 대해서만 정의할 수 있다.
 
-자동 증가 특성은 JDBC 프로그램에서 자동 생성된 키로 인식되고, 이 키의 검색을 사용하려면 자동 생성된 키 값을 검색할 행을 삽입할 시기를 표시해야 한다. 이를 수행하기 위하여 **Connection.prepareStatement** 와 **Statement.execute** 메서드를 호출하여 플래그를 설정해야 한다. 이때, 실행된 명령문은 **INSERT** 문 또는 **INSERT** within **SELECT** 문이어야 하며, 다른 명령문의 경우 JDBC 드라이버가 플래그를 설정하는 매개변수를 무시한다.
+자동 증가 특성은 JDBC 프로그램에서 자동 생성된 키로 인식되고, 이 키의 검색을 사용하려면 자동 생성된 키 값을 검색할 행을 삽입할 시기를 표시해야 한다. 이를 수행하기 위하여 **Connection.prepareStatement** 와 **Statement.execute** 메서드를 호출하여 플래그를 설정해야 한다. 이때, 실행된 명령문은 **INSERT** 문 또는 **INSERT** within **SELECT** 문이어야 하며, 다른 명령문의 경우 JDBC 드라이버가 플래그를 설정하는 파라미터를 무시한다.
 
 **수행 단계**
 
@@ -862,7 +1067,7 @@ JDBC에서 **LOB** 데이터를 처리하는 인터페이스는 JDBC 4.0 스펙�
      
     // ResetSet에서 직접 데이터 인출
     PrepareStatement pstmt1 = conn.prepareStatement("SELECT content FROM doc_t WHERE doc_id = ? ");
-    pstmt2.setString(1, "doc-10");
+    pstmt1.setString(1, "doc-10");
     ResultSet rs = pstmt1.executeQuery();
     
     while (rs.next())
@@ -911,19 +1116,19 @@ prepareStatement.setBooelan(1, false) 는 다음으로 지정된다.
 
 .. _jdbc-error-codes:
 
-JDBC 에러 코드와 에러 메시지
+JDBC 오류 코드와 오류 메시지
 ----------------------------
 
-SQLException에서 발생하는 JDBC 에러 코드는 다음과 같다.
+SQLException에서 발생하는 JDBC 오류 코드는 다음과 같다.
 
-*   모든 에러 번호는 0보다 작은 음수이다.
-*   SQLException 발생 시 에러 번호는 SQLException.getErrorCode(), 에러 메시지는 SQLException.getMessage()를 통해 확인할 수 있다.
-*   에러 번호가 -21001부터 -21999 사이이면, CUBRID JDBC 메서드에서 발생하는 에러이다. 
-*   에러 번호가 -10000부터 -10999 사이이면, CAS에서 발생하는 에러를 JDBC가 전달받아 반환하는 에러이다. CAS 에러는 :ref:`cas-error`\ 를 참고한다.
-*   에러 번호가 0부터 -9999 사이이면, DB 서버에서 발생하는 에러이다. DB 서버 에러는 :ref:`database-server-error`\ 를 참고한다.
+*   모든 오류 번호는 0보다 작은 음수이다.
+*   SQLException 발생 시 오류 번호는 SQLException.getErrorCode(), 오류 메시지는 SQLException.getMessage()를 통해 확인할 수 있다.
+*   오류 번호가 -21001부터 -21999 사이이면, CUBRID JDBC 메서드에서 발생하는 오류이다. 
+*   오류 번호가 -10000부터 -10999 사이이면, CAS에서 발생하는 오류를 JDBC가 전달받아 반환하는 오류이다. CAS 오류는 :ref:`cas-error`\ 를 참고한다.
+*   오류 번호가 0부터 -9999 사이이면, DB 서버에서 발생하는 오류이다. DB 서버 오류는 :ref:`database-server-error`\ 를 참고한다.
 
 +---------------+--------------------------------------------------------------------------------------+
-| 에러 번호     | 에러 메시지                                                                          |
+| 오류 번호     | 오류 메시지                                                                          |
 +===============+======================================================================================+
 | -21001        | Index's Column is Not Object                                                         |
 +---------------+--------------------------------------------------------------------------------------+
@@ -1092,7 +1297,7 @@ DataSource 객체를 사용하여 데이터베이스에 연결할 수도 있다.
     ... 
      
     ds = new CUBRIDDataSource(); 
-    ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000&logTraceApi=true&logTraceNetwork=true"); 
+    ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000"); 
 
 CUBRIDDataSource에 대한 자세한 설명은 :ref:`jdbc-conn-datasource`\ 을 참고한다.
 
@@ -1119,7 +1324,7 @@ CUBRIDDataSource에 대한 자세한 설명은 :ref:`jdbc-conn-datasource`\ 을 
             thrCPDSMT thread[];
  
             ds = new CUBRIDDataSource();
-            ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000&logTraceApi=true&logTraceNetwork=true");
+            ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000");
  
             try {
                 thread = new thrCPDSMT[num_thread];
@@ -1311,7 +1516,7 @@ CUBRIDDataSource에 대한 자세한 설명은 :ref:`jdbc-conn-datasource`\ 을 
                stmt = conn.createStatement();
                stmt.executeUpdate("CREATE TABLE xoo ( a INT, b INT, c CHAR(10))");
      
-               preStmt = conn.prepareStatement("INSERT INTO xoo VALUES(?,?,''''100'''')");
+               preStmt = conn.prepareStatement("INSERT INTO xoo VALUES(?,?,'100')");
                preStmt.setInt (1, 1) ;
                preStmt.setInt (2, 1*10) ;
                int rst = preStmt.executeUpdate () ;
@@ -1409,7 +1614,7 @@ CUBRIDDataSource에 대한 자세한 설명은 :ref:`jdbc-conn-datasource`\ 을 
 JDBC API
 ========
 
-JDBC API에 대한 자세한 내용은 Java API Specification 문서(https://docs.oracle.com/javase/7/docs/api/)를 참고한다. 기타 Java에 대한 자세한 내용은 Java SE Documentation 문서(https://www.oracle.com/technetwork/java/javase/documentation/index.htm)를 참고한다.
+JDBC API에 대한 자세한 내용은 Java API Specification 문서(https://docs.oracle.com/javase/7/docs/api/)를 참고한다. 기타 Java에 대한 자세한 내용은 Java SE Documentation 문서(https://www.oracle.com/java/technologies/javase-documentation.html)를 참고한다.
 
 :ref:`커서 유지(cursor holdability) <cursor-holding>`\ 와 관련하여 설정을 명시하지 않으면 기본으로 커서가 유지된다.
 

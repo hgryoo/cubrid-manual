@@ -1,5 +1,5 @@
 
-:meta-keywords: cubrid administrator, cubrid dba, cubrid tools, cubrid utilities, cubrid services, cubrid processes, cubrid config, cubrid troubleshoot
+:meta-keywords: cubrid administrator, cubrid dba, cubrid tools, cubrid utilities, cubrid services, cubrid processes, cubrid config, cubrid troubleshoot, ddl audit
 :meta-description: This manual chapter covers everything needed by database administrators how to use cubrid utilities, how to monitor cubrid systems, how to troubleshoot and how to fix problems.
 
 ***********
@@ -8,7 +8,7 @@ CUBRID 운영
 
 이 장에서는 데이터베이스 관리자(**DBA**)가 CUBRID 시스템을 사용하는데 필요한 작업 방법을 설명한다.
 
-*   CUBRID 서버, 브로커 및 매니저 서버 등의 다양한 프로세스들을 구동하고 정지하는 방법을 설명한다. :doc:`/admin/control`\를 참조한다.
+*   CUBRID 서버, 브로커, 프로시저 언어 서버 및 매니저 서버 등의 다양한 프로세스들을 구동하고 정지하는 방법을 설명한다. :doc:`/admin/control`\를 참조한다.
 
 *   **cubrid** 유틸리티를 통해 데이터베이스 생성 및 삭제, 볼륨 추가와 같은 데이터베이스 관리 작업, 데이터베이스를 다른 곳으로 이동하거나 시스템 버전에 맞춰서 변경하는 마이그레이션 작업, 장애 대비를 위한 데이터베이스의 백업 및 복구 작업 등에 대해 설명한다. :doc:`/admin/admin_utils`\를 참조한다.
 
@@ -34,6 +34,10 @@ CUBRID 운영
 
     *   :ref:`cubrid broker <broker>`
 
+*   게이트웨이 유틸리티: 게이트웨이 프로세스 및 응용서버(CAS) 프로세스를 구동 및 관리한다.
+
+    *   :ref:`cubrid gateway <gateway>`
+
 *   매니저 유틸리티: 매니저 서버 프로세스를 구동 및 관리한다.
 
     *   :ref:`cubrid manager <cubrid-manager-server>`
@@ -41,6 +45,10 @@ CUBRID 운영
 *   HA 유틸리티: HA 관련 프로세스를 구동 및 관리한다.
 
     *   :ref:`cubrid heartbeat <cubrid-heartbeat>`
+
+*   PL 유틸리티: 프로시저 언어 서버를 관리한다.
+    
+    *   :ref:`cubrid pl <cubrid-pl-server>`
 
 자세한 설명은 :ref:`control-cubrid-processes` 절을 참조한다.
 
@@ -118,9 +126,12 @@ CUBRID 운영
 .. toctree::
     :maxdepth: 3
 
-    control.rst
-    db_manage.rst
-    admin_utils.rst
-    config.rst
-    systemtap.rst
-    troubleshoot.rst
+    control
+    db_manage
+    admin_utils
+    config
+    systemtap
+    scripts
+    troubleshoot
+    ddl_audit
+    error_log

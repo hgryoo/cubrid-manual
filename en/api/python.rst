@@ -31,15 +31,17 @@ To install CUBRID Python driver by compiling source code, you should have Python
 
 .. FIXME: If you do not have the package, follow the instructions stated at http://www.cubrid.org/wiki_apis/entry/install-python-development-package .
 
+#.  For building CCI Driver, GNU Developer Toolset 8 or higher is required.
+
 #.  Download the source code from https://www.cubrid.org/downloads#python.
 
 #.  Extract the archive to the desired location. ::
 
-        tar xvfz cubrid-python-src-8.4.0.0001.tar.gz
+        tar xvfz cubrid-python-11.2-latest.tar.gz
 
 #.  Navigate to the directory where you have extracted the source code. ::
 
-        cd cubrid-python-src
+        cd RB-11.0.0
 
 #.  Build the driver. At this and next step, make sure you are still under the root user. ::
 
@@ -51,7 +53,7 @@ To install CUBRID Python driver by compiling source code, you should have Python
 
 **Using a Package Manager (EasyInstall) of CUBRID Python Driver (Linux)**
 
-EasyInstall is a Python module (**easy_install**) bundled with **setuptools** that lets you automatically download, build, install, and manage Python packages. It gives you a quick way to install packages remotely by connecting to other websites via HTTP as well as connecting to the Package Index. It is somewhat analogous to the CPAN and PEAR tools for Perl and PHP, respectively. For more information about EasyInstall, see https://setuptools.readthedocs.io/en/latest/easy_install.html.
+EasyInstall is a Python module (**easy_install**) bundled with **setuptools** that lets you automatically download, build, install, and manage Python packages. It gives you a quick way to install packages remotely by connecting to other websites via HTTP as well as connecting to the Package Index. It is somewhat analogous to the CPAN and PEAR tools for Perl and PHP, respectively. For more information about EasyInstall, see https://setuptools.pypa.io/en/latest/deprecated/easy_install.html.
 
 Enter the command below to install CUBRID Python driver by using EasyInstall. ::
 
@@ -103,7 +105,7 @@ This sample program will show steps that you need to perform in order to connect
     
     .. code-block:: python
     
-        conn = CUBRIDdb.connect('CUBRID:localhost:30000:demodb:dba::')
+        conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'dba', '')
 
 For the *demodb* database, it is not required to enter any password. In a real-world scenario, you will have to provide the password to successfully connect. 
 The syntax to use the `connect <https://pythonhosted.org/CUBRID-Python/_cubrid-module.html#connect>`_ () function is as follows: ::
@@ -142,7 +144,7 @@ Now that the table is empty, insert data for the test. First, you have to obtain
     cur.execute("INSERT INTO posts (id, title, body, last_updated) VALUES (1, 'Title 1', 'Test body #1', CURRENT_TIMESTAMP)")
     conn.commit()
 
-The auto-commit in CUBRID Python driver is disabled by default. Therefore, you have to manually perform commit by using the `commit <https://pythonhosted.org/CUBRID-Python/_cubrid.connection-class.html#commit>`_ () function after executing any SQL statement. This is equivalent to executing **cur.execute("COMMIT")** . The opposite to executing commit() is executing `rollback <https://pythonhosted.org/CUBRID-Python/_cubrid.connection-class.html#rollback>`_ (), which aborts the current transaction.
+The autocommit in CUBRID Python driver is disabled by default. Therefore, you have to manually perform commit by using the `commit <https://pythonhosted.org/CUBRID-Python/_cubrid.connection-class.html#commit>`_ () function after executing any SQL statement. This is equivalent to executing **cur.execute("COMMIT")** . The opposite to executing commit() is executing `rollback <https://pythonhosted.org/CUBRID-Python/_cubrid.connection-class.html#rollback>`_ (), which aborts the current transaction.
 
 Another way to insert data is to use prepared statements. You can safely insert data into the database by defining a row that contains the parameters and passing it to the `execute <https://pythonhosted.org/CUBRID-Python/CUBRIDdb.cursors.BaseCursor-class.html#execute>`_ () function.
 
@@ -156,7 +158,7 @@ The entire script up to now looks like this:
 .. code-block:: python
 
     import CUBRIDdb
-    conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'public', '')
+    conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'dba', '')
     cur = conn.cursor()
      
     # Plain insert statement
@@ -241,6 +243,6 @@ After you have done using any cursor or connection to the database, you must rel
 Python API
 ==========
 
-Python Database API is composed of connect() module class, Connection object, Cursor object, and many other auxiliary functions. For more information, see Python DB API 2.0 Official Documentation at  https://www.python.org/dev/peps/pep-0249/.
+Python Database API is composed of connect() module class, Connection object, Cursor object, and many other auxiliary functions. For more information, see Python DB API 2.0 Official Documentation at https://peps.python.org/pep-0249/. 
 
 You can find the information about CUBRID Python API at http://ftp.cubrid.org/CUBRID_Docs/Drivers/Python/.

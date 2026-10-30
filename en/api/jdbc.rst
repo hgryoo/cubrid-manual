@@ -11,7 +11,7 @@ JDBC Driver
 JDBC Overview
 =============
 
-CUBRID JDBC driver (**cubrid_jdbc.jar**) implements an interface to enable access from applications in Java to CUBRID database server. CUBRID JDBC driver is installed in the <*directory where CUBRID is installed*>/**jdbc** directory. The driver has been developed based on the JDBC 2.0 specification and the default driver provided is complied with JDK 1.6.
+CUBRID JDBC driver (**cubrid_jdbc.jar**) implements an interface to enable access from applications in Java to CUBRID database server. CUBRID JDBC driver is installed in the <*directory where CUBRID is installed*>/**jdbc** directory. The driver has been developed based on the JDBC 2.0 specification and the default driver provided is complied with JDK 1.8.
 
 .. FIXME: To download JDBC driver or get the latest information, please visit http://www.cubrid.org/wiki_apis/entry/cubrid-jdbc-driver\ .
 
@@ -29,7 +29,7 @@ You can verify the version of JDBC driver as follows: ::
     cubrid/sql/
     cubrid/jdbc/driver/CUBRIDBlob.class
     ...
-    CUBRID-JDBC-8.3.1.1032
+    CUBRID-JDBC-11.3.0.0047
 
 **Registering CUBRID JDBC Driver**
 
@@ -55,19 +55,19 @@ Installing and Configuring JDBC
 
 **Requirements**
 
-*   JDK 1.6 or later
+*   JDK 1.8 or later
 *   CUBRID 2008 R2.0 (8.2.0) or later
 *   CUBRID JDBC driver 2008 R1.0 or later
 
 **Installing Java and Configuring Environment**
 
-You must already have Java installed and the **JAVA_HOME** environment variable configured in your system. You can download Java from the Developer Resources for Java Technology website ( https://www.oracle.com/java/technologies/ ). For more information, please see :ref:`jsp-environment-configuration`.
+You must already have Java installed and the **JAVA_HOME** environment variable configured in your system. You can download Java from the Developer Resources for Java Technology website ( https://www.oracle.com/java/technologies/downloads/#java8 ).
 
 **Configuring the environment variables for Windows**
 
-After installing Java, right-click [My Computer] and click [System Properties]. In the [Advanced] tab, click [Environment Variables]. The [Environment Variables] dialog will appear.
+After installing Java, right-click on [This PC] and select [Properties]. Then, click on [Advanced system settings] under the Related settings to open the System Properties dialog box. Click on [Environment Variables] in the [Advanced] tab to open the Environment Variables dialog box.
 
-In the [System Variables], click [New]. Enter **JAVA_HOME** and Java installation path such as C:\Program Files\Java\jdk1.6.0_13 and then click [OK].
+In the [System variables], click [New]. Enter **JAVA_HOME** as the variable name and input the Java installation path (e.g., C:\Program Files\Java\jdk1.8.0_421) as the variable value, the click [OK].
 
 .. image:: /images/image51.png
 
@@ -77,17 +77,17 @@ Of system variables, select Path and then click [Edit]. Add **%JAVA_HOME%\\bin**
 
 You can also configure **JAVA_HOME** and **PATH** values in the shell instead of using the way described above. ::
 
-    set JAVA_HOME= C:\Program Files\Java\jdk1.6.0_13
+    set JAVA_HOME= C:\Program Files\Java\jdk1.8.0_421
     set PATH=%PATH%;%JAVA_HOME%\bin
 
 **Configuring the environment variables for Linux**
 
-Specify the directory path where Java is installed (example: /usr/java/jdk1.6.0_13) as a **JAVA_HOME** environment variable and add **$JAVA_HOME/bin** to the **PATH** environment variable. ::
+Specify the directory path where Java is installed (example: /usr/java/jdk1.8.0_4211) as a **JAVA_HOME** environment variable and add **$JAVA_HOME/bin** to the **PATH** environment variable. ::
 
-    export JAVA_HOME=/usr/java/jdk1.6.0_16     #bash
+    export JAVA_HOME=/usr/java/jdk1.8.0_421       #bash
     export PATH=$JAVA_HOME/bin:$PATH           #bash
      
-    setenv JAVA_HOME /usr/java/jdk1.6.0_16     #csh
+    setenv JAVA_HOME /usr/java/jdk1.8.0_421       #csh
     set path = ($JAVA_HOME/bin $path)          #csh
 
 **Configuring JDBC Driver**
@@ -129,23 +129,29 @@ The **getConnection** method returns the **Connection** object and it is used to
      
     <property> ::= altHosts=<alternative_hosts>
                  | rcTime=<second>
-                 | loadBalance=<bool_type>
+                 | loadBalance=<balance_mode>
                  | connectTimeout=<second>
                  | queryTimeout=<second>
                  | charSet=<character_set>
                  | zeroDateTimeBehavior=<behavior_type>
-                 | logFile=<file_name>
                  | logOnException=<bool_type>
                  | logSlowQueries=<bool_type>&slowQueryThresholdMillis=<millisecond>
                  | useLazyConnection=<bool_type>
                  | useSSL=<bool_type>
-                 
+                 | clientCacheSize=<unit_size>
+                 | usePreparedStmtCache=<bool_type>
+                 | preparedStmtCacheSize=<unit_size>
+                 | preparedStmtCacheSqlLimit=<unit_size>
+                 | hold_cursor=<bool_type>
+
         <alternative_hosts> ::=
         <standby_broker1_host>:<port> [,<standby_broker2_host>:<port>]
         <behavior_type> ::= exception | round | convertToNull
         <bool_type> ::= true | false
+        <unit_size> ::= multiple of mega byte
+        <balance_mode> ::= true | false | rr | sh
 
-*   *host*: IP address or host name where the CUBRID broker is running
+*   *host*: IP address or hostname where the CUBRID broker is running
 *   *port*: The CUBRID broker port number (default value: 33,000)
 *   *db-name*: The name of the database to connect
 
@@ -159,7 +165,13 @@ The **getConnection** method returns the **Connection** object and it is used to
         .. note:: Even if there are **RW** and **RO** together in *ACCESS_MODE** setting of brokers of main host and **altHosts**, application decides the target host to access without the relation for the setting of **ACCESS_MODE**. Therefore, you should define the main host and **altHosts** as considering **ACCESS_MODE** of target brokers.
 
     *   **rcTime**: Interval time (in seconds) to try to connect active brokers during failover in the HA environment. See the below URL example.
-    *   **loadBalance**: If this value is true, the application tries to connect with main host and altHosts in random order(default value: false). 
+    *   **loadBalance**: When there are multiple hosts that a client can connect to, this is the property that selects the algorithm for determining the target host to connect to. Through load balancing, the client's connection requests can be distributed so that they are not concentrated on a specific server. (default value: false)  
+
+        The behavior for each setting is as follows:
+
+        *   **false**: This property is not applied. 
+	    *   **true or rr**: Connects to the specified hosts using the **Round-Robin** method.
+        *   **sh**: Connects to the specified hosts using the **Random(Shuffle)** method.  
 
     *   **connectTimeout**: Timeout value (in seconds) for database connection. The default value is 30 seconds. If this value is 0, it means infinite waiting. This value is also applied when internal reconnection occurs after the initial connection. The **DriverManger.setLoginTimeout** () method can be used to configure it; however, the value configured in this method will be ignored if a value is configured in the connection URL.
 
@@ -176,11 +188,12 @@ The **getConnection** method returns the **Connection** object and it is used to
         *   **round**: Converts to the minimum value allowed for a type to be returned. Exceptionally, when the value's type is TIMESTAMP, this value is rounded as '1970-01-01 00:00:00'(GST). (yyyy-mm-dd hh24:mi:ss)
         *   **convertToNull**: Converts to **NULL**.
 
-    *   **logFile**: The name of a log file for debugging (default value: cubrid_jdbc.log). If a path is not configured, it is stored the location where applications are running.
-    *   **logOnException**: Whether to log exception handling for debugging (default value: false)
-    *   **logSlowQueries**: Whether to log slow queries for debugging (default value: false)
+    *   **logOnException**: Whether to log exception handling for debugging (default value: true). For the output destination and the level, see :ref:`jdbc-logging-conf`.
+    *   **logSlowQueries**: Whether to log slow queries for debugging (default value: false). For the output destination and the level, see :ref:`jdbc-logging-conf`.
 
         *   **slowQueryThresholdMillis**: Timeout value (in milliseconds) of slow queries (default value: 60,000).
+
+    .. note:: The **logFile** property is no longer used. Even if it remains in a connection URL it is ignored without an error, and the output destination of driver logs is determined by the **java.util.logging** configuration of the application (see :ref:`jdbc-logging-conf`).
 
     *   **useLazyConnection**: If this is true, it returns success without connecting to the broker when user requests the connection, and it connects to the broker after calling prepare or execute function(default: false). If this value is true, it can prevent from access delay or failure as many application clients restart simultaniously and create connection pools.
 
@@ -188,6 +201,16 @@ The **getConnection** method returns the **Connection** object and it is used to
 
        *   Packet encryption: useSSL = true
        *   Plain text: useSSL = false
+
+    *  **clientCacheSize**: cache size for result-cache
+       *   the unit is multiple of mega-byte
+       *   the range is 1 ~ 1024 (1 mega-byte to 1 giga-byte)
+       *   the default value is 1
+
+    *  **usePreparedStmtCache**: Prepared Statement Cache mode (Default: false)
+    *  **preparedStmtCacheSize**: If usePreparedStmtCache is TRUE, the number of SQLs that can be cached (Default:25, Min:1, Max:2147483647)
+    *  **preparedStmtCacheSqlLimit**: If usePreparedStmtCache is TRUE, length of SQL that can be cached (Default:256, Min:1, Max:2147483647)
+    *  **hold_cursor**: Cursor holdability setting (default: true). If this value is false, CLOSE_CURSORS_AT_COMMIT is set, and if true, HOLD_CURSORS_OVER_COMMIT is set. For details, see :ref:`cursor-holding`\ .
 
 **Example 1** ::
 
@@ -218,6 +241,15 @@ The **getConnection** method returns the **Connection** object and it is used to
     --connection URL string when useSSL property specified for encrypted connection
     URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?useSSL=true
 
+    --connection URL string when clientCacheSize property specified for result-cache
+    URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?clientCacheSize=1
+
+    --connection URL string when usePreparedStmtCache property specified for prepared stament cache
+    URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?usePreparedStmtCache=true&preparedStmtCacheSize=100&preparedStmtCacheSqlLimit=1024"
+    
+    --connection URL string when hold_cursor property specified for cursor holdability
+    URL=jdbc:CUBRID:192.168.0.1:33000:demodb:public::?hold_cursor=true    
+
 **Example 2**
 
 .. code-block:: java
@@ -241,7 +273,7 @@ The **getConnection** method returns the **Connection** object and it is used to
 
 .. note::
 
-    *   Because a colon (:) and a question mark are used as a separator in the URL string, it is not allowed to use them as parts of a password. To use them in a password, you must specify a user name (*user-id*) and a password (*password*) as a separate argument in the **getConnection** method.
+    *   Because a colon (:) and a question mark are used as a separator in the URL string, it is not allowed to use them as parts of a password. To use them in a password, you must specify a username (*user-id*) and a password (*password*) as a separate argument in the **getConnection** method.
     *   The database connection in thread-based programming must be used independently each other.
     *   The rollback method requesting transaction rollback will be ended after a server completes the rollback job.
     *   In autocommit mode, the transaction is not committed if all results are not fetched after running the SELECT statement. Therefore, although in autocommit mode, you should end the transaction by executing COMMIT or ROLLBACK if some error occurs during fetching for the resultset.
@@ -252,6 +284,54 @@ The **getConnection** method returns the **Connection** object and it is used to
 
        *   useSSL=true, connection request will be rejected when the broker is in 'normal mode' (**cubrid_broker.conf**: SSL = OFF)
        *   useSSL=false, connection request will be rejected when the broker is in 'encryption mode' (**cubrid_broker.conf**: SSL = ON)
+
+    * The **clientCacheSize** works only when **JDBC_CACHE** or **JDBC_CACHE_ONLY_HINT** of broker configure is **ON**.
+
+.. _jdbc-logging-conf:
+
+Configuring Driver Logs
+-----------------------
+
+Driver logs written by **logOnException** and **logSlowQueries** are emitted through **java.util.logging**. Where the logs are stored is determined by the **java.util.logging** configuration of the application; the driver does not create a log file by itself.
+
+Logs are emitted by the **cubrid.jdbc.jci.UConnection** logger, and the configuration is done on its parent logger, **cubrid.jdbc**. The level differs by the kind of log.
+
+================= ========== ==============================================================
+Log               Level      Content
+================= ========== ==============================================================
+Exception dump    FINE       Exception class and stack trace
+Slow query        FINEST     CAS information, elapsed time, SQL statement, bound values
+================= ========== ==============================================================
+
+Both levels are lower than **INFO**, the default threshold of the JDK, so nothing is printed unless the level of **cubrid.jdbc** is set.
+
+Exception dumps are printed as soon as the level is set, because **logOnException** defaults to **true**. To stop them, specify **logOnException=false** in the connection URL. Slow queries are different: the driver has to measure the elapsed time of every statement, so **logSlowQueries** must be set to **true**.
+
+::
+
+    handlers = java.util.logging.FileHandler
+    cubrid.jdbc.level = FINEST
+    java.util.logging.FileHandler.pattern = /var/log/myapp/cubrid_jdbc%g.log
+    java.util.logging.FileHandler.limit = 10485760
+    java.util.logging.FileHandler.count = 10
+    java.util.logging.FileHandler.append = true
+    java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
+
+**%g** is the generation number of a log file. With the configuration above, files are created from cubrid_jdbc0.log to cubrid_jdbc9.log, and the most recent log is always **cubrid_jdbc0.log**. If **limit** is not specified, the size of a log file is not limited.
+
+The configuration file written as above is specified as follows.
+
+::
+
+    java -Djava.util.logging.config.file=logging.properties -jar app.jar
+
+Setting **cubrid.jdbc.level** to **FINE** prints exception dumps only; setting it to **FINEST** prints slow queries as well.
+
+.. note::
+
+    *   The default formatter of **FileHandler** is **XMLFormatter**. Unless **formatter** is specified as in the example above, logs are written in XML format instead of line-oriented text.
+    *   A slow query log contains the SQL statement and the bound values as they are. Check the access permission of the log file when setting **cubrid.jdbc.level** to **FINEST**.
+    *   To separate driver logs from the logs of the application, specify **cubrid.jdbc.handlers** and set **cubrid.jdbc.useParentHandlers** to **false**.
 
 .. _jdbc-conn-datasource:
 
@@ -273,7 +353,7 @@ To create a DataSource object, call as follows.
 
 **Setting Connection Properties**
 
-**Connection properties** are used to configure connections between datasource and CUBRID DBMS. General properties are a DB name, a host name, a port number, a user name and a password.
+**Connection properties** are used to configure connections between datasource and CUBRID DBMS. General properties are a DB name, a hostname, a port number, a username and a password.
 
 To set or get the values of properties, use below methods which is implemented in cubrid.jdbc.driver.CUBRIDDataSource.
 
@@ -316,7 +396,7 @@ Especially, use a setURL() method to set the property through a URL string. Rega
     ... 
     CUBRIDDataSource ds = null;
     ds = new CUBRIDDataSource(); 
-    ds.setUrl("jdbc:cubrid:10.113.153.144:55300:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000&logTraceApi=true&logTraceNetwork=true"); 
+    ds.setUrl("jdbc:cubrid:192.168.0.1:55300:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000"); 
 
 Call getConnection method to get a connection object from DataSource.
 
@@ -403,26 +483,152 @@ When the methods above are called, the ResultSet consisting of 14 columns listed
 
 .. code-block:: java
 
-    ResultSet rs = null;
-    DatabaseMetaData dbmd = conn.getMetaData();
+	import java.sql.*;
+	import java.lang.*;
+	import cubrid.jdbc.driver.*;
 
-    System.out.println("\n===== Test getImportedKeys");
-    System.out.println("=====");
-    rs = dbmd.getImportedKeys(null, null, "pk_table");
-    Test.printFkInfo(rs);
-    rs.close();
-     
-    System.out.println("\n===== Test getExportedKeys");
-    System.out.println("=====");
-    rs = dbmd.getExportedKeys(null, null, "fk_table");
-    Test.printFkInfo(rs);
-    rs.close();
-     
-    System.out.println("\n===== Test getCrossReference");
-    System.out.println("=====");
-    rs = dbmd.getCrossReference(null, null, "pk_table", null, null, "fk_table");
-    Test.printFkInfo(rs);
-    rs.close();
+
+	public class Metadata_Sample
+	{
+		public static String getRuleName(String rule) {
+			int r = Integer.parseInt(rule);
+			switch(r) {
+				case DatabaseMetaData.importedKeyCascade:
+					return "cascade (" + rule + ")";
+				case DatabaseMetaData.importedKeyRestrict:
+					return "restrict (" + rule + ")";
+				case DatabaseMetaData.importedKeySetNull:
+					return "set null (" + rule + ")";
+				case DatabaseMetaData.importedKeyNoAction:
+					return "no action (" + rule + ")";
+				case DatabaseMetaData.importedKeySetDefault:
+					return "set default (" + rule + ")";
+				default:
+					return "unknown (" + rule + ")";
+			}
+		}
+
+		public static String getDeferrabilityName(String deferrability) {
+			int d = Integer.parseInt(deferrability);
+			switch(d) {
+				case DatabaseMetaData.importedKeyInitiallyDeferred:
+					return "initially deferred (" + deferrability + ")";
+				case DatabaseMetaData.importedKeyInitiallyImmediate:
+					return "initially immediate (" + deferrability + ")";
+				case DatabaseMetaData.importedKeyNotDeferrable:
+					return "not deferrable (" + deferrability + ")";
+				default:
+					return "unknown (" + deferrability + ")";
+			}
+		}
+
+		public static void printFkInfo(ResultSet rs) throws Exception {
+			while(rs.next()) {
+				System.out.println("\n<" + rs.getString("FK_NAME") + ">");
+				System.out.println("01. PKTABLE_CAT   : " + rs.getString("PKTABLE_CAT"));
+				System.out.println("02. PKTABLE_SCHEM : " + rs.getString("PKTABLE_SCHEM"));
+				System.out.println("03. PKTABLE_NAME  : " + rs.getString("PKTABLE_NAME"));
+				System.out.println("04. PKCOLUMN_NAME : " + rs.getString("PKCOLUMN_NAME"));
+				System.out.println("05. FKTABLE_CAT   : " + rs.getString("FKTABLE_CAT"));
+				System.out.println("06. FKTABLE_SCHEM : " + rs.getString("FKTABLE_SCHEM"));
+				System.out.println("07. FKTABLE_NAME  : " + rs.getString("FKTABLE_NAME"));
+				System.out.println("08. FKCOLUMN_NAME : " + rs.getString("FKCOLUMN_NAME"));
+				System.out.println("09. KEY_SEQ       : " + rs.getString("KEY_SEQ"));
+				System.out.println("10. UPDATE_RULE   : " + getRuleName(rs.getString("UPDATE_RULE")));
+				System.out.println("11. DELETE_RULE   : " + getRuleName(rs.getString("DELETE_RULE")));
+				System.out.println("12. FK_NAME       : " + rs.getString("FK_NAME"));
+				System.out.println("13. PK_NAME       : " + rs.getString("PK_NAME"));
+				System.out.println("14. DEFERRABILITY : " + getDeferrabilityName(rs.getString("DEFERRABILITY")));
+			}
+		}
+		public static void main (String args []) {
+			Connection conn = null;
+			Statement stmt;
+			DatabaseMetaData dbmd;
+			ResultSet rs;
+
+			try {
+				conn = (CUBRIDConnection)DriverManager.getConnection("jdbc:cubrid:localhost:33000:demodb:::", "dba", "");
+
+				stmt = conn.createStatement();
+
+				dbmd = conn.getMetaData();
+
+				stmt.executeUpdate("drop table if exists refer_1");
+				stmt.executeUpdate("drop table if exists refer_2");
+				stmt.executeUpdate("drop table if exists referred_1");
+				stmt.executeUpdate("drop table if exists referred_2");
+
+				stmt.executeUpdate("create table referred_1 ("
+						+ "pk1 int,"
+						+ "pk2 int,"
+						+ "primary key (pk1, pk2))");
+
+				stmt.executeUpdate("create table referred_2 ("
+						+ "pk int primary key)");
+
+				stmt.executeUpdate("create table refer_1 ("
+						+ "pk int primary key,"
+						+ "fk1 int,"
+						+ "fk2 int,"
+						+ "fk3 int,"
+						+ "constraint refer_1_fk1_2_fk foreign key (fk1, fk2) references referred_1(pk1, pk2),"
+						+ "constraint refer_1_fk3_fk foreign key (fk3) references referred_2(pk))");
+
+				stmt.executeUpdate("create table refer_2 ("
+						+ "pk int primary key,"
+						+ "fk1 int,"
+						+ "fk2 int,"
+						+ "fk3 int,"
+						+ "constraint refer_2_fk1_2_fk foreign key (fk1, fk2) references referred_1(pk1, pk2) "
+						+ "on update set null on delete no action,"
+						+ "constraint refer_2_fk3_fk foreign key (fk3) references referred_2(pk) "
+						+ "on update restrict on delete cascade)");
+
+				System.out.println("\n============== getImportedKeys() ==================");
+
+				rs = dbmd.getImportedKeys(null, null, "refer_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getImportedKeys(null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+
+				System.out.println("\n=============== getExportedKeys() =================");
+				rs = dbmd.getExportedKeys(null, null, "referred_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getExportedKeys(null, null, "referred_2");
+				printFkInfo(rs);
+				rs.close();
+
+				System.out.println("\n=============== getCrossReference() =================");
+				rs = dbmd.getCrossReference(null, null, "referred_1", null, null, "refer_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "referred_1", null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "referred_2", null, null, "refer_1");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "referred_2", null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+
+				rs = dbmd.getCrossReference(null, null, "refer_1", null, null, "refer_2");
+				printFkInfo(rs);
+				rs.close();
+			} catch (Exception e) {
+			   e.printStackTrace();
+			}
+		}
+	}
 
 Using Object Identifiers (OIDs) and Collections
 -----------------------------------------------
@@ -604,7 +810,7 @@ The line "a" in the example 1 is where data of collection types (**SET**, **MULT
                Connection con = DriverManager.getConnection(url,user,passwd);
                Statement stmt = con.createStatement();
                CUBRIDResultSet rs = (CUBRIDResultSet) stmt.executeQuery(sql);
-               CUBRIDResultSetMetaData rsmd = (CUBRIDResultSetMetaData) rs.getMeta Data();
+               CUBRIDResultSetMetaData rsmd = (CUBRIDResultSetMetaData) rs.getMetaData();
                int numbOfColumn = rsmd.getColumnCount();
                while (rs.next ()) {
                    for (int j=1; j<=numbOfColumn; j++ ) {
@@ -633,7 +839,7 @@ The line "a" in the example 1 is where data of collection types (**SET**, **MULT
     import java.lang.*;
     import cubrid.sql.*;
     import cubrid.jdbc.driver.*;
-     
+
     // create class collection_test(
     // settest set(integer),
     // multisettest multiset(integer),
@@ -643,45 +849,42 @@ The line "a" in the example 1 is where data of collection types (**SET**, **MULT
     // insert into collection_test values({1,2,3},{1,2,3},{1,2,3});
     // insert into collection_test values({2,3,4},{2,3,4},{2,3,4});
     // insert into collection_test values({3,4,5},{3,4,5},{3,4,5});
-     
-    class SetOP_Sample
-    {
-       public static void main (String args [])
-       {
-           String url = "jdbc:cubrid:127.0.0.1:33000:demodb:public::";
-           String user = "";
-           String passwd = "";
-           String sql = "select collection_test from collection_test";
-           try {
-               Class.forName("cubrid.jdbc.driver.CUBRIDDriver");
-           } catch(Exception e){
-               e.printStackTrace();
-           }
-           try {
-               CUBRIDConnection con =(CUBRIDConnection)
-               DriverManager.getConnection(url,user,passwd);
-               Statement stmt = con.createStatement();
-               CUBRIDResultSet rs = (CUBRIDResultSet)stmt.executeQuery(sql);
-               while (rs.next ()) {
-                   CUBRIDOID oid = rs.getOID(1);
-                   oid.addToSet("settest",new Integer(10));
-                   oid.addToSet("multisettest",new Integer(20));
-                   oid.addToSequence("listtest",1,new Integer(30));
-                   oid.addToSequence("listtest",100,new Integer(100));
-                   oid.putIntoSequence("listtest",99,new Integer(99));
-                   oid.removeFromSet("settest",new Integer(1));
-                   oid.removeFromSet("multisettest",new Integer(2));
-                   oid.removeFromSequence("listtest",99);
-                   oid.removeFromSequence("listtest",1);
-               }
-               con.commit();
-               rs.close();
-               stmt.close();
-               con.close();
-           } catch(SQLException e) {
-               e.printStackTrace();
-           }
-       }
+
+    class SetOP_Sample {
+	    public static void main(String args[]) {
+		    String url = "jdbc:cubrid:127.0.0.1:33000:demodb:public::";
+		    String user = "";
+		    String passwd = "";
+		    String sql = "select collection_test from collection_test";
+		    try {
+			    Class.forName("cubrid.jdbc.driver.CUBRIDDriver");
+		    } catch (Exception e) {
+			    e.printStackTrace();
+		    }
+		    try {
+			    CUBRIDConnection con = (CUBRIDConnection) DriverManager.getConnection(url, user, passwd);
+			    Statement stmt = con.createStatement();
+			    CUBRIDResultSet rs = (CUBRIDResultSet) stmt.executeQuery(sql);
+			    while (rs.next()) {
+				    CUBRIDOID oid = rs.getOID(1);
+				    oid.addToSet("settest", Integer.valueOf(10));
+				    oid.addToSet("multisettest", Integer.valueOf(20));
+				    oid.addToSequence("listtest", 1, Integer.valueOf(30));
+				    oid.addToSequence("listtest", 100, Integer.valueOf(100));
+				    oid.putIntoSequence("listtest", 99, Integer.valueOf(99));
+				    oid.removeFromSet("settest", Integer.valueOf(1));
+				    oid.removeFromSet("multisettest", Integer.valueOf(2));
+				    oid.removeFromSequence("listtest", 99);
+				    oid.removeFromSequence("listtest", 1);
+			    }
+			    con.commit();
+			    rs.close();
+			    stmt.close();
+			    con.close();
+		    } catch (SQLException e) {
+			    e.printStackTrace();
+		    }
+	    }
     }
 
 Getting Auto Increment Column Value
@@ -859,7 +1062,7 @@ You can get the **LOB** type data in the following ways.
      
     // Getting data directly from ResetSet
     PrepareStatement pstmt1 = conn.prepareStatement("SELECT content FROM doc_t WHERE doc_id = ? ");
-    pstmt2.setString(1, "doc-10");
+    pstmt1.setString(1, "doc-10");
     ResultSet rs = pstmt1.executeQuery();
     
     while (rs.next())
@@ -1071,7 +1274,7 @@ To connect to CUBRID, load the JDBC driver by using the **forName** () method of
 **Connecting to Database**
 
 After loading the JDBC driver, use the **getConnection** () method of the **DriverManager** to connect to the database. 
-To create a **Connection** object, you must specify information such as the URL which indicates the location of a database, user name, password, etc. For more information, see :ref:`jdbc-connection-conf`.
+To create a **Connection** object, you must specify information such as the URL which indicates the location of a database, username, password, etc. For more information, see :ref:`jdbc-connection-conf`.
 
 .. code-block:: java
 
@@ -1089,7 +1292,7 @@ To connect to a database, it is possible to use a DataSource object, too. If you
     ... 
      
     ds = new CUBRIDDataSource(); 
-    ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000&logTraceApi=true&logTraceNetwork=true"); 
+    ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000"); 
 
 For details about CUBRIDDataSource, see :ref:`jdbc-conn-datasource`.
 
@@ -1116,7 +1319,7 @@ Codes are separated with DataSourceMT.java and DataSourceExample.java.
             thrCPDSMT thread[];
  
             ds = new CUBRIDDataSource();
-            ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000&logTraceApi=true&logTraceNetwork=true");
+            ds.setURL("jdbc:cubrid:127.0.0.1:33000:demodb:::?charset=utf8&logSlowQueries=true&slowQueryThresholdMillis=1000");
  
             try {
                 thread = new thrCPDSMT[num_thread];
@@ -1249,7 +1452,7 @@ You can use the **next** () method to process the next row from the **ResultSet*
 
 .. note::
 
-    In the version of 2008 R4.x or before, if you execute commit after query execution, **ResultSet** will be automatically closed. Therefore, you must not use **ResultSet** after commit. Generally CUBRID is executed in auto-commit mode; if you do not want for CUBRID being executed in auto-commit mode, you should specify **conn.setAutocommit(false);** in the code.
+    In the version of 2008 R4.x or before, if you execute commit after query execution, **ResultSet** will be automatically closed. Therefore, you must not use **ResultSet** after commit. Generally CUBRID is executed in autocommit mode; if you do not want for CUBRID being executed in autocommit mode, you should specify **conn.setAutocommit(false);** in the code.
     
     From 9.1, :ref:`Cursor holdability <cursor-holding>` is supported; therefore, you can use **ResultSet** after commit.
 
@@ -1308,7 +1511,7 @@ The following is an example which connects to *demodb*, creates a table, execute
                stmt = conn.createStatement();
                stmt.executeUpdate("CREATE TABLE xoo ( a INT, b INT, c CHAR(10))");
      
-               preStmt = conn.prepareStatement("INSERT INTO xoo VALUES(?,?,''''100'''')");
+               preStmt = conn.prepareStatement("INSERT INTO xoo VALUES(?,?,'100')");
                preStmt.setInt (1, 1) ;
                preStmt.setInt (2, 1*10) ;
                int rst = preStmt.executeUpdate () ;
@@ -1406,7 +1609,7 @@ The following example shows how to execute the **INSERT** statement by connectin
 JDBC API
 ========
 
-For details about JDBC API, see Java API Specification (https://docs.oracle.com/javase/7/docs/api/) and for details about Java, see Java SE Documentation (https://www.oracle.com/technetwork/java/javase/documentation/index.htm).
+For details about JDBC API, see Java API Specification (https://docs.oracle.com/javase/7/docs/api/) and for details about Java, see Java SE Documentation (https://www.oracle.com/java/technologies/javase-documentation.html).
 
 If :ref:`cursor holdability <cursor-holding>` is not configured, a cursor is maintained by default.
 

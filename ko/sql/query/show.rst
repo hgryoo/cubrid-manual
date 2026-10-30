@@ -17,9 +17,9 @@ DESC, DESCRIBE
 
 ::
 
-    DESC tbl_name;
-    DESCRIBE tbl_name;
-    
+    DESC [schema_name.]table_name;
+    DESCRIBE [schema_name.]table_name;
+
 EXPLAIN
 =======
 
@@ -27,16 +27,18 @@ EXPLAIN
 
 ::
 
-    EXPLAIN tbl_name;
+    EXPLAIN [schema_name.]table_name;
 
 .. _show-tables-statement:
 
 SHOW TABLES
 ===========
 
-데이터베이스의 전체 테이블 이름 목록을 출력한다. 결과 칼럼의 이름은 *tables_in_<데이터베이스 이름>* 이 되며 하나의 칼럼을 지닌다. **LIKE** 절을 사용하면 이와 매칭되는 테이블 이름을 검색할 수 있으며, **WHERE** 절을 사용하면 좀더 일반적인 조건으로 테이블 이름을 검색할 수 있다. **SHOW FULL TABLES** 는 *table_type* 이라는 이름의 두 번째 칼럼을 함께 출력하며, 테이블은 **BASE TABLE**, 뷰는 **VIEW** 라는 값을 가진다. ::
+데이터베이스의 전체 테이블 이름 목록을 출력한다. 결과 칼럼의 이름은 *tables_in_<데이터베이스 이름>* 이 되며 하나의 칼럼을 지닌다. **LIKE** 절을 사용하면 이와 매칭되는 테이블 이름을 검색할 수 있으며, **WHERE** 절을 사용하면 좀더 일반적인 조건으로 테이블 이름을 검색할 수 있다. **SHOW FULL TABLES** 는 *owner* 칼럼과 *table_type* 칼럼을 함께 출력한다. *owner* 칼럼은 소유자 이름을 값으로 가진다. *table_type* 칼럼은 테이블이면 **BASE TABLE**, 뷰이면 **VIEW**\를 값으로 가진다.
 
-    SHOW [FULL] TABLES [LIKE 'pattern' | WHERE expr]
+::
+
+    SHOW [ FULL ] TABLES [ LIKE 'pattern' | WHERE expr ];
 
 다음은 이 구문을 수행한 예이다.
 
@@ -62,45 +64,45 @@ SHOW TABLES
 .. code-block:: sql
 
     SHOW FULL TABLES;
-    
+
 ::
 
-      Tables_in_demodb     Table_type
-    ============================================
-      'athlete'             'BASE TABLE'
-      'code'                'BASE TABLE'
-      'event'               'BASE TABLE'
-      'game'                'BASE TABLE'
-      'history'             'BASE TABLE'
-      'nation'              'BASE TABLE'
-      'olympic'             'BASE TABLE'
-      'participant'         'BASE TABLE'
-      'record'              'BASE TABLE'
-      'stadium'             'BASE TABLE'
-     
+      Tables_in_demodb      Owner                 Table_type
+    ==================================================================
+      'athlete'             'PUBLIC'              'BASE TABLE'
+      'code'                'PUBLIC'              'BASE TABLE'
+      'event'               'PUBLIC'              'BASE TABLE'
+      'game'                'PUBLIC'              'BASE TABLE'
+      'history'             'PUBLIC'              'BASE TABLE'
+      'nation'              'PUBLIC'              'BASE TABLE'
+      'olympic'             'PUBLIC'              'BASE TABLE'
+      'participant'         'PUBLIC'              'BASE TABLE'
+      'record'              'PUBLIC'              'BASE TABLE'
+      'stadium'             'PUBLIC'              'BASE TABLE'
+
 .. code-block:: sql
 
     SHOW FULL TABLES LIKE '%c%';
-    
+
 ::
 
-      Tables_in_demodb      Table_type
-    ============================================
-      'code'                'BASE TABLE'
-      'olympic'             'BASE TABLE'
-      'participant'         'BASE TABLE'
-      'record'              'BASE TABLE'
-     
+      Tables_in_demodb      Owner                 Table_type
+    ==================================================================
+      'code'                'PUBLIC'              'BASE TABLE'
+      'olympic'             'PUBLIC'              'BASE TABLE'
+      'participant'         'PUBLIC'              'BASE TABLE'
+      'record'              'PUBLIC'              'BASE TABLE'
+
 .. code-block:: sql
 
     SHOW FULL TABLES WHERE table_type = 'BASE TABLE' and TABLES_IN_demodb LIKE '%co%';
-    
+
 ::
 
-      Tables_in_demodb      Table_type
-    ============================================
-      'code'                'BASE TABLE'
-      'record'              'BASE TABLE'
+      Tables_in_demodb      Owner                 Table_type
+    ==================================================================
+      'code'                'PUBLIC'              'BASE TABLE'
+      'record'              'PUBLIC'              'BASE TABLE'
 
 .. _show-columns-statement:
 
@@ -111,11 +113,9 @@ SHOW COLUMNS
 
 ::
 
-    SHOW [FULL] COLUMNS {FROM | IN} tbl_name [LIKE 'pattern' | WHERE expr];
+    SHOW [FULL] COLUMNS (FROM | IN) [schema_name.]table_name [LIKE 'pattern' | WHERE expr];
 
 **FULL** 키워드를 사용하면  **collation** 및 **comment** 를 추가로 출력한다.
-
-**SHOW FIELDS** 는 **SHOW COLUMNS** 와 같은 구문이다.
 
 **DESCRIBE** (또는 줄여서 **DESC**) 문과 **EXPLAIN** 문은 **SHOW COLUMNS**\ 와 같은 정보를 제공하지만, LIKE 절 또는 WHERE 절은 지원하지 않는다.
 
@@ -193,7 +193,7 @@ SHOW INDEX
 
 ::
 
-    SHOW {INDEX | INDEXES | KEYS } {FROM | IN} tbl_name;
+    SHOW (INDEX | INDEXES | KEYS) (FROM | IN) [schema_name.]table_name;
 
 해당 질의는 다음과 같은 칼럼을 가진다. 
 
@@ -208,7 +208,7 @@ Key_name                            VARCHAR         인덱스 이름
 Seq_in_index                        INTEGER         인덱스에 있는 칼럼의 일련번호. 1부터 시작한다.
 Column_name                         VARCHAR         칼럼 이름
 Collation                           VARCHAR         칼럼이 인덱스에서 정렬되는 방법. 'A'는 오름차순(Ascending), **NULL** 은 비정렬을 의미한다.
-Cardinality                         INTEGER         인덱스에서 유일한 값의 개수를 측정한 수치. 카디널리티가 높을수록 인덱스를 이용할 기회가 높아진다. 
+Cardinality                         INTEGER         인덱스에서 고유한 값의 개수를 측정한 수치. 카디널리티가 높을수록 해당 인덱스를 선택 가능성이 높아진다. 
                                                     이 값은 **SHOW INDEX** 가 실행되면 매번 업데이트된다. 이 값은 근사치임에 유의한다.
 Sub_part                            INTEGER         칼럼의 일부만 인덱스된 경우 인덱스된 문자의 바이트 수. 칼럼 전체가 인덱스되면 **NULL** 이다.
 Packed                                              키가 어떻게 팩되었는지(packed)를 나타냄. 팩되지 않은 경우 **NULL**. 현재 지원 안 함.
@@ -227,9 +227,9 @@ Visible                             VARCHAR         인덱스의 가시성을 �
     
 ::
 
-       Table     Non_unique   Key_name       Seq_in_index  Column_name    Collation     Cardinality   Sub_part  Packed   Null   Index_type  Func   Comment   Visible
-    ======================================================================================================================================================================
-     'athlete'     0      'pk_athlete_code'     1          'code'           'A'           6677          NULL      NULL    'NO'    'BTREE'     NULL   NULL       'YES
+      Table             Non_unique  Key_name           Seq_in_index  Column_name  Collation  Cardinality  Sub_part  Packed  Null  Index_type  func  Comment  Visible
+    =================================================================================================================================================================
+      'public.athlete'           0  'pk_athlete_code'             1  'code'       'A'               6677      NULL  NULL    'NO'  'BTREE'     NULL  NULL     'YES'
 
 .. code-block:: sql
 
@@ -246,16 +246,16 @@ Visible                             VARCHAR         인덱스의 가시성을 �
     
 ::
 
-      Table  Non_unique  Key_name       Seq_in_index  Column_name  Collation  Cardinality     Sub_part  Packed  Null    Index_type   Func   Comment   Visible
-    =========================================================================================================================================================
-      'tbl1'          1  'i_tbl1_i1'               1  'i1'         'D'                  0         NULL    NULL    'YES'   'BTREE'      NULL   NULL       'YES'
-      'tbl1'          1  'i_tbl1_i1_s1'            1  'i1'         'A'                  0         NULL    NULL    'YES'   'BTREE'      NULL   NULL       'YES'
-      'tbl1'          1  'i_tbl1_i1_s1'            2  's1'         'A'                  0         NULL    NULL    'YES'   'BTREE'      NULL   NULL       'YES'
-      'tbl1'          0  'i_tbl1_i2_s2'            1  'i2'         'A'                  0         NULL    NULL    'NO'    'BTREE'      NULL   NULL       'YES'
-      'tbl1'          0  'i_tbl1_i2_s2'            2  's2'         'A'                  0         NULL    NULL    'YES'   'BTREE'      NULL   NULL       'YES'
-      'tbl1'          1  'i_tbl1_s1'               1  's1'         'A'                  0         NULL    NULL    'YES'   'BTREE'      NULL   NULL       'YES'
-      'tbl1'          0  'u_tbl1_i3'               1  'i3'         'A'                  0         NULL    NULL    'YES'   'BTREE'      NULL   NULL       'YES'
-      'tbl1'          0  'u_tbl1_s3'               1  's3'         'A'                  0         NULL    NULL    'YES'   'BTREE'      NULL   NULL       'YES'
+      Table          Non_unique  Key_name        Seq_in_index  Column_name  Collation  Cardinality  Sub_part  Packed  Null   Index_type  Func  Comment  Visible
+    =============================================================================================================================================================
+      'public.tbl1'           1  'i_tbl1_i1'                1  'i1'         'D'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           1  'i_tbl1_i1_s1'             1  'i1'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           1  'i_tbl1_i1_s1'             2  's1'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           0  'i_tbl1_i2_s2'             1  'i2'         'A'                  0      NULL  NULL    'NO'   'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           0  'i_tbl1_i2_s2'             2  's2'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           1  'i_tbl1_s1'                1  's1'         'A'                  0         7  NULL    'YES'  'BTREE'     NULL  NULL     'NO'
+      'public.tbl1'           0  'u_tbl1_i3'                1  'i3'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           0  'u_tbl1_s3'                1  's3'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
 
 .. _show-collation-statement:
  
@@ -266,7 +266,7 @@ SHOW COLLATION
 
 ::
 
-    SHOW COLLATION [ LIKE 'pattern' ];
+    SHOW COLLATION [LIKE 'pattern'];
 
 해당 질의는 다음과 같은 칼럼을 가진다.
 
@@ -333,7 +333,7 @@ SHOW TIMEZONES
 
 ::
 
-    SHOW [FULL] TIMEZONES [ LIKE 'pattern' ];
+    SHOW [FULL] TIMEZONES [LIKE 'pattern'];
 
 FULL이 명시되지 않으면 타임 존의 영역 이름을 가진 하나의 칼럼을 출력한다. 칼럼의 이름은 timezone_region이다.
 
@@ -350,11 +350,11 @@ dst_offset          VARCHAR(32)     일광 절약 시간을 고려한 타임존 
 dst_abbreviation    VARCHAR(32)     일광 절약 시간이 적용된 영역의 약어
 =================== =============== ===================================================
 
-두 번째, 세 번째, 네 번째 칼럼에서 출력되는 정보는 현재 날짜와 시간에 관한 것이다.
+region_offset, dst_offset, dst_abbreviation 값은 현재 날짜와 시간을 기준으로 출력된다.
 
 타임 존 영역이 일광 절약 시간(daylight saving time) 규칙을 적용하지 않는다면, dst_offset과 dst_abbreviation 값은 NULL 값이 된다.
  
-현재의 날짜에 일광 절약 시간이 적용되지 않는다면 dst_offset 값은 0이 되고 dst_abbreviation 값은 빈 문자열이 된다.
+현재의 날짜에 일광 절약 시간이 적용되지 않으면 dst_offset 값은 '0'이 되고 dst_abbreviation 값은 빈 문자열('')이 된다.
 
 WHERE 조건 없는 LIKE 조건은 첫 번째 칼럼에 적용된다. WHERE 조건은 결과를 필터링하기 위해 사용될 수 있다.
 
@@ -385,7 +385,7 @@ WHERE 조건 없는 LIKE 조건은 첫 번째 칼럼에 적용된다. WHERE 조�
 
 .. code-block:: sql
 
-    SHOW [FULL] TIMEZONES [ LIKE 'pattern' ];
+    SHOW FULL TIMEZONES;
 
 ::
 
@@ -425,9 +425,11 @@ WHERE 조건 없는 LIKE 조건은 첫 번째 칼럼에 적용된다. WHERE 조�
 SHOW GRANTS
 ===========
 
-데이터베이스의 사용자 계정에 부여된 권한을 출력한다. ::
+데이터베이스의 사용자 계정에 부여된 권한을 출력한다.
 
-    SHOW GRANTS FOR 'user';
+::
+
+    SHOW GRANTS FOR user_name;
     
 다음은 이 구문을 수행한 예이다.
 
@@ -443,7 +445,7 @@ SHOW GRANTS
 
       Grants for USER1
     ======================
-      'GRANT INSERT, SELECT ON testgrant TO USER1'
+      'GRANT INSERT, SELECT ON dba.testgrant TO USER1'
 
 .. _show-create-table-statement:
 
@@ -452,7 +454,7 @@ SHOW CREATE TABLE
 
 테이블 이름을 지정하면 해당 테이블의 **CREATE TABLE** 문을 출력한다. ::
 
-    SHOW CREATE TABLE table_name;
+    SHOW CREATE TABLE [schema_name.]table_name;
 
 .. code-block:: sql
 
@@ -462,12 +464,9 @@ SHOW CREATE TABLE
 
       TABLE                 CREATE TABLE
     ============================================
-      'nation'               'CREATE TABLE [nation] ([code] CHARACTER(3) NOT NULL, 
-    [name] CHARACTER VARYING(40) NOT NULL, [continent] CHARACTER VARYING(10), 
-    [capital] CHARACTER VARYING(30),  CONSTRAINT [pk_nation_code] PRIMARY KEY  ([code])) 
-    COLLATE iso88591_bin'
+      'public.nation'       'CREATE TABLE [nation] ([code] CHARACTER(3) NOT NULL, [name] CHARACTER VARYING(40) NOT NULL, [continent] CHARACTER VARYING(10), [capital] CHARACTER VARYING(30), CONSTRAINT [pk_nation_code] PRIMARY KEY  ([code])) DONT_REUSE_OID, COLLATE iso88591_bin'
 
-**SHOW CREATE TABLE** 문은 사용자가 입력한 구문을 그대로 출력하지는 않는다. 예를 들어, 사용자가 입력한 커멘트를 출력하지 않으며, 테이블 명이나 칼럼 명은 항상 소문자로 출력한다.
+**SHOW CREATE TABLE** 문은 사용자가 입력한 구문을 그대로 출력하지는 않는다. 예를 들어, 사용자가 입력한 주석을 출력하지 않으며, 테이블 명이나 칼럼 명은 항상 소문자로 출력한다.
     
 .. _show-create-view-statement:
 
@@ -486,25 +485,18 @@ SHOW CREATE VIEW
      
 ::
 
-      View              Create View
-    ========================================
-      'db_class'       'SELECT c.class_name, CAST(c.owner.name AS VARCHAR(255)), CASE c.class_type WHEN 0 THEN 'CLASS' WHEN 1 THEN 'VCLASS' ELSE
-                       'UNKNOW' END, CASE WHEN MOD(c.is_system_class, 2) = 1 THEN 'YES' ELSE 'NO' END, CASE WHEN c.sub_classes IS NULL THEN 'NO'
-                       ELSE NVL((SELECT 'YES' FROM _db_partition p WHERE p.class_of = c and p.pname IS NULL), 'NO') END, CASE WHEN
-                       MOD(c.is_system_class / 8, 2) = 1 THEN 'YES' ELSE 'NO' END FROM _db_class c WHERE CURRENT_USER = 'DBA' OR {c.owner.name}
-                       SUBSETEQ (  SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{t.g.name}), SET{})  FROM db_user u, TABLE(groups) AS t(g)  WHERE
-                       u.name = CURRENT_USER) OR {c} SUBSETEQ (  SELECT SUM(SET{au.class_of})  FROM _db_auth au  WHERE {au.grantee.name} SUBSETEQ
-                       (  SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{t.g.name}), SET{})  FROM db_user u, TABLE(groups) AS t(g)  WHERE u.name =
-                       CURRENT_USER) AND  au.auth_type = 'SELECT')'
+      View                  Create View
+    ============================================
+      'db_class'            'SELECT [c].[class_name], CAST([c].[owner].[name] AS VARCHAR(255)), CASE [c].[class_type] WHEN 0 THEN 'CLASS' WHEN 1 THEN 'VCLASS' ELSE 'UNKNOW' END, CASE WHEN MOD([c].[is_system_class], 2) = 1 THEN 'YES' ELSE 'NO' END, CASE [c].[tde_algorithm] WHEN 0 THEN 'NONE' WHEN 1 THEN 'AES' WHEN 2 THEN 'ARIA' END, CASE WHEN [c].[sub_classes] IS NULL THEN 'NO' ELSE NVL((SELECT 'YES' FROM [_db_partition] [p] WHERE [p].[class_of] = [c] and [p].[pname] IS NULL), 'NO') END, CASE WHEN MOD([c].[is_system_class] / 8, 2) = 1 THEN 'YES' ELSE 'NO' END, [coll].[coll_name], [c].[comment] FROM [_db_class] [c], [_db_collation] [coll] WHERE [c].[collation_id] = [coll].[coll_id] AND (CURRENT_USER = 'DBA' OR {[c].[owner].[name]} SUBSETEQ(SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{[t].[g].[name]}), SET{}) FROM [db_user] [u], TABLE([groups]) AS [t]([g]) WHERE [u].[name] = CURRENT_USER) OR {[c]} SUBSETEQ ( SELECT SUM(SET{[au].[class_of]}) FROM [_db_auth] [au] WHERE {[au].[grantee].[name]} SUBSETEQ ( SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{[t].[g].[name]}), SET{}) FROM [db_user] [u], TABLE([groups]) AS [t]([g]) WHERE [u].[name] = CURRENT_USER) AND [au].[auth_type] = 'SELECT'))'
 
 SHOW ACCESS STATUS 
 ==================
  
-**SHOW ACCESS STATUS** 문은 데이터베이스 계정에 대한 로그인 정보를 출력한다. 이 명령은 데이터베이스 계정이 DBA인 사용자만 사용할 수 있다. 
+**SHOW ACCESS STATUS** 문은 데이터베이스 사용자의 최근 로그인 정보를 출력한다. 이 명령은 데이터베이스 계정이 DBA인 사용자만 사용할 수 있다. 
 
 :: 
   
-    SHOW ACCESS STATUS [LIKE 'pattern' | WHERE expr] ; 
+    SHOW ACCESS STATUS [LIKE 'pattern' | WHERE expr]; 
 
 해당 구문은 다음과 같은 칼럼을 출력한다.
 
@@ -522,7 +514,7 @@ program_name        VARCHAR(32) 클라이언트 프로그램 이름(broker_cub_c
 .. code-block:: sql 
   
     SHOW ACCESS STATUS; 
-  
+ 
 :: 
   
       user_name last_access_time last_access_host program_name 
@@ -532,7 +524,7 @@ program_name        VARCHAR(32) 클라이언트 프로그램 이름(broker_cub_c
 
 .. note::
 
-    SHOW ACCESS STATUS가 보여주는 로그인 정보는 데이터베이스가 재시작되면 초기화되며, HA 환경에서 복제되지 않으므로 각 노드마다 다른 결과를 보여준다.
+    SHOW ACCESS STATUS의 로그인 정보는 데이터베이스가 재시작되면 초기화되며, HA 환경에서 복제되지 않으므로 각 노드마다 다른 결과를 출력된다.
 
 .. _show-exec-statistics-statement:
 
@@ -545,7 +537,7 @@ SHOW EXEC STATISTICS
 
 *   통계 정보 수집 결과를 출력한다.
 
-    *   **SHOW EXEC STATISTICS**\ 는 data_page_fetches, data_page_dirties, data_page_ioreads, data_page_iowrites 이렇게 4가지 항목의 데이터 페이지 통계 정보를 출력하며, 결과 칼럼은 통계 정보 이름과 값에 해당하는 variable 칼럼과 value 칼럼으로 구성된다. **SHOW EXEC STATISTICS** 문을 실행하고 나면 그동안 누적되었던 통계 정보가 초기화된다.
+    *   **SHOW EXEC STATISTICS**\ 는 data_page_fetches, data_page_dirties, data_page_ioreads, data_page_iowrites 이렇게 4가지 항목의 데이터 페이지 통계 정보를 출력하며, 결과 칼럼은 통계 정보 이름과 값에 해당하는 variable 칼럼과 value 칼럼으로 구성된다. **SHOW EXEC STATISTICS** 문을 실행하면 그동안 누적된 통계 정보가 초기화된다.
 
     *   **SHOW EXEC STATISTICS ALL**\ 은 모든 항목의 통계 정보를 출력한다.
 
@@ -651,6 +643,10 @@ SHOW EXEC STATISTICS
 진단(Diagnostics)
 =================
 
+다음 진단(Diagnostics) SHOW 명령은 데이터베이스 계정이 DBA 또는 DBA 멤버인 사용자만 사용할 수 있다.
+
+::
+
 SHOW VOLUME HEADER
 ------------------
 
@@ -675,12 +671,12 @@ Num_total_sectors                   INT             섹터 전체 개수
 Num_free_sectors                    INT             여유 섹터 개수
 Num_max_sectors                     INT             섹터 수의 최대값
 Hint_alloc_sector                   INT             할당될 다음 섹터에 대한 힌트
-Sector_alloc_table_size_in_pages    INT             페이지 내 섹터 할당 테이브 크기
+Sector_alloc_table_size_in_pages    INT             페이지 내 섹터 할당 테이블 크기
 Sector_alloc_table_first_page       INT             섹터 할당 테이블의 첫번째 페이지 
 Page_alloc_table_size_in_pages      INT             페이지 내 페이지 할당 테이블의 크기
 Page_alloc_table_first_page         INT             페이지 할당 테이블의 첫번째 페이지
 Last_system_page                    INT             마지막 시스템 페이지
-Creation_time                       DATETIME        데이터베이스 생성 시간
+Creation_time                       DATETIME        볼륨 생성 시간
 Db_charset                          INT             데이터베이스 문자셋번호 
 Checkpoint_lsa                      VARCHAR(64)     이 볼륨의 복구 절차를 시작하는 가장 작은 로그 일련 주소
 Boot_hfid                           VARCHAR(64)     다중 볼륨과 데이터베이스 기동을 위한 시스템 힙 파일ID
@@ -728,9 +724,11 @@ SHOW LOG HEADER
 
 ::
 
-    SHOW LOG HEADER [OF file_name];
+    SHOW LOG HEADER [OF file_path];
     
-OF file_name을 생략하면 메모리의 헤더 정보를 출력하며, OF file_name을 포함하면 file_name의 헤더 정보를 출력한다.
+OF file_path를 생략하면 메모리의 헤더 정보를 출력하며, OF file_path를 포함하면 file_path의 헤더 정보를 출력한다.
+file_path에는 활성 로그 파일의 상대경로 또는 절대경로를 입력할 수 있다.
+상대경로 입력 시 기준이 되는 경로는 활성 로그 파일이 존재하는 디렉터리이다.
 
 해당 구문은 다음의 칼럼을 출력한다.
 
@@ -740,12 +738,12 @@ Column name                         Type            Description
 Volume_id                           INT             볼륨 식별자
 Magic_symbol                        VARCHAR(32)     로그 파일의 매직 값
 Magic_symbol_location               INT             로그 페이지의 매직 심볼 위치
-Creation_time                       DATETIME        데이터베이스 생성 시간
+Creation_time                       DATETIME        볼륨 생성 시간
 Release                             VARCHAR(32)     CUBRID 릴리즈 버전
 Compatibility_disk_version          VARCHAR(32)     현재 릴리즈 버전에 대한 DB의 호환성
 Db_page_size                        INT             DB 페이지의 크기
 Log_page_size                       INT             로그 페이지의 크기
-Shutdown                            INT             로그 셧다운의 여부
+Shutdown                            INT             로그 종료의 여부
 Next_trans_id                       INT             다음 트랜잭션 ID
 Num_avg_trans                       INT             평균 트랜잭션 개수
 Num_avg_locks                       INT             평균 객체 잠금 개수
@@ -883,7 +881,10 @@ SHOW ARCHIVE LOG HEADER
 
 ::
 
-    SHOW ARCHIVE LOG HEADER OF file_name;
+    SHOW ARCHIVE LOG HEADER OF file_path;
+
+file_path에는 보관 로그 파일의 상대경로 또는 절대경로를 입력할 수 있다.
+상대경로 입력 시 기준이 되는 경로는 보관 로그 파일이 존재하는 디렉터리이다.
 
 해당 구문은 다음의 칼럼을 출력한다.
 
@@ -893,7 +894,7 @@ SHOW ARCHIVE LOG HEADER
 Volume_id                           INT             로그 볼륨 ID
 Magic_symbol                        VARCHAR(32)     보관 로그 파일의 매직 값
 Magic_symbol_location               INT             로그 페이지로부터 매직 심볼 위치
-Creation_time                       DATETIME        DB 생성 시간
+Creation_time                       DATETIME        볼륨 생성 시간
 Next_trans_id                       BIGINT          다음 트랜잭션 ID
 Num_pages                           INT             보관 로그에서 페이지의 개수
 First_page_id                       BIGINT          보관 로그에서 물리적 위치 1에 대한 논리 페이지 ID
@@ -925,7 +926,7 @@ SHOW HEAP HEADER
 
 ::
 
-    SHOW [ALL] HEAP HEADER OF table_name;
+    SHOW  [ALL] HEAP HEADER OF [schema_name.]table_name;
 
 *   ALL: 분할 테이블에서 "ALL" 키워드가 주어지면 기반 테이블과 분할 테이블이 같이 출력된다.
 
@@ -1116,7 +1117,7 @@ SHOW HEAP CAPACITY
 
 ::
 
-    SHOW [ALL] HEAP CAPACITY OF table_name;
+    SHOW [ALL] HEAP CAPACITY OF [schema_name.] table_name;
 
 *   ALL: 분할 테이블에서 "ALL" 키워드가 주어지면 기반 테이블과 분할된 테이블이 같이 출력된다.
 
@@ -1251,7 +1252,7 @@ SHOW SLOTTED PAGE HEADER
 
 ::
 
-    SHOW SLOTTED PAGE HEADER { WHERE|OF } VOLUME = volume_num AND PAGE = page_num;
+    SHOW SLOTTED PAGE HEADER (WHERE | OF) VOLUME = volume_num AND PAGE = page_num;
 
 해당 구문은 다음의 칼럼을 출력한다.
 
@@ -1303,7 +1304,7 @@ SHOW SLOTTED PAGE SLOTS
 
 ::
 
-    SHOW SLOTTED PAGE SLOTS { WHERE|OF } VOLUME = volume_num AND PAGE = page_num;
+    SHOW SLOTTED PAGE SLOTS (WHERE | OF) VOLUME = volume_num AND PAGE = page_num;
     
 해당 구문은 다음의 칼럼을 출력한다.
 
@@ -1359,13 +1360,13 @@ SHOW INDEX HEADER
 
 ::
 
-    SHOW INDEX HEADER OF table_name.index_name;
+    SHOW INDEX HEADER OF [schema_name.]table_name.index_name;
 
-ALL 키워드를 사용하고 인덱스 이름을 생략하면 해당 테이블의 전체 인덱스의 헤더 정보를 출력한다.
+ALL 키워드를 사용하면 특정 테이블에 속한 모든 인덱스의 헤더 정보를 출력한다.
 
 ::
 
-    SHOW ALL INDEXES HEADER OF table_name;
+    SHOW ALL INDEXES HEADER OF [schema_name.]table_name;
 
 해당 구문은 다음의 칼럼을 출력한다.
 
@@ -1403,9 +1404,9 @@ Columns                             VARCHAR(256)    인덱스를 구성하는 �
 ::
 
     <00001> Table_name   : 'tbl1'
-            Index_name   : 'index_a'
+            Index_name   : 'index_ab'
             Btid         : '(0|378|950)'
-            Node_type    : 'LEAF'
+            Node_level   : 'LEAF'
             Max_key_len  : 0
             Num_oids     : -1
             Num_nulls    : -1
@@ -1423,13 +1424,13 @@ SHOW INDEX CAPACITY
 
 ::
 
-    SHOW INDEX CAPACITY OF table_name.index_name;
+    SHOW INDEX CAPACITY OF [schema_name.]table_name.index_name;
 
 ALL 키워드를 사용하고 인덱스 이름을 생략하면 해당 테이블의 전체 인덱스의 용량 정보를 출력한다.
 
 ::
 
-    SHOW ALL INDEXES CAPACITY OF table_name;
+    SHOW ALL INDEXES CAPACITY OF [schema_name.]table_name;
 
 해당 구문은 다음의 칼럼을 출력한다.
 
@@ -1441,19 +1442,33 @@ Index_name                          VARCHAR(256)    인덱스 이름
 Btid                                VARCHAR(64)     BTID (volid|fileid|root_pageid)
 Num_distinct_key                    INT             단말 노드(leaf) 페이지의 Distinct key 개수
 Total_value                         INT             트리에 저장된 값의 총 개수
+Deduplicate_distinct_key            INT             단말 노드(leaf) 페이지의 Deduplicated Distinct key 개수
+Num_fence_key                       INT             펜스키(Fence-key)의 개수
 Avg_num_value_per_key               INT             키당 OID 값의 평균 개수
+Avg_num_value_per_deduplicate_key   INT             Deduplicated된 키당 OID 값의 평균 개수
 Num_leaf_page                       INT             단말 노드(leaf) 페이지 개수
 Num_non_leaf_page                   INT             비단말(NonLeaf) 노드 페이지 개수
+Num_ovf_page                        INT             단말 노드의 오버플로우 페이지 개수
 Num_total_page                      INT             전체 페이지 개수
 Height                              INT             트리의 높이
 Avg_key_len                         INT             평균 키 길이
 Avg_rec_len                         INT             평균 페이지 레코드 길이
 Total_space                         VARCHAR(64)     인덱스에 의해 점유되는 전체 공간
-Total_used_space                    VARCHAR(64)     인덱스의 전체 사용 공간
-Total_free_space                    VARCHAR(64)     인덱스의 전체 여유 공간
-Avg_num_page_key                    INT             단말 노드 페이지에서 페이지 당 평균 키 개수
-Avg_page_free_space                 VARCHAR(64)     페이지 당 평균 여유 공간
+Total_used_space_non_ovf            VARCHAR(64)     할당된 페이지에서 사용된 총 공간(단말 노드의 오버플로우 페이지는 제외)
+Total_free_space_non_ovf            VARCHAR(64)     할당된 페이지에서 사용되지 않은 총 공간(단말 노드의 오버플로우 페이지는 제외)
+Total_used_space_ovf                VARCHAR(64)     단말 노드의 할당된 오버플로우 페이지에서 사용된 총 공간
+Total_free_space_ovf                VARCHAR(64)     단말 노드의 할당된 오버플로우 페이지에서 사용되지 않은 총 공간
+Avg_num_key_per_page_non_ovf        INT             단말 노드 페이지에서 페이지 당 평균 키 개수
+Avg_free_space_per_page_non_ovf     VARCHAR(64)     단말 노드 페이지에서 페이지 당 평균 여유 공간
+Avg_num_key_per_page_ovf            INT             단말 노드의 오버플로우 페이지에서 페이지 당 평균 키 개수
+Avg_free_space_per_page_ovf         VARCHAR(64)     단말 노드의 오버플로우 페이지 당 평균 여유 공간
+Max_num_ovf_page_a_key              INT             하나의 키에 대해 연결된 단말 노드의 오버플로우 페이지의 최대 개수
 =================================== =============== ======================================================================================================================================
+
+.. note::
+
+    Fence key는 B-tree 인덱스의 운용을 돕기 위해 단말 노드(leaf)에 추가되는 가상의 키이다.
+
 
 다음은 이 구문을 수행한 예이다.
 
@@ -1470,25 +1485,33 @@ Avg_page_free_space                 VARCHAR(64)     페이지 당 평균 여유 
     SHOW INDEX CAPACITY OF tbl1.index_a;
     
 ::
-    
-    <00001> Table_name           : 'tbl1'
-            Index_name           : 'index_a'
-            Btid                 : '(0|378|950)'
-            Num_distinct_key     : 0
-            Total_value          : 0
-            Avg_num_value_per_key: 0
-            Num_leaf_page        : 1
-            Num_non_leaf_page    : 0
-            Num_total_page       : 1
-            Height               : 1
-            Avg_key_len          : 0
-            Avg_rec_len          : 0
-            Total_space          : '16.0K'
-            Total_used_space     : '116.0B'
-            Total_free_space     : '15.9K'
-            Avg_num_page_key     : 0
-            Avg_page_free_space  : '15.9K'
 
+    <00001> Table_name                       : 'dba.tbl1'
+            Index_name                       : 'index_a'
+            Btid                             : '(0|4160|4161)'
+            Num_distinct_key                 : 0
+            Total_value                      : 0
+            Deduplicate_distinct_key         : 0
+            Num_fence_key                    : 0
+            Avg_num_value_per_key            : 0
+            Avg_num_value_per_deduplicate_key: 0
+            Num_leaf_page                    : 1
+            Num_non_leaf_page                : 0
+            Num_ovf_page                     : 0
+            Num_total_page                   : 1
+            Height                           : 1
+            Avg_key_len                      : 0
+            Avg_rec_len                      : 0
+            Total_space                      : '16.0K'
+            Total_used_space_non_ovf         : '120.0B'
+            Total_free_space_non_ovf         : '15.8K'
+            Total_used_space_ovf             : '0.0B'
+            Total_free_space_ovf             : '0.0B'
+            Avg_num_key_per_page_non_ovf     : 0
+            Avg_free_space_per_page_non_ovf  : '15.8K'
+            Avg_num_ovf_page_per_key         : 0
+            Avg_free_space_per_page_ovf      : '0.0B'
+            Max_num_ovf_page_a_key           : 0
 
 .. code-block:: sql
       
@@ -1496,40 +1519,58 @@ Avg_page_free_space                 VARCHAR(64)     페이지 당 평균 여유 
     
 ::
 
-    <00001> Table_name           : 'tbl1'
-            Index_name           : 'index_a'
-            Btid                 : '(0|378|950)'
-            Num_distinct_key     : 0
-            Total_value          : 0
-            Avg_num_value_per_key: 0
-            Num_leaf_page        : 1
-            Num_non_leaf_page    : 0
-            Num_total_page       : 1
-            Height               : 1
-            Avg_key_len          : 0
-            Avg_rec_len          : 0
-            Total_space          : '16.0K'
-            Total_used_space     : '116.0B'
-            Total_free_space     : '15.9K'
-            Avg_num_page_key     : 0
-            Avg_page_free_space  : '15.9K'
-    <00002> Table_name           : 'tbl1'
-            Index_name           : 'index_b'
-            Btid                 : '(0|381|960)'
-            Num_distinct_key     : 0
-            Total_value          : 0
-            Avg_num_value_per_key: 0
-            Num_leaf_page        : 1
-            Num_non_leaf_page    : 0
-            Num_total_page       : 1
-            Height               : 1
-            Avg_key_len          : 0
-            Avg_rec_len          : 0
-            Total_space          : '16.0K'
-            Total_used_space     : '120.0B'
-            Total_free_space     : '15.9K'
-            Avg_num_page_key     : 0
-            Avg_page_free_space  : '15.9K'
+    <00001> Table_name                       : 'dba.tbl1'
+            Index_name                       : 'index_a'
+            Btid                             : '(0|4160|4161)'
+            Num_distinct_key                 : 0
+            Total_value                      : 0
+            Deduplicate_distinct_key         : 0
+            Num_fence_key                    : 0
+            Avg_num_value_per_key            : 0
+            Avg_num_value_per_deduplicate_key: 0
+            Num_leaf_page                    : 1
+            Num_non_leaf_page                : 0
+            Num_ovf_page                     : 0
+            Num_total_page                   : 1
+            Height                           : 1
+            Avg_key_len                      : 0
+            Avg_rec_len                      : 0
+            Total_space                      : '16.0K'
+            Total_used_space_non_ovf         : '120.0B'
+            Total_free_space_non_ovf         : '15.8K'
+            Total_used_space_ovf             : '0.0B'
+            Total_free_space_ovf             : '0.0B'
+            Avg_num_key_per_page_non_ovf     : 0
+            Avg_free_space_per_page_non_ovf  : '15.8K'
+            Avg_num_ovf_page_per_key         : 0
+            Avg_free_space_per_page_ovf      : '0.0B'
+            Max_num_ovf_page_a_key           : 0
+    <00002> Table_name                       : 'dba.tbl1'
+            Index_name                       : 'index_b'
+            Btid                             : '(0|4224|4225)'
+            Num_distinct_key                 : 0
+            Total_value                      : 0
+            Deduplicate_distinct_key         : 0
+            Num_fence_key                    : 0
+            Avg_num_value_per_key            : 0
+            Avg_num_value_per_deduplicate_key: 0
+            Num_leaf_page                    : 1
+            Num_non_leaf_page                : 0
+            Num_ovf_page                     : 0
+            Num_total_page                   : 1
+            Height                           : 1
+            Avg_key_len                      : 0
+            Avg_rec_len                      : 0
+            Total_space                      : '16.0K'
+            Total_used_space_non_ovf         : '124.0B'
+            Total_free_space_non_ovf         : '15.8K'
+            Total_used_space_ovf             : '0.0B'
+            Total_free_space_ovf             : '0.0B'
+            Avg_num_key_per_page_non_ovf     : 0
+            Avg_free_space_per_page_non_ovf  : '15.8K'
+            Avg_num_ovf_page_per_key         : 0
+            Avg_free_space_per_page_ovf      : '0.0B'
+            Max_num_ovf_page_a_key           : 0
 
 SHOW CRITICAL SECTIONS
 ----------------------
@@ -1550,11 +1591,11 @@ Name                                VARCHAR(32)     CS 이름
 Num_holders                         VARCHAR(16)     해당 CS 보유자의 개수. 다음 값 중 하나: 'N readers', '1 writer', 'none'
 Num_waiting_readers                 INT             읽기 대기자의 개수
 Num_waiting_writers                 INT             쓰기 대기자의 개수
-Owner_thread_index                  INT             CS 쓰기 소유자의 쓰레드 인덱스. 소유자 없으면 NULL
+Owner_thread_index                  INT             CS 쓰기 소유자의 스레드 인덱스. 소유자 없으면 NULL
 Owner_tran_index                    INT             CS 쓰기 소유자의 트랜잭션 인덱스. 소유자 없으면 NULL
 Total_enter_count                   BIGINT          진입자의 전체 개수
 Total_waiter_count                  BIGINT          대기자의 전체 개수     
-Waiting_promoter_thread_index       INT             승격 대기자의 쓰레드 인덱스. 승격 대기자 없으면 NULL
+Waiting_promoter_thread_index       INT             승격 대기자의 스레드 인덱스. 승격 대기자 없으면 NULL
 Max_waiting_msecs                   NUMERIC(10,3)   최대 대기 시간(밀리 초)
 Total_waiting_msecs                 NUMERIC(10,3)   전체 대기 시간(밀리초)
 =================================== =============== ======================================================================================================================================
@@ -1596,7 +1637,7 @@ SHOW TRANSACTION TABLES
 
 .. code-block:: sql
 
-    SHOW { TRAN | TRANSACTION } TABLES [ WHERE EXPR ];
+    SHOW { TRAN | TRANSACTION } TABLES [ WHERE expr ];
 
 해당 구문은 다음의 칼럼을 출력한다.
 
@@ -1654,7 +1695,7 @@ First_save_entry         VARCHAR(20)     트랜잭션의 처음 세이브 포인
 Tran_unique_stats        VARCHAR(20)     다중 열에 대한 로컬 통계 정보. 주소 포인터를 0x12345678 처럼 나타냄, NULL은 0x00000000 을 의미함
 Modified_class_list      VARCHAR(20)     더티 클래쓰의 목록, 주소 포인터를 0x12345678 처럼 나타냄, NULL은 0x00000000 을 의미함
 Num_temp_files           INT             임시 파일의 개수 
-Waiting_for_res          VARCHAR(20)     대기 리소스, 주소 포인터를 0x12345678 처럼 나타냄, NULL은 0x00000000 을 의미함
+Waiting_for_res          VARCHAR(20)     대기 자원, 주소 포인터를 0x12345678 처럼 나타냄, NULL은 0x00000000 을 의미함
 Has_deadlock_priority    INT             데드락 우선순위 유무,  0 : 무, 1 : 유
 Suppress_replication     INT             플래그가 세팅 될 때 복제 로그 쓰기를 생략 
 Query_timeout            DATETIME        query_timeout 시간 내에 퀴리는 수행되어야 함. NULL일 경우 질의가 끝날 때 까지 기다림.
@@ -1733,44 +1774,44 @@ SA MODE일 경우 이 구문은 아무런 결과도 출력하지 않는다.
 
 .. code-block:: sql
 
-    SHOW THREADS [ WHERE EXPR ];
+    SHOW THREADS [ WHERE expr ];
 
 해당 구문은 다음의 칼럼을 출력한다.
 
 =========================== =============== ==============================================================================================================================================================
-칼럼명                      타입            설영
+칼럼명                      타입            설명
 =========================== =============== ==============================================================================================================================================================
-Index                       INT             쓰레드 시작 인덱스
-Jobq_index                  INT             워커 쓰레드의 작업 큐 인덱스.  워커 쓰레드가 아닌 경우 NULL 
-Thread_id                   BIGINT          쓰레드 식별자
-Tran_index                  INT             쓰레드가 속한 트랜잭션 인덱스. 관련 쓰레드가 없을 경우 NULL
-Type                        VARCHAR(8)      쓰레드 종류. 다음 중 하나 'MASTER', 'SERVER', 'WORKER', 'DAEMON', 'VACUUM_MASTER', 'VACUUM_WORKER', 'NONE', 'UNKNOWN'.
-Status                      VARCHAR(8)      쓰레드 상태. 다음 중 하나 'DEAD', 'FREE', 'RUN', 'WAIT', 'CHECK'.
+Index                       INT             스레드 시작 인덱스
+Jobq_index                  INT             워커 스레드의 작업 큐 인덱스.  워커 스레드가 아닌 경우 NULL 
+Thread_id                   BIGINT          스레드 식별자
+Tran_index                  INT             스레드가 속한 트랜잭션 인덱스. 관련 스레드가 없을 경우 NULL
+Type                        VARCHAR(8)      스레드 종류. 다음 중 하나 'MASTER', 'SERVER', 'WORKER', 'DAEMON', 'VACUUM_MASTER', 'VACUUM_WORKER', 'NONE', 'UNKNOWN'.
+Status                      VARCHAR(8)      스레드 상태. 다음 중 하나 'FREE', 'RUN', 'WAIT', 'CHECK'.
 Resume_status               VARCHAR(32)     재시작 상태. 다음 중 하나 'RESUME_NONE', 'RESUME_DUE_TO_INTERRUPT', 'RESUME_DUE_TO_SHUTDOWN', 'PGBUF_SUSPENDED', 'PGBUF_RESUMED', 
                                             'JOB_QUEUE_SUSPENDED', 'JOB_QUEUE_RESUMED', 'CSECT_READER_SUSPENDED', 'CSECT_READER_RESUMED', 'CSECT_WRITER_SUSPENDED', 'CSECT_WRITER_RESUMED',
                                             'CSECT_PROMOTER_SUSPENDED', 'CSECT_PROMOTER_RESUMED', 'CSS_QUEUE_SUSPENDED', 'CSS_QUEUE_RESUMED', 'QMGR_ACTIVE_QRY_SUSPENDED', 'QMGR_ACTIVE_QRY_RESUMED',
                                             'QMGR_MEMBUF_PAGE_SUSPENDED', 'QMGR_MEMBUF_PAGE_RESUMED', 'HEAP_CLSREPR_SUSPENDED', 'HEAP_CLSREPR_RESUMED', 'LOCK_SUSPENDED', 'LOCK_RESUMED', 
                                             'LOGWR_SUSPENDED', 'LOGWR_RESUMED'
 Net_request                 VARCHAR(64)     net_requests 배열의 요청 이름, 예: 'LC_ASSIGN_OID'. 요청 이름이 없을 경우  NULL  
-Conn_client_id              INT             쓰레드에 응답하는 클라이언트의 식별자, 클라이언트의 식별자가 없을 경우 NULL 
-Conn_request_id             INT             쓰레드가 처리하고 있는 요청의 식별자, 요청 식별자가 없을 경우 NULL 
+Conn_client_id              INT             스레드에 응답하는 클라이언트의 식별자, 클라이언트의 식별자가 없을 경우 NULL 
+Conn_request_id             INT             스레드가 처리하고 있는 요청의 식별자, 요청 식별자가 없을 경우 NULL 
 Conn_index                  INT             연결 인덱스, 없을 경우 NULL
-Last_error_code             INT             마지막 에러 코드 
-Last_error_msg              VARCHAR(256)    마지막 에러 메세지, 메세지가 256 자 보다 클 경우 일부만 보인다. 에러 메세지가 없을 경우 NULL
-Private_heap_id             VARCHAR(20)     쓰레드 내부 메모리 할당자의 주소, 예: 0x12345678. 관련 힙 id 가 없을 경우 NULL
+Last_error_code             INT             마지막 오류 코드 
+Last_error_msg              VARCHAR(256)    마지막 오류 메시지, 메시지가 256 자 보다 클 경우 일부만 보인다. 오류 메시지가 없을 경우 NULL
+Private_heap_id             VARCHAR(20)     스레드 내부 메모리 할당자의 주소, 예: 0x12345678. 관련 힙 id 가 없을 경우 NULL
 Query_entry                 VARCHAR(20)     QMGR_QUERY_ENTRY의 주소 , 예: 0x12345678,  연관된 QMGR_QUERY_ENTRY 가 없을 경우 NULL.
 Interrupted                 INT             요청/트랜잭션의 인터럽트 유/무 0 또는 1
 Shutdown                    INT             서버의 중지 진행 여/부, 0 또는 1
 Check_interrupt             INT             0 또는 1
-Wait_for_latch_promote      INT             0 또는 1, 쓰레드가 래치 프로모션(latch promotion)을 대기하는 여/부 
+Wait_for_latch_promote      INT             0 또는 1, 스레드가 래치 프로모션(latch promotion)을 대기하는 여/부 
 Lockwait_blocked_mode       VARCHAR(24)     잠금대기 블록 모드, 다음 중 하나. 'NULL_LOCK', 'IS_LOCK', 'S_LOCK', 'IS_LOCK', 'IX_LOCK', 'SIX_LOCK', 'X_LOCK', 'SCH_M_LOCK', 'UNKNOWN'
 Lockwait_start_time         DATETIME        차단이 시작된 시간, 차단 상태 아닌 경우 NULL
 Lockwait_msecs              INT             차단되었던 시간(milliseconds), 차단된 상태가 아닌 경우 NULL
 Lockwait_state              VARCHAR(24)     잠금 대기 상태 예: 'SUSPENDED', 'RESUMED', 'RESUMED_ABORTED_FIRST', 'RESUMED_ABORTED_OTHER', 'RESUMED_DEADLOCK_TIMEOUT', 'RESUMED_TIMEOUT', 
                                             'RESUMED_INTERRUPT'. 블록 된 상태가 없을 경우  NULL
-Next_wait_thread_index      INT             다음 대기 쓰레드 인덱스, 없을 경우 NULL
-Next_tran_wait_thread_index INT             잠금 매니저의 다음 대기 쓰레드 인덱스, 없을 경우 NULL
-Next_worker_thread_index    INT             css_Job_queue.worker_thrd_list 의 다음 워커 쓰레드 인덱스, 없을 경우 NULL
+Next_wait_thread_index      INT             다음 대기 스레드 인덱스, 없을 경우 NULL
+Next_tran_wait_thread_index INT             잠금 매니저의 다음 대기 스레드 인덱스, 없을 경우 NULL
+Next_worker_thread_index    INT             css_Job_queue.worker_thrd_list 의 다음 워커 스레드 인덱스, 없을 경우 NULL
 =========================== =============== ==============================================================================================================================================================
 
 다음은 이 구문을 수행한 예이다.
@@ -1850,9 +1891,89 @@ SHOW JOB QUEUES
 칼럼명                      타입            설명
 =========================== =============== =======================================================
 Jobq_index                  INT             작업 큐의 인덱스
-Num_total_workers           INT             큐의 워커 쓰레드 총 개수 
-Num_busy_workers            INT             큐의 활성 워커 쓰레드의 개수 
-Num_connection_workers      INT             큐의 연결(connection) 워커 쓰레드의 수
+Num_total_workers           INT             큐의 워커 스레드 총 개수 
+Num_busy_workers            INT             큐의 활성 워커 스레드의 개수 
+Num_connection_workers      INT             큐의 연결(connection) 워커 스레드의 수
 =========================== =============== =======================================================
 
+SHOW PAGE BUFFER STATUS
+-----------------------
+
+데이터 페이지 버퍼의 상태를 출력한다.
+
+.. code-block:: sql
+
+    SHOW PAGE BUFFER STATUS;
+
+해당 구문은 다음의 칼럼을 출력한다.
+
+=========================== =============== ===============================================================
+칼럼 이름                   타입            설명
+=========================== =============== ===============================================================
+Hit_rate                    NUMERIC(13,10)  데이터 버퍼의 페이지 적중률 (사용 중단(deprecated), 항상 NULL)
+Num_hit                     BIGINT          데이터 버퍼의 페이지 적중 수 (사용 중단(deprecated), 항상 NULL)
+Num_page_request            BIGINT          데이터 버퍼에 페이지 요청 수 (사용 중단(deprecated), 항상 NULL)
+Pool_size                   INT             데이터 버퍼의 전체 페이지 수
+Page_size                   INT             데이터 버퍼의 단일 페이지 크기
+Free_pages                  INT             데이터 버퍼의 여유 페이지 수
+Victim_candidate_pages      INT             데이터 버퍼의 희생자(victim) 후보 페이지 수
+Clean_pages                 INT             데이터 버퍼의 갱신되지 않은 페이지 수
+Dirty_pages                 INT             데이터 버퍼의 갱신된 페이지 수
+Num_index_pages             INT             데이터 버퍼의 인덱스 페이지 수
+Num_data_pages              INT             데이터 버퍼의 데이터 페이지 수
+Num_system_pages            INT             데이터 버퍼의 시스템 페이지 수
+Num_temp_pages              INT             데이터 버퍼의 임시 페이지 수
+Num_pages_created           BIGINT          데이터 버퍼에서 새롭게 생성된 페이지 수 (사용 중단(deprecated), 항상 NULL)
+Num_pages_written           BIGINT          데이터 버퍼에서 디스크로 쓰여진 페이지 수 (사용 중단(deprecated), 항상 NULL)
+Pages_written_rate          NUMERIC(20,10)  데이터 버퍼에서 디스크로 초당 쓰여진 페이지 수 (사용 중단(deprecated), 항상 NULL)
+Num_pages_read              BIGINT          데이터 버퍼로 디스크에서 읽은 페이지 수 (사용 중단(deprecated), 항상 NULL)
+Pages_read_rate             NUMERIC(20,10)  데이터 버퍼로 디스크에서 초당 읽은 페이지 수 (사용 중단(deprecated), 항상 NULL)
+Num_flusher_waiting_threads INT             데이터 버퍼의 페이지 할당을 대기하는 스레드 수 (사용 중단(deprecated), 항상 NULL)
+=========================== =============== ===============================================================
+
+.. note::
+
+    **Hit_rate**, **Num_hit**, **Num_page_request**, **Num_pages_created**, **Num_pages_written**, **Pages_written_rate**, **Num_pages_read**, **Pages_read_rate**, **Num_flusher_waiting_threads** 칼럼은 11.5 버전부터 사용이 중단(deprecated)되어 항상 NULL을 반환한다. 칼럼 자체는 제거되지 않으므로 결과셋의 칼럼 개수, 이름, 타입, 순서는 이전 버전과 동일하다.
+
+    이 중 다음 4개 칼럼은 **cubrid statdump** 의 통계 항목으로 대체할 수 있다. 각 항목에 대한 자세한 설명은 :ref:`statdump`\ 을 참고한다.
+
+    *   **Hit_rate**: **Data_page_buffer_hit_ratio** (소수점 둘째 자리까지 출력된다)
+    *   **Num_page_request**: **Num_data_page_fetches**
+    *   **Num_pages_read**: **Num_data_page_ioreads**
+    *   **Num_pages_written**: **Num_data_page_iowrites**
+
+    단, 사용이 중단되기 전의 이 칼럼들은 직전 **SHOW PAGE BUFFER STATUS** 실행 이후의 증분값이었던 반면 **cubrid statdump** 의 통계 항목은 누적값이므로, 같은 구간의 값을 얻으려면 **cubrid statdump -i** *SECOND* 로 주기별 값을 출력하거나 두 시점의 누적값 차이를 사용한다.
+
+    나머지 5개 칼럼은 **cubrid statdump** 에 대응하는 항목이 없다. 이 중 **Num_hit** 는 **Num_data_page_fetches** 에서 **Num_data_page_ioreads** 를 뺀 값으로, **Pages_written_rate** 와 **Pages_read_rate** 는 위의 주기별 출력값을 해당 주기로 나누어 간접적으로 구할 수 있다. **Num_pages_created** 와 **Num_flusher_waiting_threads** 는 대체할 수 있는 통계 항목이 없다.
+
+    사용이 중단되지 않은 칼럼(**Pool_size**, **Page_size**, **Free_pages**, **Victim_candidate_pages**, **Clean_pages**, **Dirty_pages**, **Num_index_pages**, **Num_data_pages**, **Num_system_pages**, **Num_temp_pages**)은 데이터 버퍼의 페이지 구성 정보로, 계속 정상 값을 출력한다.
+
+다음은 이 구문을 수행한 예이다.
+
+.. code-block:: sql
+
+    -- csql> ;line on
+    SHOW PAGE BUFFER STATUS;
+
+::
+
+    <00001> Hit_rate                   : NULL
+            Num_hit                    : NULL
+            Num_page_request           : NULL
+            Pool_size                  : 32768
+            Page_size                  : 16392
+            Free_pages                 : 32739
+            Victim_candidate_pages     : 0
+            Clean_pages                : 32767
+            Dirty_pages                : 1
+            Num_index_pages            : 2
+            Num_data_pages             : 15
+            Num_system_pages           : 12
+            Num_temp_pages             : 0
+            Num_pages_created          : NULL
+            Num_pages_written          : NULL
+            Pages_written_rate         : NULL
+            Num_pages_read             : NULL
+            Pages_read_rate            : NULL
+            Num_flusher_waiting_threads: NULL
 

@@ -1,6 +1,6 @@
 
 :meta-keywords: cubrid identifier guideline, cubrid legal identifier, database identifier
-:meta-description: CUBRID Identifiers can be table names, index names, view names, column names, user names etc.
+:meta-description: CUBRID Identifiers can be table names, index names, view names, column names, usernames etc.
 
 **********
 Identifier
@@ -9,7 +9,7 @@ Identifier
 Guidelines for Creating Identifiers
 ===================================
 
-Table name, index name, view name, column name, user name etc. are included in identifier. The guidelines for creating identifiers are as follows:
+Table name, index name, view name, column name, username etc. are included in identifier. The guidelines for creating identifiers are as follows:
 
 *   An identifier must begin with a letter; it must not begin with a number or a symbol.
 *   It is not case-sensitive.
@@ -43,11 +43,27 @@ Identifiers or reserved keywords shown as below are not allowed. However, if the
 
 ::
 
-    " select"
-    " @lowcost"
-    " low cost"
-    " abc" " def"
+    "select"
+    "@lowcost"
+    "low cost"
+    "abc" "def"
     [position]
+
+.. Warning::
+
+    Even though identifiers are enclosed in double quotation marks, square brackets, or backticks, they cannot contain square brackets ([ ]) or dots (.).
+
+    *  Square brackets are used by default to process reserved words when parsing a query inside.
+    *  Dots are used in Path Expressions and JSON, and they are also used to separate schema names and object names.
+
+    The following identifiers are not allowed even though they are enclosed in double quotation marks (" ").
+
+    ::
+
+        "he[[o"
+        "wor]d"
+        "hello[]world"
+        "hello.world"
 
 .. note::
 
@@ -104,7 +120,9 @@ The following table summarizes the maximum byte length allowable for each identi
 +=======================+===================+
 | Database              | 17                |
 +-----------------------+-------------------+
-| Table                 | 254               |
+| User                  | 31                |
++-----------------------+-------------------+
+| Table                 | 222               |
 +-----------------------+-------------------+
 | Column                | 254               |
 +-----------------------+-------------------+
@@ -114,12 +132,16 @@ The following table summarizes the maximum byte length allowable for each identi
 +-----------------------+-------------------+
 | Java Stored Procedure | 254               |
 +-----------------------+-------------------+
-| Trigger               | 254               |
+| Trigger               | 222               |
 +-----------------------+-------------------+
-| View                  | 254               |
+| View                  | 222               |
 +-----------------------+-------------------+
-| Serial                | 254               |
+| Serial                | 222               |
 +-----------------------+-------------------+
+
+.. note::
+
+    Prior to version 11.2, the maximum length of table, trigger, and serial names were 254 bytes. Since version 11.2, table, trigger, and serial names contain schema names. Therefore, identifier names cannot exceed 222 bytes except for 31 bytes, which is the length of the owner name, and 1 byte, which is the length of the delimiter (.).
 
 .. note::
 

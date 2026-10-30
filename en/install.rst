@@ -12,19 +12,21 @@ Supported Platforms and System Requirements
 
 The platforms supported by CUBRID and hardware/software requirements for the installation are as follows:
 
-+---------------------------------------------------------------------+------------------+---------------------+--------------------------------------+
-| Supported Platforms                                                 | Required Memory  | Required Disk Space | Required Software                    |
-+=====================================================================+==================+=====================+======================================+
-| * Windows 32/64 Bit Windows 7                                       | 1GB or more      | 2GB or more(\*)     | JRE/JDK 1.6 or higher                |
-|                                                                     |                  |                     | (Required when Java Stored Procedure |
-| * Linux family 64 Bit(Linux kernel 2.4, glibc 2.3.4 or higher)      |                  |                     | is required)                         |
-+---------------------------------------------------------------------+------------------+---------------------+--------------------------------------+
++------------------------------------------------------------------------------------+------------------+---------------------+
+| Supported Platforms                                                                | Required Memory  | Required Disk Space |
++====================================================================================+==================+=====================+
+| * Windows 64 Bit Windows 7 or higher (native Windows)                              | 1GB or more      | 2GB or more(\*)     |
+|                                                                                    |                  |                     |
+| * Windows 64 Bit Windows 10 2004 (Build 19041) or Higher or Windows 11 (with WSL)  | 2GB or more      | 2GB or more(\*)     |
+|                                                                                    |                  |                     |
+| * Linux family 64 Bit(Linux kernel 2.4, glibc 2.3.4 or higher)                     | 1GB or more      | 2GB or more(\*)     |
++------------------------------------------------------------------------------------+------------------+---------------------+
 
 (\*): Requires a 500MB of free disk space on the initial installation; requires approximately 1.5GB of free disk space with a database creating with default options.
 
-Beginning with 2008 R4.0, CUBRID Manager Client is not automatically installed when installing the CUBRID package. For this reason, if you require CUBRID Manager you must install it separately. The CUBRID can be downloaded from http://ftp.cubrid.org.
+CUBRID Admin Client is not automatically installed when installing the CUBRID package. For this reason, if you require CUBRID Admin you must install it separately. The CUBRID can be downloaded from http://ftp.cubrid.org.
 
-A variety of drivers such as PHP, ODBC and OLE DB can also be downloaded from http://ftp.cubrid.org.
+A variety of drivers such as JDBC, ODBC and PHP can also be downloaded from http://ftp.cubrid.org.
 
 For more information on the CUBRID engine, tools, and drivers, see https://www.cubrid.org.
 
@@ -33,25 +35,19 @@ Compatibility
 
 **Application Compatibility**
 
-*   Applications that use JDBC, PHP or CCI APIs from 2008 R4.1 or higher version of CUBRID can access the CUBRID 10.2 database. However, you must link the CUBRID 10.2 library or use the driver to use the added/improved features of JDBC, PHP or CCI interfaces. In order to use :ref:`timezone-type` which are introduced as 10.0, users should upgrade drivers.
+*   Applications that use JDBC, PHP or CCI APIs from 2008 R4.1 or higher version of CUBRID can access the CUBRID 11.4 database. However, you must link the CUBRID 11.4 library or use the driver to use the added/improved features of JDBC, PHP or CCI interfaces. In order to use :ref:`timezone-type` which are introduced as 10.0, users should upgrade drivers.
 
-*   Old driver versions connecting to CUBRID 10.2 server interpret a JSON type column as Varchar.
+*   Drivers lower version than 10.2 interpret JSON type columns as Varchar.
 
 *   Note that query results may differ from those given in the earlier version because new reserved words have been added, and the specifications for some queries have been changed.
 
 *   An application that is developed by using the GLO class can be used after it is converted to an application or schema suitable to the BLOB or CLOB type.
 
-**CUBRID Manager Compatibility**
+**CUBRID Admin Compatibility**
 
-*   CUBRID Manager guarantees backward compatibility with the servers using CUBRID 2008 R2.2 or higher and uses the CUBRID JDBC driver that matches each server version. However, you must use a CUBRID Manager that is higher than CUBRID servers in version in order to utilize all the features of CUBRID Manager. The CUBRID JDBC driver is included in the $CUBRID/jdbc directory when CUBRID is installed($CUBRID on Linux, %CUBRID% on Windows).
+*   CUBRID Admin guarantees backward compatibility with the servers using CUBRID 10.0 or higher and uses the CUBRID JDBC driver that matches each server version. However, you must use a CUBRID Admin that is higher than CUBRID servers in version in order to utilize all the features of CUBRID Admin. The CUBRID JDBC driver is included in the $CUBRID/jdbc directory when CUBRID is installed($CUBRID on Linux, %CUBRID% on Windows).
 
-*   The bit version of CUBRID Manager must be identical to the bit version of JRE.
-
-    For example, if a 64-bit DB server uses CUBRID Manager 32-bit version, JRE or JDK 32-bit version should be installed.
-
-*   Drivers for 2008 R2.2 and higher versions are included in CUBRID Manager by default, which you can download separately from the https://www.cubrid.org Website.
-
-.. note:: Old version users should upgrade all of driver, broker, DB server; Data migration should be done because its DB volume is not compatible with 10.2 version.
+.. note:: Old version users should upgrade all of driver, broker, DB server; Data migration should be done because 11.3 or early version's DB volume is not compatible with 11.4 version.
     For upgrade and data migration, see :doc:`/upgrade`.
 
 **Interoperability between CUBRID DB server and broker**
@@ -95,27 +91,27 @@ Check the following before installing CUBRID for Linux.
     
     *   Curses Library (rpm -q ncurses)
 
-        CUBRID is packaged with version 5 of Curses library. You may need to install ncurses-compat-libs package if your system has newer version and downgrade is not possible.
+        CUBRID is packaged with version 5 of Curses library. If you have the latest version and you are not able to downgrade your system, you may need to install the ncurses-compat-libs package.
 
     *   gcrypt Library (rpm -q libgcrypt)
     *   stdc++ Library (rpm -q libstdc++)
     
-*   Check if the mapping between host names and IP addresses are correct in the /etc/hosts file.
+*   Check if the mapping between hostnames and IP addresses are correct in the /etc/hosts file.
 
-    If host names and IP addresses are matched incorrectly, DB server cannot be started normally. Therefore, check if they are correctly mapped.
+    If hostnames and IP addresses are matched incorrectly, DB server cannot be started normally. Therefore, check if they are correctly mapped.
     
 **Installing CUBRID**
 
-The installation program consists of shell scripts that contain binary; thus it can be installed automatically. The following example shows how to install CUBRID with the "CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.sh" file on the Linux. 
+The installation program consists of shell scripts that contain binary; thus it can be installed automatically. The following example shows how to install CUBRID with the "CUBRID-11.4-latest-Linux.x86_64.sh" file on the Linux. 
 
 ::
 
-    $ sh CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.sh
+    $ sh CUBRID-11.4-latest-Linux.x86_64.sh
     Do you agree to the above license terms? (yes or no) : yes
     Do you want to install this software(CUBRID) to the default(/home1/cub_user/CUBRID) directory? (yes or no) [Default: yes] : yes
     Install CUBRID to '/home1/cub_user/CUBRID' ...
     In case a different version of the CUBRID product is being used in other machines, 
-    please note that the CUBRID 10.2 servers are only compatible with the CUBRID 10.2 clients and vice versa.
+    please note that the CUBRID 11.4 servers are only compatible with the CUBRID 11.4 clients and vice versa.
     Do you want to continue? (yes or no) [Default: yes] : yes
     Copying old .cubrid.sh to .cubrid.sh.bak ...
 
@@ -127,7 +123,8 @@ The installation program consists of shell scripts that contain binary; thus it 
     $ . /home1/cub_user/.cubrid.sh
     $ cubrid service start
 
-As shown in the example above, after installing the downloaded file (CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.sh), the CUBRID related environment variables must be set in order to use the CUBRID database. Such setting has been made automatically when logging in the concerned terminal. Therefore there is no need to re-set after the first installation. ::
+As shown in the example above, after installing the downloaded file (CUBRID-11.4-latest-Linux.x86_64.sh), you must run .cubrid.sh (or .cubrid.csh) according to your shell environment to set the environment variables required to use the CUBRID database.
+Additionally, to automatically set these variables upon login, you need to manually register .cubrid.sh (or .cubrid.csh) in a shell startup file such as .bashrc (or .cshrc), depending on your shell environment. ::
 
     $ . /home1/cub_user/.cubrid.sh
 
@@ -158,17 +155,17 @@ When you want to check whether CUBRID Manager server and CUBRID broker works wel
 
 You can install CUBRID by using rpm file that is created on CentOS 6. The way of installing and uninstalling CUBRID is the same as that of using general rpm utility. While CUBRID is being installed, a new system group (cubrid) and a user account (cubrid) are created. After installation is complete, you should log in with a cubrid user account to start a CUBRID service.::
 
-    $ rpm -Uvh cubrid-10.2.0.8787-a31ea42-Linux.x86_64.rpm
+    $ rpm -Uvh CUBRID-11.4-latest-Linux.x86_64.rpm
 
 When rpm is executed, CUBRID is installed in the "cubrid" home directory (/opt/cubrid) and related configuration file (cubrid.[c]sh) is installed in the /etc/profile.d directory. Note that *demodb* is not automatically installed. Therefore, you must executed /opt/cubrid/demo/make_cubrid_demo.sh with "cubrid" Linux ID. When installation is complete, enter the code below to start CUBRID with "cubrid" Linux ID. ::
 
     $ cubrid service start
 
-.. note:: \
+.. note::
 
     *   **RPM and dependency**
     
-        You must check RPM dependency when installing with RPM. If you ignore (--nodeps) dependency, it may not be executed. 
+        You must check RPM dependency when installing with RPM. If you ignore (\-\-nodeps) dependency, it may not be executed. 
 
     *   **cubrid account and DB exists even if you remove RPM package**
         
@@ -180,9 +177,9 @@ When rpm is executed, CUBRID is installed in the "cubrid" home directory (/opt/c
 
         When you use RPM package to install CUBRID, the cubrid script will be included in /etc/init.d. But you still need to change the environment variable, $CUBRID_USER from "cubrid" script file.
 
-    *   **In /etc/hosts file, check if a host name and an IP address mapping is normal**
+    *   **In /etc/hosts file, check if a hostname and an IP address mapping is normal**
 
-        If a host name and an IP address is abnormally mapped, you cannot start DB server. Therefore, you should check if they are normally mapped.
+        If a hostname and an IP address is abnormally mapped, you cannot start DB server. Therefore, you should check if they are normally mapped.
 
 **Upgrading CUBRID**
 
@@ -213,9 +210,123 @@ A simple description on each driver can be found on :doc:`/api/index`.
 
 **Installing CUBRID Tools**
 
-You can download various tools including CUBRID Manager and CUBRID Migration Toolkit from https://www.cubrid.org/downloads.
+You can download various tools including CUBRID Admin and CUBRID Migration Toolkit from https://www.cubrid.org/downloads.
 
-.. FIXME You can see the latest information on tools such as CUBRID Manager and install them by downloading files from http://www.cubrid.org/downloads.
+.. FIXME You can see the latest information on tools such as CUBRID Admin and install them by downloading files from http://www.cubrid.org/downloads.
+
+.. _Installing-and-Running-on-Windows-With-WSL:
+
+Installing and Running CUBRID on Windows with WSL (Windows Subsystem for Linux)
+--------------------------------------------------------------------------------
+
+CUBRID provides an installer that can install and run CUBRID in a WSL (Windows Subsystem for Linux) environment on Windows. (https://www.cubrid.org/downloads)
+To install and run CUBRID in a WSL environment, WSL must already be installed. For information on how to install WSL, see https://learn.microsoft.com/en-us/windows/wsl/install.
+
+**Checklist before Installing**
+
+You should check the below before installing CUBRID for Windows.
+
+*   Check Windows version compatibility
+
+    Windows 10 version 2004 (Build 19041) or later, or Windows 11
+
+*   Check virtualization technology support (Intel VT-x, AMD-V)
+
+    Check whether virtualization technology is enabled in the BIOS/UEFI.
+
+*   Install and enable WSL (Windows Subsystem for Linux)
+
+    Install the latest WSL2 from https://github.com/microsoft/WSL/releases and enable WSL in Windows Features.
+    The CUBRID installer does not automatically install WSL; it only checks whether WSL is enabled and provides a way to enable it.
+    If WSL needs to be installed and enabled, a reboot is required, and you must run the installer again after rebooting.
+
+*   The installer requires administrator privileges.
+
+**Installation Process**
+
+When you run the provided EXE installer, it checks the WSL environment. If the requirements are not met, it displays a message and stops the installation.
+If WSL is enabled, the installer installs a Linux distribution that includes CUBRID and a tray application for managing the CUBRID server.
+
+**Step 1: Selecting installation options**
+
+    *   Set the distribution name
+    *   Choose whether to register the tray application in the startup list
+    *   Choose whether to create a desktop shortcut
+    *   Choose whether to create a sample database
+    *   Select WSL2 mode (checked by default). When checked, CUBRID is installed in WSL2 mode; when unchecked, it is installed in WSL1 mode.
+
+        The supported platform requirements and verified behavior described above are based on WSL2 mode.
+        WSL1 mode does not use the Linux kernel directly, so some features may be limited.
+
+**Step 2: Specifying the installation directory**
+
+**Step 3: Completing the installation**
+
+    *   After installation completes, you can choose whether to run the tray application.
+    *   The installer only provides install and uninstall functions. Uninstalling removes the WSL distribution
+        and the tray application, and all databases and configuration files inside the distribution are also deleted;
+        back up your databases before uninstalling.
+
+    .. warning::
+        Copy any files backed up with backupdb or other methods to the Windows filesystem (the /mnt/c/... path) and keep them outside the distribution.
+        Files kept inside the distribution are deleted when it is removed.
+
+    *   To upgrade CUBRID, do not run the installer again. Instead, connect to the distribution and follow the same
+        procedure as on Linux using the Linux installation file.
+        For details, see the CUBRID upgrade section in :ref:`Installing-and-Running-on-Linux`.
+
+.. note::
+
+    Once installation is complete, the CUBRID WSL distribution and the CUBRID server are set to start automatically whenever the system reboots.
+    To stop this automatic startup on reboot, turn it off at "Settings > Apps > Startup > **cubrid_starter.exe**".
+    Likewise, if the tray application was registered in the startup list, turn it off at "Settings > Apps > Startup > **cubrid_tray_app.exe**" to stop it from starting automatically.
+
+**Step 4: Verifying the installation**
+
+    *   After installation, check that the distribution was installed by running ``wsl -l -v`` in the Windows Command Prompt.
+    *   After installation, check that the CUBRID server is running by running
+        ``wsl -d <distribution name> -u cubrid -- bash -l -c 'cubrid service status'`` in the Windows Command Prompt.
+    *   Run the tray application and select the About menu to check the installed distribution name, CUBRID version, and status.
+
+**About the Distribution**
+
+    *   The installer lets you set the distribution name, which you can check with the ``wsl -l`` command in the Windows Command Prompt.
+    *   CUBRID in the distribution is installed under the **cubrid** user account, whose home directory is /home/cubrid.
+    *   CUBRID is installed at /home/cubrid/CUBRID in the distribution, and the CUBRID environment variables are set in /home/cubrid/.cubrid.sh.
+    *   To access the distribution, run ``wsl -d <distribution name> -u cubrid`` in the Windows Command Prompt.
+
+**Tray Application**
+
+    *   The tray application can start, stop, and restart the CUBRID server, and provides the following menu:
+
+        *   About: Check the installed distribution name, CUBRID version, and status
+        *   CUBRID Start: Start the CUBRID server
+        *   CUBRID Stop: Stop the CUBRID server
+        *   Guide: Network configuration and upgrade guide
+        *   Exit: Exit the tray application
+
+**About WSL**
+
+    *   WSL2 offers improved performance over WSL1 and uses the Linux kernel directly, so you can use the latest Linux features.
+    *   CUBRID can be installed and run on both WSL2 and WSL1, but WSL2 is recommended whenever your environment can use it.
+    *   For more information about WSL, see https://learn.microsoft.com/en-us/windows/wsl/.
+
+**About Networking**
+
+    *   In WSL2 mode, Windows and WSL communicate over a virtual NAT network, so port forwarding may need to be configured.
+
+        Most versions support port forwarding automatically, so the server can be reached at localhost:<port>.
+        To resolve the port forwarding and distribution IP address changes caused by the NAT mode, WSL2 supports a networking option called mirrored mode.
+        Setting the following in the %USERPROFILE%\\.wslconfig file makes WSL2 directly mirror the Windows network interface, the same way WSL1 does. ::
+
+            [wsl2]
+            networkingMode=mirrored
+
+        Note:
+        In mirrored mode, Since Windows and WSL2 share the same network space, running a port that is already in use on Windows (e.g. 30000) inside WSL2 as well can cause a port conflict.
+
+    *   In WSL1 mode, Windows and WSL are host-integrated, sharing the Windows host's IP address and network stack as-is (Windows firewall rules apply).
+    *   For networking configuration, see https://learn.microsoft.com/en-us/windows/wsl/networking.
 
 .. _Installing-and-Running-on-Windows:
 
@@ -283,7 +394,7 @@ You can change configuration such as service ports to meet the user environment 
     For example, if the value of **APPL_SERVER_PORT** is 35000 and the maximum number of CASes by **MAX_NUM_APPL_SERVER** is 50, then listening ports on CASes are 35000, 35001, ..., 35049.
     For more details, see :ref:`parameter-by-broker`. 
 
-    The **CCI_DEFAULT_AUTOCOMMIT** broker parameter is supported since 2008 R4.0. The default value in the version is **OFF** and it is later changed to **ON**.  Therefore, users who have upgraded from 2008 R4.0 to 2008 R4.1 or later versions should change this value to **OFF** or configure the auto-commit mode to **OFF**.
+    The **CCI_DEFAULT_AUTOCOMMIT** broker parameter is supported since 2008 R4.0. The default value in the version is **OFF** and it is later changed to **ON**.  Therefore, users who have upgraded from 2008 R4.0 to 2008 R4.1 or later versions should change this value to **OFF** or configure the autocommit mode to **OFF**.
 
 **Installing CUBRID Interfaces**
 
@@ -295,7 +406,7 @@ A simple description on each driver can be found on :doc:`/api/index`.
 
 **Installing CUBRID Tools**
 
-You can download various tools including CUBRID Manager and CUBRID Migration Toolkit from https://www.cubrid.org/downloads.
+You can download various tools including CUBRID Admin and CUBRID Migration Toolkit from https://www.cubrid.org/downloads.
 
 .. FIXME: You can see the latest information on tools such as CUBRID Manager and install them by downloading files from `<http://www.cubrid.org/wiki_tools>`_.
 
@@ -334,9 +445,9 @@ Check the following before installing CUBRID for Linux.
     *   gcrypt Library (rpm -q libgcrypt)
     *   stdc++ Library (rpm -q libstdc++)
     
-*   Check if the mapping between host names and IP addresses are correct in the /etc/hosts file.
+*   Check if the mapping between hostnames and IP addresses are correct in the /etc/hosts file.
 
-    If host names and IP addresses are matched incorrectly, DB server cannot be started normally. Therefore, check if they are correctly mapped.
+    If hostnames and IP addresses are matched incorrectly, DB server cannot be started normally. Therefore, check if they are correctly mapped.
 
 **Installation Process**
 
@@ -346,7 +457,7 @@ Check the following before installing CUBRID for Linux.
 
         ::
         
-            tar xvfz CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.tar.gz /home1/cub_user/
+            tar xvfz CUBRID-11.4-latest-Linux.x86_64.tar.gz /home1/cub_user/
 
         CUBRID directory is created under /home1/cub_user/ and files are created under CUBRID directory. 
 
@@ -363,7 +474,7 @@ Check the following before installing CUBRID for Linux.
             export CUBRID=/home1/cub_user/CUBRID
             export CUBRID_DATABASES=$CUBRID/databases
             
-    #.  Add CUBRID JDBC library file name to the **CLASSPATH** environment variable.
+    #.  Add CUBRID JDBC library filename to the **CLASSPATH** environment variable.
     
         ::
         
@@ -445,12 +556,18 @@ Check below list before installing CUBRID database of Windows version.
         
             %CUBRID%\jdbc\cubrid_jdbc.jar       
             
-    #.  Add CUBRID bin directory to **Path** system variable.
+    #.  Add CUBRID bin and cci\bin directory to **Path** system variable.
       
         ::
-        
-            %CUBRID%\bin
-                
+
+            %CUBRID%\cci\bin;%CUBRID%\bin
+
+    .. note:: 
+
+        Setting environment variables for using CUBRID can be conveniently configured by using the batch file (cubrid_env.bat) below.
+        C:\CUBRID\shard\windows_scripts\cubrid_env.bat
+	
+	
     **Creating DB**
         
     *   Run **cmd** command and open the console; move to the directory to create DB and create DB.
@@ -547,3 +664,12 @@ Since CUBRID Service Tray is not automatically registered when installing CUBRID
     *   Check if CUBRID Service Tray is registered in [Start button] > [All Programs] > [Startup]; if not, register CUBRID Service Tray.
 
 For environment setting, tools installation and interfaces installation after CUBRID installation,  see :ref:`Installing-and-Running-on-Windows`.
+
+.. note:: 
+
+    If CUBRID is installed as a zip file, it may not be executed because there is no DLL required to execute CUBRID.
+    In this case, you need to install Microsoft Visual C++ Redistributable.
+    
+    *   **Microsoft Visual C++ Redistributable**
+    
+        https://visualstudio.microsoft.com/downloads/

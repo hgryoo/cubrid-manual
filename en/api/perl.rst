@@ -22,13 +22,15 @@ Installing and Configuring Perl
 
 **Requirements**
 
-*   Perl: It is recommended to use an appropriate version of Perl based on your system environment. For example, all Linux and FreeBSD distributions come with Perl. For Windows, ActivePerl is recommended. For details, see https://www.activestate.com/products/perl/ .
+*   Perl: It is recommended to use an appropriate version of Perl based on your system environment. For example, all Linux and FreeBSD distributions come with Perl. For Windows, ActivePerl is recommended. For details, see https://www.activestate.com/platform/supported-languages/legacy-languages .
 
-*   CUBRID: To build CUBRID Perl driver, you need to get the CCI driver. You can get it from installing CUBRID. You can download the CUBRID Perl driver's source code from https://www.cubrid.org/downloads .
+*   CUBRID: To build the CUBRID Perl driver, the CCI driver is needed. You can obtain it by installing the CUBRID Engine, which can be downloaded from https://www.cubrid.org/downloads. After downloading and installing a proper version of the CUBRID Engine, you can find the required CCI driver in the installed CUBRID Engine directory, $CUBRID/cci.
 
-*   DBI: http://code.activestate.com/ppm/DBI/ .
+*   DBI: https://metacpan.org/dist/DBI/
 
 *   C compiler: In most cases, there are binary distributions of **DBD::cubrid** ( https://www.cubrid.org/downloads#perl ) available. However, if you want to build the driver from source code, a C compiler is required. Make sure to use the same C compiler that was used for compiling Perl and CUBRID. Otherwise, you will encounter problems because of differences in the underlying C runtime libraries.
+
+*   For building CCI Driver In Linux, GNU Developer Toolset 8 or higher is required.
 
 **Comprehensive Perl Archive Network (CPAN) Installation**
 
@@ -50,7 +52,7 @@ If you cannot get the CPAN module, you should download the **DBD::cubrid** sourc
 
 https://www.cubrid.org/downloads#perl
 
-The file name is typically something like this: **DBD-cubrid-X.X.X.tar.gz**. After extracting the archive, enter the command line below under the **DBD-cubrid-X.X.X** directory. (On Windows, you may need to replace **make** with **nmake** or **dmake**.) ::
+The filename is typically something like this: **DBD-cubrid-X.X.X.tar.gz**. After extracting the archive, enter the command line below under the **DBD-cubrid-X.X.X** directory. (On Windows, you may need to replace **make** with **nmake** or **dmake**.) ::
 
     Perl Makefile.PL
     make

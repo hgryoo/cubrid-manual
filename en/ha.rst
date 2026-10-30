@@ -52,7 +52,7 @@ A CUBRID HA node consists of one master process (cub_master), one or more databa
 
 .. image:: /images/image15.png
 
-*   **Replication log reflection process (applylogdb)** : Reflects the log that has been copied by the replication log copy process to a node. The information of reflected replications is stored in the internal catalog (db_ha_apply_info). You can use the :ref:`cubrid-applyinfo` utility to verify this information.
+*   **Replication log reflection process (applylogdb)** : Reflects the log that has been copied by the replication log copy process to a node. The information of reflected replications is stored in the internal catalog (_db_ha_apply_info). You can use the :ref:`cubrid-applyinfo` utility to verify this information.
 
 .. image:: /images/image16.png
 
@@ -105,7 +105,7 @@ A failback means that the previously failed master node automatically becomes a 
 
 .. image:: /images/image19.png
 
-If a heartbeat message fails to deliver, a failover will occur. For this reason, servers with unstable connection may experience failover even though no actual failures occur. To prevent a failover from occurring in the situation described above, configure **ha_ping_ports**. Configuring **ha_ping_ports** will send a ping message to a node specified in **ha_ping_ports** in order to verify whether the network is stable or not when a heartbeat message fails to deliver. For details on configuring **ha_ping_ports**, see :ref:`cubrid-ha-conf`.
+If a heartbeat message fails to deliver, a failover will occur. For this reason, servers with unstable connection may experience failover even though no actual failures occur. To prevent a failover from occurring in the situation described above, configure **ha_ping_hosts**. Configuring **ha_ping_hosts** will send a ping message to the hosts specified in **ha_ping_hosts** in order to verify whether the network is stable or not when a heartbeat message fails to deliver. For details on configuring **ha_ping_hosts**, see :ref:`cubrid-ha-conf`.
 
 .. _broker-mode:
 
@@ -134,7 +134,7 @@ The following picture shows how a broker connects to the host through the **db-h
 
 .. image:: /images/image20.png
 
-The broker tries to connect as the order of *B*, *C*, *A* because db-host in databases.txt is "node B:node C:node A". At this time, "node B:node C:node A" specified in db-host is the real host names defined in the /etc/hosts file.
+The broker tries to connect as the order of *B*, *C*, *A* because db-host in databases.txt is "node B:node C:node A". At this time, "node B:node C:node A" specified in db-host is the real hostnames defined in the /etc/hosts file.
 
 *   Example 1.  *node B* is crashed, *node C* is in standby status, and *node A* is in active status. Therefore, at last, the broker connects to *node A*.
 *   Example 2.  *node B* is crashed, and *node C* is in active status. Therefore, at last, the broker connects to *node C*.
@@ -151,7 +151,7 @@ The following picture shows how a broker connects to the host through the **db-h
 
 .. image:: /images/image21.png
 
-The broker tries to connect as the order of *A*, *B*, *C* because db-host in databases.txt is "node A:node B:node C". At this time, "node A:node B:node C" specified in db-host is the real host names defined in the /etc/hosts file.
+The broker tries to connect as the order of *A*, *B*, *C* because db-host in databases.txt is "node A:node B:node C". At this time, "node A:node B:node C" specified in db-host is the real hostnames defined in the /etc/hosts file.
 
 *   Example 1.  *node A* is in active status, *node B* is in standby status. Therefore, at last, the broker connects to *node B*.
 *   Example 2.  *node A* is in active status, *node B* is crashed, and *node C* is in standby status. Therefore, at last, the broker connects to *node C*.
@@ -167,7 +167,7 @@ The following picture shows how a broker connects to the host through the **db-h
 
 .. image:: /images/image22.png
 
-The broker tries to connect as the order of *A*, *B*, *C* because db-host in databases.txt is "node A:node B:node C". At this time, "node A:node B:node C" specified in db-host is the real host names defined in the /etc/hosts file.
+The broker tries to connect as the order of *A*, *B*, *C* because db-host in databases.txt is "node A:node B:node C". At this time, "node A:node B:node C" specified in db-host is the real hostnames defined in the /etc/hosts file.
 
 *   Example 1.  *node A* is in active status, *node B* is in standby status. Therefore, at last, the broker connects to *node B*.
 *   Example 2.  *node A* is in active status, *node B* is crashed, and *node C* is in standby status. Therefore, at last, the broker connects to *node C*.
@@ -210,7 +210,7 @@ The following is an example in which two Read Write (RW) brokers are configured.
 
 .. image:: /images/image25.png
 
-The following is an example in which the Read Write (RW) broker and the Read Only (RO) broker are configured in each piece of equipment of the master node and the slave node. First, the *app1* and the *app2* URL connect to *broker A1* (RW) and *broker B2* (RO), respectively. The second connection (altHosts) is made to *broker A2* (RO) and *broker B1* (RW). When equipment that includes *nodeA* fails, app1 and the app2 connect to the broker that includes *nodeB*.
+The following is an example in which the Read Write (RW) broker and the Read Only (RO) broker are configured on each piece of equipment for the master node and the slave node. First, the *app1* and *app2* URLs connect to *broker A1* (RW) and *broker B2* (RO), respectively. The second connection (altHosts) is made to *broker A2* (RO) and *broker B1* (RW). When the equipment that includes *nodeA* fails, *app1* and *app2* connect to the broker that includes *nodeB*.
 
 .. image:: /images/image26.png
 
@@ -334,7 +334,7 @@ Ensure **ha_mode** of **$CUBRID/conf/cubrid.conf** in every CUBRID HA node has t
 
 **cubrid_ha.conf**
 
-Ensure **ha_port_id**, **ha_node_list**, **ha_db_list** of **$CUBRID/conf/cubrid_ha.conf** in every CUBRID HA node has the same value. In the example below, we assume that the host name of a master node is *nodeA* and that of a slave node is *nodeB*. ::
+Ensure **ha_port_id**, **ha_node_list**, **ha_db_list** of **$CUBRID/conf/cubrid_ha.conf** in every CUBRID HA node has the same value. In the example below, we assume that the hostname of a master node is *nodeA* and that of a slave node is *nodeB*. ::
 
     [common]
     ha_port_id=59901
@@ -345,7 +345,7 @@ Ensure **ha_port_id**, **ha_node_list**, **ha_db_list** of **$CUBRID/conf/cubrid
 
 **databases.txt**
 
-Ensure that you must configure the host names (*nodeA:nodeB*) of master and slave nodes in db-host of **$CUBRID_DATABASES/databases.txt**; if **$CUBRID_DATABASES** is not configured, do it in **$CUBRID/databases/databases.txt**). ::
+Ensure that you must configure the hostnames (*nodeA:nodeB*) of master and slave nodes in db-host of **$CUBRID_DATABASES/databases.txt**; if **$CUBRID_DATABASES** is not configured, do it in **$CUBRID/databases/databases.txt**). ::
 
     #db-name vol-path db-host log-path lob-base-path
     testdb /home/cubrid/DB/testdb nodeA:nodeB /home/cubrid/DB/testdb/log file:/home/cubrid/DB/testdb/lob
@@ -355,7 +355,7 @@ Starting and Verifying CUBRID HA
 
 **Starting CUBRID HA**
 
-Execute the **cubrid heartbeat** **start** at each node in the CUBRID HA group. Note that the node executing **cubrid heartbeat start** first will become a master node. In the example below, we assume that the host name of a master node is *nodeA* and that of a slave node is *nodeB*.
+Execute the **cubrid heartbeat** **start** at each node in the CUBRID HA group. Note that the node executing **cubrid heartbeat start** first will become a master node. In the example below, we assume that the hostname of a master node is *nodeA* and that of a slave node is *nodeB*.
 
 *   Master node ::
 
@@ -369,14 +369,14 @@ Execute the **cubrid heartbeat** **start** at each node in the CUBRID HA group. 
 
 Execute **cubrid heartbeat status** at each node in the CUBRID HA group to verify its configuration status. ::
 
-    [nodeA]$ cubrid heartbeat status
+    [cubrid@nodeA]$ cubrid heartbeat status
     @ cubrid heartbeat list
-     HA-Node Info (current nodeA-node-name, state master)
+     HA-Node Info (current nodeA, state master)
        Node nodeB-node-name (priority 2, state slave)
        Node nodeA-node-name (priority 1, state master)
      HA-Process Info (nodeA 9289, state nodeA)
-       Applylogdb testdb@localhost:/home1/cubrid1/DB/testdb_nodeB.cub (pid 9423, state registered)
-       Copylogdb testdb@nodeB-node-name:/home1/cubrid1/DB/testdb_nodeB.cub (pid 9418, state registered)
+       Applylogdb testdb@localhost:/home1/cubrid1/DB/testdb_nodeB (pid 9423, state registered)
+       Copylogdb testdb@nodeB-node-name:/home1/cubrid1/DB/testdb_nodeB (pid 9418, state registered)
        Server testdb (pid 9306, state registered_and_active)
      
     [nodeA]$
@@ -395,7 +395,7 @@ Use the **cubrid changemode** utility at each node in the CUBRID HA group to ver
 
 **Verifying the CUBRID HA Operation**
 
-Verify that action is properly applied to standby server of the slave node after performing write in an active server of the master node. To make a success connection via the CSQL Interpreter in HA environment, you must specify the host name to be connected after the database name like "@<*host_name*>"). If you specify a host name as localhost, it is connected to local node.
+Verify that action is properly applied to standby server of the slave node after performing write in an active server of the master node. To make a success connection via the CSQL Interpreter in HA environment, you must specify the hostname to be connected after the database name like "@<*host_name*>"). If you specify a hostname as localhost, it is connected to local node.
 
 .. warning:: Ensure that primary key must exist when creating a table to have replication successfully processed.
 
@@ -468,7 +468,7 @@ The following example shows how to execute a broker from the master node.
 
 **Configuring Applications**
 
-Specifies the host name (*nodeA_broker*, *nodeB_broker*) and port for an application to connect in the connection URL. The **altHosts** attribute defines the broker where the next connection will be made when the connection to a broker fails. The following is an example of a JDBC program. For more information on CCI and PHP, see :ref:`ha-cci-conf` and :ref:`ha-php-conf`.
+Specifies the hostname (*nodeA_broker*, *nodeB_broker*) and port for an application to connect in the connection URL. The **altHosts** attribute defines the broker where the next connection will be made when the connection to a broker fails. The following is an example of a JDBC program. For more information on CCI and PHP, see :ref:`ha-cci-conf` and :ref:`ha-php-conf`.
 
 .. code-block:: java
 
@@ -543,7 +543,7 @@ For details about **max_clients**, see :ref:`connection-parameters`.
 
 *   **log_buffer_size** : The size of a log buffer. This must be same for all nodes, as it affects the protocol between **copylogdb** that duplicate the server and logs.
 
-*   **log_volume_size** : The size of a log volume. In CUBRID HA, the format and contents of a transaction log are the same as that of the replica log. Therefore, the parameter must be same for all nodes. If each node creates its own DB, the **cubrid createdb** options (**--db-volume-size**, **--db-page-size**, **--log-volume-size**, **--log-page-size**, etc.) must be the same.
+*   **log_volume_size** : The size of a log volume. In CUBRID HA, the format and contents of a transaction log are the same as that of the replica log. Therefore, the parameter must be same for all nodes. If each node creates its own DB, the **cubrid createdb** options (**\-\-db-volume-size**, **\-\-db-page-size**, **\-\-log-volume-size**, **\-\-log-page-size**, etc.) must be the same.
 
 *   **cubrid_port_id** : The TCP port number for creating a server connection. It must be same for all nodes in order to connect **copylogdb** that duplicate the server and logs.
 
@@ -554,6 +554,7 @@ For details about **max_clients**, see :ref:`connection-parameters`.
     *   The **ha_mode** parameter in replica node
     *   The **ha_copy_sync_mode** parameter
     *   The **ha_ping_hosts** parameter
+    *   The **ha_tcp_ping_hosts** parameter
 
 **Example**
 
@@ -595,13 +596,13 @@ Node
 
 **ha_node_list**
 
-**ha_node_list** is a parameter used to configure the group name to be used in the CUBRID HA group and the host name of member nodes in which failover is supported. The group name is separated by @. The name before @ is for the group, and the names after @ are for host names of member nodes. A comma(,) or colon(:) is used to separate individual host names. The default is **localhost@localhost**.
+**ha_node_list** is a parameter used to configure the group name to be used in the CUBRID HA group and the hostname of member nodes in which failover is supported. The group name is separated by @. The name before @ is for the group, and the names after @ are for hostnames of member nodes. A comma(,) or colon(:) is used to separate individual hostnames. The default is **localhost@localhost**.
 
 .. note::
 
-    The host name of the member nodes specified in this parameter cannot be replaced with the IP. You should use the host names which are registered in **/etc/hosts**. 
+    The hostname of the member nodes specified in this parameter cannot be replaced with the IP. You should use the hostnames which are registered in **/etc/hosts**. 
 
-    If the host name is not specified properly, the below message is written into the server.err error log file.
+    If the hostname is not specified properly, the below message is written into the server.err error log file.
     
     ::
     
@@ -613,23 +614,19 @@ This parameter can be modified dynamically. If you modify the value of this para
 
 **ha_replica_list**
 
-**ha_replica_list** is a parameter used to configure the group name, which is used in the CUBRID HA group, and the replica nodes, which are host names of member nodes in which failover is not supported. There is no need to specify this if you do not construct replica nodes. The group name is separated by @. The name before @ is for the group, and the names after @ are for host names of member nodes. A comma(,) or colon(:) is used to separate individual host names. The default is **NULL**.
+**ha_replica_list** is a parameter used to configure the group name, which is used in the CUBRID HA group, and the replica nodes, which are hostnames of member nodes in which failover is not supported. There is no need to specify this if you do not construct replica nodes. The group name is separated by @. The name before @ is for the group, and the names after @ are for hostnames of member nodes. A comma(,) or colon(:) is used to separate individual hostnames. The default is **NULL**.
 
-The group name must be identical to the name specified in **ha_replica_list**. The host names of member nodes and the host names of nodes specified in this parameter must be registered in **/etc/hosts**. A node in which the **ha_mode** value is set to **replica** must be specified in **ha_replica_list**. The **ha_replica_list** values of all nodes in the CUBRID HA group must be identical.
+The group name must be identical to the name specified in **ha_replica_list**. The hostnames of member nodes and the hostnames of nodes specified in this parameter must be registered in **/etc/hosts**. A node in which the **ha_mode** value is set to **replica** must be specified in **ha_replica_list**. The **ha_replica_list** values of all nodes in the CUBRID HA group must be identical.
 
 This parameter can be modified dynamically. If you modify the value of this parameter, you must execute :ref:`cubrid heartbeat reload <cubrid-heartbeat>` to apply the changes.
 
 .. note::
 
-    The host name of the member nodes specified in this parameter cannot be replaced with the IP. You should use the host names which are registered in **/etc/hosts**. 
+    The hostname of the member nodes specified in this parameter cannot be replaced with the IP. You should use the hostnames which are registered in **/etc/hosts**. 
 
 **ha_db_list**
 
 **ha_db_list** is a parameter used to configure the name of the database that will run in CUBRID HA mode. The default is **NULL**. You can specify multiple databases by using a comma (,).
-
-.. note::
-
-    The host name of the member nodes specified in this parameter cannot be replaced with the IP. You should use the host names which are registered in **/etc/hosts**. 
 
 Access
 ^^^^^^
@@ -642,13 +639,23 @@ If a firewall exists in the service environment, the firewall must be configured
 
 **ha_ping_hosts**
 
-**ha_ping_hosts** is a parameter used to configure the host which verifies whether or not a failover occurs due to unstable network when a failover has started in a slave node. The default is **NULL**. A comma(,) or colon(:) is used to separate individual host names.
+**ha_ping_hosts** is a parameter used to configure the host which verifies whether or not a failover occurs due to unstable network when a failover has started in a slave node. The default is **NULL**. A comma(,) or colon(:) is used to separate individual hostnames.
 
-The host name of the member nodes specified in this parameter can be replaced with the IP. When a host name is used, the name must be registered in **/etc/hosts**.
+The hostname of the member nodes specified in this parameter can be replaced with the IP. When a hostname is used, the name must be registered in **/etc/hosts**.
 
 CUBRID checks hosts specified in **ha_ping_hosts** every hour; if there is a problem on a host, "ping check" is paused temporarily and checks every 5 minutes if the host is normalized or not.
 
 Configuring this parameter can prevent split-brain, a phenomenon in which two master nodes simultaneously exist as a result of the slave node erroneously detecting an abnormal termination of the master node due to unstable network status and then promoting itself as the new master.
+
+However, the "ping check" does not work if the ICMP protocol is disabled. CUBRID provides **ha_tcp_ping_hosts** as an alternative to address this.
+
+This parameter can be modified dynamically. If you modify the value of this parameter, you must execute :ref:`cubrid heartbeat reload <cubrid-heartbeat>` to apply the changes.
+
+**ha_tcp_ping_hosts**
+
+**ha_tcp_ping_hosts** is a parameter that can be used as an alternative to **ha_ping_hosts** when the ICMP protocol is disabled. **ha_tcp_ping_hosts** works like **ha_ping_hosts** except that the TCP layer is used instead of the IP layer for the "ping check". The default is **NULL**. A comma(,) is used to separate individual hostnames, and a colon(:) is used to separate a hostname and a port number. So, the format of this parameter is like "ha_tcp_ping_hosts=host1:port1,host2:port2". In order to use the TCP ping properly, a TCP socket that can receive the requests must be opened in advance with the port number on the host specified in **ha_tcp_ping_hosts** and the firewall must not block the requests. **ha_tcp_ping_hosts** is ignored if the **ha_ping_hosts** is also set.
+
+This parameter can be modified dynamically. If you modify the value of this parameter, you must execute :ref:`cubrid heartbeat reload <cubrid-heartbeat>` to apply the changes.
 
 Replication
 ^^^^^^^^^^^
@@ -663,9 +670,14 @@ For details, see :ref:`log-multiplexing`.
 
 **ha_copy_log_base**
 
-**ha_copy_log_base** is a parameter used to configure the location of storing the transaction log copy. The default is **$CUBRID_DATABASES**/\ *<db_name>*\_\ *<host_name>*.
+Specifies the parent path for saving replication logs. The default value is the directory path set in the $CUBRID_DATABASES environment variable.
+Replication logs are stored in a subdirectory of <db_name>_<host_name>, depending on the server and database name.
 
-For details, see :ref:`log-multiplexing`.
+The replication log path can be set to either a relative or absolute path.
+The following are examples of each setting.
+
+ex1) ha_copy_log_base=copylog: Considered a relative path and stores replication logs in $CUBRID_DATABASES/copylog.
+ex2) ha_copy_log_base=/log/copy_log: Saves replication logs in /log/copy_log as an absolute path.
 
 .. _ha_copy_log_max_archives:
 
@@ -737,7 +749,7 @@ In a master node, only the transactions which have been run on the specified tim
 
 .. note::
 
-    The following example shows how to configure the value of /etc/hosts (a host name of a member node: nodeA, IP: 192.168.0.1). 
+    The following example shows how to configure the value of /etc/hosts (a hostname of a member node: nodeA, IP: 192.168.0.1). 
     
     ::
 
@@ -765,12 +777,12 @@ See the above description of **ha_delay_limit**.
 
 This is the maximum value of the time in which a node's database server process (cub_server) waits a response from another node's replication-log-copy process (copylogdb). The default is 5(seconds). If this value is -1, this means to be infinite wait. It only works with **SYNC** log copy mode(**ha_copy_sync_mode**) parameter. 
 
-**ha_monitor_disk_failure_interval** 
+**ha_check_disk_failure_interval** 
 
-CUBRID judges the disk failure for each time which is set to the value of this parameter. The default is 30, and the unit is second.
+CUBRID judges the disk failure for each time which is set to the value of this parameter. The default is 15, and the unit is second.
 
-*   If the value of **ha_copy_log_timeout** parameter is -1, the value of **ha_monitor_disk_failure_interval** parameter is ignored and the disk failure is not judged.
-*   If the value of **ha_monitor_disk_failure_interval** parameter is smaller than the value of **ha_copy_log_timeout** parameter, the disk failure is judged for each **ha_copy_log_timeout** + 20 seconds.
+*   If the value of **ha_copy_log_timeout** parameter is -1, the value of **ha_check_disk_failure_interval** parameter is ignored and the disk failure is not judged.
+*   If the value of **ha_check_disk_failure_interval** parameter is smaller than the value of **ha_copy_log_timeout** parameter, the disk failure is judged for each **ha_copy_log_timeout** + 20 seconds.
 
 **ha_unacceptable_proc_restart_timediff**
 
@@ -782,14 +794,15 @@ SQL Logging
 
 **ha_enable_sql_logging**
 
-If the value of this parameter is **yes**, CUBRID generates the log file of SQL which **aplylogdb** process applies to the DB volume. The log file is located under the sql_log of the replication log directory(**ha_copy_log_base**). 
+If the value of this parameter is **yes**, CUBRID generates the log file of SQL which **applylogdb** process applies to the DB volume. The log file is located under the sql_log of the replication log directory(**ha_copy_log_base**).
 The default is **no**.
 
-The format of this log file name is *<db name>_<master hostname>*\ **.sql.log.**\ *<id>*, and *<id>* starts from 0.
+The format of this log filename is *<db name>_<master hostname>*\ **.sql.log.**\ *<id>*, and *<id>* starts from 0.
 If this size is over **ha_sql_log_max_size_in_mbytes**, a new file with "*<id>* + 1" is created.
 For example, if "ha_sql_log_max_size_in_mbytes=100", demodb_nodeA.sql.log.1 is newly created as the size of demodb_nodeA.sql.log.0 file becomes 100MB.
+*<id>* will wrap around to 0 once it exceeds the maximum value (4,294,967,295).
 
-SQL log files are piled up when this parameter is on; therefore, a user should remove log files manually for retaining the free space.
+By default, only two latest SQL log files are maintained, and the maximum number of them can be adjusted through **ha_sql_log_max_count**.
 
 The SQL log format is as follows.
 
@@ -835,6 +848,14 @@ The SQL log format is as follows.
 
 The value of this parameter is the maximum size of the file which is created when SQL applied to DB by **applylogdb** process is logged. The new file is created when the size of a log file is over this value.
 
+**ha_sql_log_max_count**
+
+The value of this parameter indicates the maximum number of SQL log files to be maintained. The oldest ones are removed when the number of SQL log files exceeds this. This parameter can be set within the range of 2 to 5, and the default is 2. **ha_sql_log_max_count** and **ha_sql_log_max_size_in_mbytes** need to be set properly in order to adjust the amount of SQL log to maintain.
+
+**ha_sql_log_path**
+
+The value of this parameter indicates the path where the SQL log files will be created. The default value is **NULL**. This parameter can be set to an absolute or relative path. If a relative path is set, it is determined based on the replication log directory described in **ha_enable_sql_logging**. The database server process (cub_server) should have appropriate permissions on the path to create SQL log files. If this parameter is not set, the SQL log files will be created on the path described in **ha_enable_sql_logging**
+
 .. _ha-cubrid-broker-conf:
 
 cubrid_broker.conf
@@ -871,7 +892,7 @@ If you concern that the connections are centralized into one DB, set this value 
 
 **PREFERRED_HOSTS**
 
-Specify the order to connect by listing host names. The default value is **NULL**.
+Specify the order to connect by listing hostnames. The default value is **NULL**.
 
 You can specify multiple nodes by using a colon (:). First, it tries to connect to host in the following order: host specified in the **PREFERRED_HOSTS** parameter first and then host specified in **$CUBRID_DATABASES/databases.txt**.
 
@@ -1027,41 +1048,40 @@ A broker in HA environment should decide the one DB server to connect among mult
 
 Here are the main parameters used in the DB connection with the broker.
 
-+------------+----------------------+-------------------------------+-----------------------------------------------------------------------+
-| Location   | Configuration file   | Parameter name                | Description                                                           |
-+============+======================+===============================+=======================================================================+
-| DB server  | cubrid.conf          | ha_mode                       | HA mode(on/off/replica) of DB server. Default: off                    |
-|            +----------------------+-------------------------------+-----------------------------------------------------------------------+
-|            | cubrid_ha.conf       | ha_delay_limit                | A period to determine whether the replication-delay                   |
-|            |                      +-------------------------------+-----------------------------------------------------------------------+
-|            |                      | ha_delay_limit_delta          | Time subtracting the resolution time of replication-delay from        |
-|            |                      |                               | the time of replication-delay                                         |
-+------------+----------------------+-------------------------------+-----------------------------------------------------------------------+
-| Broker     | cubrid_broker.conf   | ACCESS_MODE                   | Broker mode(RW/RO/SO). Default: RW                                    |
-|            |                      +-------------------------------+-----------------------------------------------------------------------+
-|            |                      | REPLICA_ONLY                  | Connectible to REPLICA server or not(ON/OFF). Default: OFF            |
-|            |                      +-------------------------------+-----------------------------------------------------------------------+
-|            |                      | PREFERRED_HOSTS               | Connecting to the host that is specified here in priority to the host |
-|            |                      |                               | that you set in the db-host of databases.txt                          |
-|            |                      +-------------------------------+-----------------------------------------------------------------------+
-|            |                      | MAX_NUM_DELAYED_HOSTS_LOOKUP  | The number of hosts to determine the delay of replication in          |
-|            |                      |                               | databases.txt. If up to the specified number of hosts was determined  |
-|            |                      |                               | as the delay of replication, the broker is connected to the host      |
-|            |                      |                               | checked at last.                                                      |
-|            |                      |                               |                                                                       |
-|            |                      |                               | * -1: check all hosts specified in databases.txt whether replication  | 
-|            |                      |                               |       is delayed or not                                               |
-|            |                      |                               | * 0: do not check whether replication-delay or not, and process       | 
-|            |                      |                               |       the secondary connection immediately                            |
-|            |                      |                               | * n(>0): check up to n hosts whether replication is delayed or not    | 
-|            |                      +-------------------------------+-----------------------------------------------------------------------+
-|            |                      | RECONNECT_TIME                | Time to try reconnecting after the broker is connected to the         |
-|            |                      |                               | improper DB server. Default: 600s.                                    |
-|            |                      |                               | If this value is 0, no try for reconnection.                          |
-|            |                      +-------------------------------+-----------------------------------------------------------------------+
-|            |                      | CONNECT_ORDER                 | A parameter specifying the connecting order whether to connect as     |
-|            |                      |                               | or the random order(SEQ/RANDOM). Default: SEQ                         |
-+------------+----------------------+-------------------------------+-----------------------------------------------------------------------+
++------------+----------------------+-------------------------------+------------------------------------------------------------------------------------------------------------+
+| Location   | Configuration file   | Parameter name                | Description                                                                                                |
++============+======================+===============================+============================================================================================================+
+| DB server  | cubrid.conf          | ha_mode                       | HA mode(on/off/replica) of DB server. Default: off                                                         |
+|            +----------------------+-------------------------------+------------------------------------------------------------------------------------------------------------+
+|            | cubrid_ha.conf       | ha_delay_limit                | A period to determine whether the replication-delay                                                        |
+|            |                      +-------------------------------+------------------------------------------------------------------------------------------------------------+
+|            |                      | ha_delay_limit_delta          | Time subtracting the resolution time of replication-delay from the time of replication-delay               |
++------------+----------------------+-------------------------------+------------------------------------------------------------------------------------------------------------+
+| Broker     | cubrid_broker.conf   | ACCESS_MODE                   | Broker mode(RW/RO/SO). Default: RW                                                                         |
+|            |                      +-------------------------------+------------------------------------------------------------------------------------------------------------+
+|            |                      | REPLICA_ONLY                  | Connectible to REPLICA server or not(ON/OFF). Default: OFF                                                 |
+|            |                      +-------------------------------+------------------------------------------------------------------------------------------------------------+
+|            |                      | PREFERRED_HOSTS               | Connecting to the host that is specified here in priority to the host that you set in the db-host of       |
+|            |                      |                               | databases.txt                                                                                              |
+|            |                      +-------------------------------+------------------------------------------------------------------------------------------------------------+
+|            |                      | MAX_NUM_DELAYED_HOSTS_LOOKUP  | The number of hosts to determine the delay of replication in                                               |
+|            |                      |                               | databases.txt. If up to the specified number of hosts was determined                                       |
+|            |                      |                               | as the delay of replication, the broker is connected to the host                                           |
+|            |                      |                               | checked at last.                                                                                           |
+|            |                      |                               |                                                                                                            |
+|            |                      |                               | * -1: check all hosts specified in databases.txt whether replication is delayed or not                     | 
+|            |                      |                               |                                                                                                            |
+|            |                      |                               | * 0: do not check whether replication-delay or not, and process the secondary connection immediately       | 
+|            |                      |                               |                                                                                                            |
+|            |                      |                               | * n(>0): check up to n hosts whether replication is delayed or not                                         | 
+|            |                      +-------------------------------+------------------------------------------------------------------------------------------------------------+
+|            |                      | RECONNECT_TIME                | Time to try reconnecting after the broker is connected to the                                              |
+|            |                      |                               | improper DB server. Default: 600s.                                                                         |
+|            |                      |                               | If this value is 0, no try for reconnection.                                                               |
+|            |                      +-------------------------------+------------------------------------------------------------------------------------------------------------+
+|            |                      | CONNECT_ORDER                 | A parameter specifying the connecting order whether to connect as                                          |
+|            |                      |                               | or the random order(SEQ/RANDOM). Default: SEQ                                                              |
++------------+----------------------+-------------------------------+------------------------------------------------------------------------------------------------------------+
 
 Connection Process
 ------------------
@@ -1378,9 +1398,60 @@ This utility is used to output the information of CUBRID HA group and CUBRID HA 
      
      
      HA-Process Info (master 2143, state slave)
-       Applylogdb testdb@localhost:/home/cubrid/DB/testdb_nodeB (pid 2510, state registered)
+       Applylogdb testdb@localhost:/home/cubrid/DB/testdb_nodeA (pid 2510, state registered)
        Copylogdb testdb@nodeA:/home/cubrid/DB/testdb_nodeA (pid 2505, state registered)
        Server testdb (pid 2393, state registered_and_standby)
+
+The -v option displays detailed information about the node.
+
+*   score : Indicates the priority of the node, with a lower score indicating a higher priority.
+*   missed heartbeat : Indicates the loss rate of heartbeat signals sent between nodes configured in an HA environment. If this value is unusually high, the configuration, network, or firewall settings should be inspected.
+
+The event occurrence times for the Applylogdb, Copylogdb, and Server processes are also displayed. If no event has occurred, it is displayed as "00:00:00.000."
+
+*   registered-time : The time when a process startup request was made via a user command.
+*   deregistered-time : The time when a remote process stop request was made via a user command (applicable only to copylogdb and applylogdb).
+*   shutdown-time : The time that HA-manager(cub_master) stopped the process
+*   start-time : The time that HA-manager(cub_master) restarted the process
+
+**Example**
+
+::
+
+    $ cubrid heartbeat status -v
+    @ cubrid heartbeat status
+
+    HA-Node Info (current cubrid1, state master)
+      Node cubrid2 (priority 2, state slave)
+        - score 2
+        - missed heartbeat 0
+      Node cubrid1 (priority 1, state master)
+        - score -32767
+        - missed heartbeat 0
+
+    HA-Process Info (master 7392, state master)
+    Copylogdb testdb@cubrid2:/home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 (pid 7841, state registered)
+     - exec-path [/home/cubha/CUBRID-11.4-latest-Linux.x86_64/bin/cub_admin]
+     - argv      [cub_admin copylogdb -L /home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 -m sync testdb@bagus2 ]
+     - registered-time   08/26/24 14:28:37.019
+     - deregistered-time 00/00/00 00:00:00.000
+     - shutdown-time     08/26/24 14:28:35.010
+     - start-time        08/26/24 14:28:36.012
+    Applylogdb testdb@localhost:/home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 (pid 7746, state registered)
+     - exec-path [/home/cubha/CUBRID-11.4-latest-Linux.x86_64/bin/cub_admin]
+     - argv      [cub_admin applylogdb -L /home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 --max-mem-size=300 testdb@localhost ]
+      - registered-time   08/26/24 14:27:14.566
+      - deregistered-time 00/00/00 00:00:00.000
+      - shutdown-time     08/26/24 14:27:12.552
+      - start-time        08/26/24 14:27:13.558
+     Server testdb (pid 7904, state registered_and_active)
+      - exec-path [/home/cubha/CUBRID-11.4-latest-Linux.x86_64/bin/cub_server]
+      - argv      [cub_server testdb ]
+      - registered-time   08/26/24 14:29:28.955
+      - deregistered-time 00/00/00 00:00:00.000
+      - shutdown-time     08/26/24 14:29:27.593
+      - start-time        08/26/24 14:29:28.594
+
 
 .. note:: **act**, **deact**, and **deregister** commands which were used in versions lower than CUBRID 9.0 are no longer used.
 
@@ -1456,13 +1527,14 @@ The following example shows how to check log information (Active Info.) of the m
 
 *   Applied Info.: Shows the status information after the slave node applies the replication log.
 *   Copied Active Info.: Shows the status information after the slave node copies the replication log.
+*   Copied Archive Info. : Shows the status information after the slave node copies the archive log.
 *   Active Info.: Shows the status information after the master node records the transaction log.
 *   Delay in Copying Active Log: Shows the status information which the transaction logs' copy is delayed.
 *   Delay in Applying Copied Log: Shows the status information which the transaction logs' application is delayed.
 
 ::
 
-    [nodeB] $ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a -i 3 testdb
+    [nodeB] $ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a -p 0 -i 3 testdb
      
      *** Applied Info. *** 
     Insert count                   : 289492
@@ -1475,13 +1547,27 @@ The following example shows how to check log information (Active Info.) of the m
      *** Copied Active Info. *** 
     DB name                        : testdb
     DB creation time               : 04:29:00.000 PM 11/04/2012 (1352014140)
+    Vol creation time              : 04:29:10.000 PM 11/04/2012 (1352014150)
     EOF LSA                        : 27722 | 10088
     Append LSA                     : 27722 | 10088
     HA server state                : active
 
+     *** Copied Archive Info. ***
+    DB name                        : testdb
+    DB creation time               : 04:29:00.000 PM 11/04/2012 (1352014140)
+    Vol creation time              : 04:29:20.000 PM 11/04/2012 (1352014160)
+    Archive number                 : 0
+    Log page 0 (phy: 1 pageid: 0, offset 0)
+    offset:0000 (tid:1 bck p:-1,o:-1 frw p:0,o:96 type:3)
+    offset:0096 (tid:1 bck p:0,o:0 frw p:0,o:320 type:5)
+    offset:0320 (tid:1 bck p:0,o:96 frw p:0,o:552 type:4)
+    offset:0552 (tid:1 bck p:0,o:320 frw p:0,o:608 type:4)
+    ...
+
      *** Active Info. *** 
     DB name                        : testdb
     DB creation time               : 04:29:00.000 PM 11/04/2012 (1352014140)
+    Vol creation time              : 04:29:10.000 PM 11/04/2012 (1352014150)
     EOF LSA                        : 27726 | 2512
     Append LSA                     : 27726 | 2512
     HA server state                : active
@@ -1510,6 +1596,7 @@ The items shown by each status are as follows:
 
     *   DB name: Name of a target database in which the replication log copy process copies logs
     *   DB creation time: The creation time of a database copied through replication log copy process
+    *   Vol creation time: The creation time of the volume copied through replication log copy process
 
     *   EOF LSA: Information of pageid and offset copied at the last time on the target node by the replication log copy process. There will be a delay in copying logs as much as difference with the EOF LSA value of "Active Info." and with the Append LSA value of "Copied Active Info."
 
@@ -1517,10 +1604,20 @@ The items shown by each status are as follows:
 
     *   HA server state: Status of a database server process which replication log copy process receives logs from. For details on status, see :ref:`ha-server`.
 
+*   Copied Archive Info.
+
+    *   DB name: Name of a target database in which the replication log copy process copies logs
+    *   DB creation time: The creation time of a database copied through replication log copy process
+    *   Vol creation time: The creation time of the volume copied through replication log copy process
+    *   Archive number: The number of archive logs copied through replication log copy process
+    *   Log page: The information of pageid and offset of the archive log copied through replication log copy process.
+    *   offset: The information of pageid and offset of the archive log copied through replication log copy process.
+
 *   Active Info.
 
     *   DB name: Name of a database whose node was configured in the **-r** option.
     *   DB creation time: Database creation time of a node that is configured in the **-r** option.
+    *   Vol creation time: Volume creation time of a node that is configured in the **-r** option.
     *   EOF LSA: The last information of pageid and offset of a database transaction log of a node that is configured in the **-r** option. There will be a delay in copying logs as much as difference between the EOF LSA value of "Copied Active Info." and this value.
     
     *   Append LSA: Information of pageid and offset written at the last time on the disk by the database whose node was configured in the **-r** option.
@@ -1600,7 +1697,7 @@ The following shows [options] used in **cubrid changemode**.
     
     *   You can change a mode as **standby** if a server's status is **maintenance**.
     
-    *   You can change a mode as **active** if a server's status is **to-be-active**. However, this should be used together with --force option. See the below descrioption regarding --force option.
+    *   You can change a mode as **active** if a server's status is **to-be-active**. However, this should be used together with **\-\-force** option. See the below descrioption regarding **\-\-force** option.
     
 .. option:: -f, --force
 
@@ -1808,7 +1905,7 @@ Load Balancing Structure
 
 The load balancing structure increases the availability of the CUBRID service by placing several nodes in the HA configuration (one master node and one slave node) and distributes read-load.
 
-Because the replica nodes receive replication logs from the nodes in the HA configuration and maintain the same data, and because the nodes in the HA configuration do not receive replication logs from the replica nodes, its network and disk usage rate is lower than that of the multiple-slave structure.
+Because the replica nodes receive replication logs from the master node in the HA configuration and maintain the same data, and because the master node in the HA configuration does not receive replication logs from the replica nodes, its network and disk usage rate is lower than that of the multiple-slave structure.
 
 Because replica nodes are not included in the HA structure, they provide read service without failover, even when all other nodes in the HA structure fail.
 
@@ -1888,12 +1985,12 @@ Connect the application to access in read/write mode to the broker of *node A* o
     Connection connection = DriverManager.getConnection(
         "jdbc:CUBRID:nodeA:33000:testdb:::?charSet=utf-8&altHosts=nodeB:33000", "dba", "");
 
-Connect the application to access in read-only mode to the broker of *node C*, *node D* or *node E*. The following is an example of a JDBC application. Configure "**loadBalance**\ =true" on the URL to connect randomly to the main host and hosts which are specified by **altHosts**.
+Connect the application to access in read-only mode to the broker of *node C*, *node D* or *node E*. The following is an example of a JDBC application. Configure "**loadBalance**\ =sh" on the URL to connect randomly to the main host and hosts which are specified by **altHosts**.
 
 .. code-block:: java
 
     Connection connection = DriverManager.getConnection(
-        "jdbc:CUBRID:nodeC:33000:testdb:::?charSet=utf-8&loadBalance=true&altHosts=nodeD:33000,nodeE:33000", "dba", "");
+        "jdbc:CUBRID:nodeC:33000:testdb:::?charSet=utf-8&loadBalance=sh&altHosts=nodeD:33000,nodeE:33000", "dba", "");
 
 For details, see :ref:`ha-jdbc-conf`, :ref:`ha-cci-conf`, and :ref:`ha-php-conf` in Environment Configuration.
 
@@ -1999,9 +2096,17 @@ If data of the specific table within CUBRID HA groups is not synchronized, you s
 
 On the partitioned table, the table which has promoted some partitions by the **PROMOTE** statement replicates all data to the slave. However, since the table does not have the primary key, the data changes on the table made by the master are not applied to the slave.
 
-**Java Stored Procedure**
+.. note::
 
-Because using java stored procedures in CUBRID HA cannot be replicated, java stored procedures should be configured to all nodes. For more details, see :ref:`jsp-environment-configuration`.
+    The data replication of tables without a primary key is supported by **USE_SBR** hint. For more information, see :ref:`sql-hint`.
+
+**Stored Procedure**
+
+In CUBRID HA, **PL/CSQL stored procedures** are replicated, but **Java stored procedures** only replicate the declaration, not the execution program. Therefore, the execution program must be manually copied to all nodes in the HA.
+
+To execute stored procedures, the CUBRID procedural langauge server must be running, which is automatically started when the database server starts.
+
+However, the **cubrid.conf** configuration for running the CUBRID language server is not replicated, so you must ensure that **stored_procedure** is set to **yes** (default) on both the master and slave nodes.
 
 **Method**
 
@@ -2023,7 +2128,7 @@ This command is used to back up a specified database. If the **-r** option is us
 
 **On-line backup**
 
-If you want to perform on-line backup in HA environment, add @\ *hostname*\ after the database name. *hostname*\ is a name defined in $CUBRID_DATABASES/databases.txt. Specify "@localhost" because you generally perform on-line backup on the local database.
+If you want to perform online backup in HA environment, add @\ *hostname*\ after the database name. *hostname*\ is a name defined in $CUBRID_DATABASES/databases.txt. Specify "@localhost" because you generally perform online backup on the local database.
 
 ::
 
@@ -2050,7 +2155,7 @@ In a CUBRID HA environment, the meta data (Locator) of a **LOB** column is repli
     From 10.0, UPDATE STATISTICS statement is replicated.
      
     In the previous version of 10.0, UPDATE STATISTICS statement is not replicated; therefore, as a separated operation, you should run this statement in the slave/replica node.
-    When you want to apply UPDATE STATISTICS on the slave/replica node in the previous version of 10.0, you should run this in the CSQL with --sysadm and --write_on_slave options.
+    When you want to apply UPDATE STATISTICS on the slave/replica node in the previous version of 10.0, you should run this in the CSQL with **\-\-sysadm** and **\-\-write_on_slave** options.
 
 Operational Scenarios
 =====================
@@ -2160,7 +2265,7 @@ You must stop all nodes in CUBRID HA group before performing the following opera
 |   General Operation                          |   Scenario                                              |   Consideration                                                                                                    |
 |                                              |                                                         |                                                                                                                    |
 +==============================================+=========================================================+====================================================================================================================+
-| Changing the host name and IP of a DB server | Stop all nodes in the CUBRID HA group, and restart      | When a host name has been changed, change the **databases.txt** file of each broker and reset the broker           |
+| Changing the hostname and IP of a DB server  | Stop all nodes in the CUBRID HA group, and restart      | When a hostname has been changed, change the **databases.txt** file of each broker and reset the broker            |
 |                                              | them after the operation task.                          | connection with **cubrid broker reset**.                                                                           |
 +----------------------------------------------+---------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
 
@@ -2186,7 +2291,7 @@ Building Replication
 restoreslave
 ------------
 
-**cubrid restoreslave** is the same as **cubrid restoredb** which restores a database from a backup but it includes several convenient features when rebuilding a slave or a replica. With **cubrid restoreslave**, user does not need to manually collect replication-related information from a backup output to create a replication catalog which is stored in **db_ha_apply_info**. It automatically reads any necessary information from a backup image and an active log and then it adds the relevant replication catalog into **db_ha_apply_info**. All you need to do is to provide two mandatory options: the state of the node where the backup image was created, and the hostname of the current master node. Please also refer :ref:`restoredb` for more details. ::
+**cubrid restoreslave** is the same as **cubrid restoredb** which restores a database from a backup but it includes several convenient features when rebuilding a slave or a replica. With **cubrid restoreslave**, user does not need to manually collect replication-related information from a backup output to create a replication catalog which is stored in **_db_ha_apply_info**. It automatically reads any necessary information from a backup image and an active log and then it adds the relevant replication catalog into **_db_ha_apply_info**. All you need to do is to provide two mandatory options: the state of the node where the backup image was created, and the hostname of the current master node. Please also refer :ref:`restoredb` for more details. ::
 
     cubrid restoreslave [OPTION] database-name
 
@@ -2202,7 +2307,7 @@ restoreslave
     
 .. option:: --list
 
-    This option displays information on backup files of a database; restoration procedure is not performed. For further information, see --list of :ref:`restoredb`
+    This option displays information on backup files of a database; restoration procedure is not performed. For further information, see **\-\-list** of :ref:`restoredb`
     
 .. option:: -B, --backup-file-path=PATH
 
@@ -2215,6 +2320,10 @@ restoreslave
 .. option:: -u, --use-database-location-path
 
     This option restores a database to the path specified in the database location file(databases.txt). For further information, see -u of :ref:`restoredb`
+
+.. option:: -k, --keys-file-path=PATH
+
+    This option specifies the path of the key file required to restore. For more information, see :ref:`restoredb`.
 
 Example Scenarios of Building Replication
 -----------------------------------------
@@ -2249,7 +2358,7 @@ In this section, we will see various scenarios regarding adding a new node or re
     
 *   :ref:`rebuild-slave`
 
-    Rebuild the slave using the existing master in the environment which a master, a slave and a replica are built. A new information should be updated by a user in the db_ha_apply_info catalog table.
+    Rebuild the slave using the existing master in the environment which a master, a slave and a replica are built. A new information should be updated by a user in the _db_ha_apply_info catalog table.
     
 Now let's see in detail about the above scenarios.    
 
@@ -2258,15 +2367,15 @@ When you want to rebuild only the abnormal node in the HA environment, see :ref:
 .. note::
 
     *   During building a replication, please note that added or rebuilt node's replication information and replication logs should be updated or removed when you add, rebuild or remove a certain node.
-        Replication information is saved on the db_ha_apply_info table, and it has other nodes' replication process information.
+        Replication information is saved on the _db_ha_apply_info table, and it has other nodes' replication process information.
     
         However, because role change does not occur in a replica node, the other node is not required to have replication information and a replication logs about the replica node. On the other hand, the replica node has all information about a master and a slave.
 
-    *   When you run a scenario of :ref:`rebuild-slave`, you should update db_ha_apply_info's information directly.
+    *   When you run a scenario of :ref:`rebuild-slave`, you should update _db_ha_apply_info's information directly.
     
     *   When you run a scenario of :ref:`build-slave`, a slave is newly built; therefore, you can use the automatically added information.
     
-    *   When you run a a scenario of :ref:`build-another-slave` or :ref:`add-replica`, backed-up database from the existing slave is used; you can use as it exists because master's db_ha_apply_info information is included in the existing slave. 
+    *   When you run a a scenario of :ref:`build-another-slave` or :ref:`add-replica`, backed-up database from the existing slave is used; you can use as it exists because master's _db_ha_apply_info information is included in the existing slave. 
     
     *   When you run a scenario of :ref:`remove-slave`, you must remove replication information about a removed slave. However, this information does not make a problem even if this is left.
 
@@ -2279,8 +2388,8 @@ Now let's see the case of building a new slave node with a single master node - 
 
 .. image:: /images/build_slave.png
 
-*   nodeA: a master node's host name
-*   nodeB: a slave node's host name to be added newly 
+*   nodeA: a master node's hostname
+*   nodeB: a slave node's hostname to be added newly 
 
 This scenario assumes that the database has been created by below commands. When you run createdb, a locale name and a charset should be the same between a master node and a slave node.
 
@@ -2452,9 +2561,9 @@ The following is a scenario to add a new slave from an existing slave during a H
 
 .. image:: /images/build_another_slave.png
 
-*   nodeA: a master node's host name
-*   nodeB: a slave node's host name
-*   nodeC: a slave node's host name to be added
+*   nodeA: a master node's hostname
+*   nodeB: a slave node's hostname
+*   nodeC: a slave node's hostname to be added
 
 You can use an existing master or slave if you want to add a new slave during HA service. In this scenario, let's add a new slave by using an existing slave because we assume that slave's disk I/O is less than master's.
 
@@ -2588,7 +2697,7 @@ You can use an existing master or slave if you want to add a new slave during HA
         
         .. note::
         
-            --sleep-msecs is an option to set the rest time in each cycle when 1MB is written in a backup file.\ The unit is millisecond. Consider setting this option if the disk I/O overhead of a machine to back up is severe; however, it is recommended to set this value as small as possible and do backup when backup overhead is small enough because if this value is bigger, backup time takes longer.  
+            **\-\-sleep-msecs** is an option to set the rest time in each cycle when 1MB is written in a backup file.\ The unit is millisecond. Consider setting this option if the disk I/O overhead of a machine to back up is severe; however, it is recommended to set this value as small as possible and do backup when backup overhead is small enough because if this value is bigger, backup time takes longer.  
                         
             If there is no I/O overhead on *nodeB*, you can omit this option.
             
@@ -2598,7 +2707,7 @@ You can use an existing master or slave if you want to add a new slave during HA
     
         ::
     
-            [nodeB]$ 
+            [nodeB]$ cd $CUBRID_DATABASES/testdb/log
             [nodeB]$ scp -l 131072 testdb_bk* cubrid_usr@nodeC:$CUBRID_DATABASES/testdb/log
     
         .. note::
@@ -2690,7 +2799,7 @@ You can use an existing master or slave if you want to add a new slave during HA
             
             You can check if requried replication logs are deleted or not by watching the testdb_lginf file.
 
-            1.  If this is the case of restoring a database from a slave backup file, you can check what pages are required, from the page of master by watching the value of required_lsa_pageid in the db_ha_apply_info catalog table.
+            1.  If this is the case of restoring a database from a slave backup file, you can check what pages are required, from the page of master by watching the value of required_lsa_pageid in the _db_ha_apply_info catalog table.
 
             2.  Watch the contents of the testdb_lginf file located in $CUBRID_DATABASES/testdb/log directory from  bottom to top.
             
@@ -2756,9 +2865,9 @@ You can use an existing master or slave if you want to add a new slave during HA
             [nodeA]$ cubrid heartbeat repl start nodeC
             [nodeB]$ cubrid heartbeat repl start nodeC
 
-7.  Add a broker and add this broker's host name into altHosts of application URL
+7.  Add a broker and add this broker's hostname into altHosts of application URL
 
-    Add a broker if needed, and add this broker's host name into altHosts, the property of application URL to access this broker.
+    Add a broker if needed, and add this broker's hostname into altHosts, the property of application URL to access this broker.
     
     If you are not considering to add a broker, you do not need to do this job.
 
@@ -2780,9 +2889,9 @@ Let's remove a slave when the HA environment is composed of "master:slave = 1:2"
 
 .. image:: /images/remove_slave.png
 
-*   nodeA: a master node's host name
-*   nodeB: a slave node's host name
-*   nodeC: a slave node's host name to be removed
+*   nodeA: a master node's hostname
+*   nodeB: a slave node's hostname
+*   nodeC: a slave node's hostname to be removed
 
 .. image:: /images/remove_slave_process.png
 
@@ -2835,12 +2944,12 @@ Let's remove a slave when the HA environment is composed of "master:slave = 1:2"
             
     *   Remove replication information about *nodeC* from *nodeA* and *nodeB*.
     
-        You can run DELELTE operation from a slave node only if you add --sysadm and --write-on-standby options on running csql.
+        You can run DELELTE operation from a slave node only if you add **\-\-sysadm** and **\-\-write-on-standby** options on running csql.
         ::
         
             $ csql -u dba --sysadm --write-on-standby testdb@localhost
             
-            sysadm> DELETE FROM db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeC';
+            sysadm> DELETE FROM _db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeC';
         
         copied_log_path is the path in which replication log files are stored.
         
@@ -2878,9 +2987,9 @@ Now let's add a replica when HA environment is set as "master:slave=1:1". The be
 
 .. image:: /images/add_replica.png
 
-*   nodeA: a master node's host name
-*   nodeB: a slave node's host name
-*   nodeC: a replica node's host name to be added newly
+*   nodeA: a master node's hostname
+*   nodeB: a slave node's hostname
+*   nodeC: a replica node's hostname to be added newly
 
 .. image:: /images/add_replica_process.png
 
@@ -2993,7 +3102,7 @@ Now let's add a replica when HA environment is set as "master:slave=1:1". The be
     
         ::
     
-            [nodeB]$ 
+            [nodeB]$ cd $CUBRID_DATABASES/testdb/log
             [nodeB]$ scp -l 131072 testdb_bk* cubrid_usr@nodeC:$CUBRID_DATABASES/testdb/log
     
         .. note::
@@ -3115,9 +3224,9 @@ Now let's add a replica when HA environment is set as "master:slave=1:1". The be
 
         At this time, coplylogdb and applylogdb processes for *nodeC* on *nodeA* and *nodeB* are needless to start because *nodeC* is a replica node.
 
-7.  Add a broker and add this broker's host name into altHosts of application URL
+7.  Add a broker and add this broker's hostname into altHosts of application URL
 
-    Add a broker if needed, and add this broker's host name into altHosts, the property of application URL to access this broker.
+    Add a broker if needed, and add this broker's hostname into altHosts, the property of application URL to access this broker.
     
     If you are not considering to add a broker, you do not need to do this job.
 
@@ -3139,9 +3248,9 @@ Now let's see the case of rebuilding a existing slave node during a service in a
 
 .. image:: /images/rebuild_slave.png
 
-*   nodeA: a host name of a master node
-*   nodeB: a host name of a slave node to be rebuilt
-*   nodeC: a host name of a replica node
+*   nodeA: a hostname of a master node
+*   nodeB: a hostname of a slave node to be rebuilt
+*   nodeC: a hostname of a replica node
 
 .. image:: /images/rebuild_slave_process.png
 
@@ -3165,13 +3274,14 @@ Now let's see the case of rebuilding a existing slave node during a service in a
             [nodeB]$ rm testdb/log/*
             
             [nodeB]$ rm -rf testdb_nodeA
+            [nodeB]$ rm $CUBRID/var/APPLYLOGDB/testdb
             
     *   Stop log replication processes of *nodeB* on *nodeA* and *nodeC*.
     
         ::
         
-            [nodeA]$ cubrid heartbeat repl stop testdb nodeB
-            [nodeC]$ cubrid heartbeat repl stop testdb nodeB
+            [nodeA]$ cubrid heartbeat repl stop nodeB
+            [nodeC]$ cubrid heartbeat repl stop nodeB
     
     *   Remove replication logs for *nodeB* from *nodeA* and *nodeC*.
     
@@ -3180,26 +3290,17 @@ Now let's see the case of rebuilding a existing slave node during a service in a
             [nodeA]$ rm -rf $CUBRID_DATABASES/testdb_nodeB
             [nodeC]$ rm -rf $CUBRID_DATABASES/testdb_nodeB
 
-2.  Remove HA catalog table's data, restore *nodeB*'s database from *nodeA*'s backup, and add data to HA catalog table.
+2.  Restore *nodeB*'s database from *nodeA*'s backup, and add data to HA catalog table.
 
-    *   Delete the HA catalog table, db_ha_apply_info's records.
-    
-        Delete all records of db_ha_apply_info of *nodeB* to initialize.
-        
-        ::
-        
-            [nodeB]$ csql --sysadm --write-on-standby -u dba -S testdb 
-            csql> DELETE FROM db_ha_apply_info;
-            
-        Delete db_ha_apply_info data for *nodeB* from *nodeA* and *nodeC*.
+    *    Delete _db_ha_apply_info data for *nodeB* from *nodeA* and *nodeC*.
         
         ::
         
             [nodeA]$ csql --sysadm -u dba testdb@localhost 
-            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path-='/home/cubrid/DB/databases/testdb_nodeB'
+            csql> DELETE FROM _db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeB';
 
             [nodeC]$ csql --sysadm --write-on-standby -u dba testdb@localhost 
-            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path-='/home/cubrid/DB/databases/testdb_nodeB'
+            csql> DELETE FROM _db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeB';
 
     *   Backup a database from *nodeA*.
 
@@ -3232,9 +3333,9 @@ Now let's see the case of rebuilding a existing slave node during a service in a
             [nodeB]$ cubrid restoredb -B $CUBRID_DATABASES/testdb/log testdb
 
 
-    *   Add a replication information record for *nodeA* to *nodeB*'s db_ha_apply_info.
+    *   Add a replication information record for *nodeA* to *nodeB*'s _db_ha_apply_info.
         
-        Get an update information of **db_ha_apply_info** from output.txt file, which has backup result messages in *nodeA*. output.txt is saved at the directory on which a user ran "cubrid backupdb" command.
+        Get an update information of **_db_ha_apply_info** from output.txt file, which has backup result messages in *nodeA*. output.txt is saved at the directory on which a user ran "cubrid backupdb" command.
                 
         ::
             
@@ -3258,7 +3359,7 @@ Now let's see the case of rebuilding a existing slave node during a service in a
 
             ...
                 
-        Make the below script and run. At "HA apply info" on the above output, put the first number, 1426495463 into $db_creation, the second number, 12922 into $pageid, and the third number, 16192 into $offset; put testdb into db_name, the database name and *nodeA* into master_host, the master node's host name.
+        Make the below script and run. At "HA apply info" on the above output, put the first number, 1426495463 into $db_creation, the second number, 12922 into $pageid, and the third number, 16192 into $offset; put testdb into db_name, the database name and *nodeA* into master_host, the master node's hostname.
         
         ::
         
@@ -3276,10 +3377,10 @@ Now let's see the case of rebuilding a existing slave node during a service in a
             
             repl_log_path=$repl_log_home_abs/${db_name}_${master_host}
 
-            local_db_creation=`awk 'BEGIN { print strftime("%m/%d/%Y %H:%M:%S", $db_creation) }'`
+            local_db_creation=`awk 'BEGIN { print strftime("%m/%d/%Y %H:%M:%S", '$db_creation') }'`
                 csql_cmd="\
                 INSERT INTO \
-                        db_ha_apply_info \
+                        _db_ha_apply_info \
                 VALUES \
                 ( \
                         '$db_name', \
@@ -3318,7 +3419,7 @@ Now let's see the case of rebuilding a existing slave node during a service in a
             [nodeB]$ csql -u dba -S testdb
             
             csql> ;line on
-            csql> SELECT * FROM db_ha_apply_info;
+            csql> SELECT * FROM _db_ha_apply_info;
             
 3.  Copy *nodeA*'s active log into *nodeB*
 
@@ -3407,11 +3508,11 @@ Detection of Replication Mismatch
 How to Detect Replication Mismatch
 ----------------------------------
 
-Replication mismatch between replication nodes, indicating that data of the master node and the slave node is not identical, can be detected to some degree by the following process. You can also use :ref:`cubrid-checksumdb` utility to detect a replication inconsistency. However, please note that there is no more accurate way to detect a replication mismatch than by directly comparing the data of the master node to the data of the slave node. If it is determined that there has been a replication mismatch, you should rebuild the database of the master node to the slave node (see :ref:`rebuilding-replication`.)
+Replication mismatch between replication nodes, indicating that data of the master node and the slave node (or the replica node) is not identical, can be detected to some degree by the following process. You can also use :ref:`cubrid-checksumdb` utility to detect a replication inconsistency. However, please note that there is no more accurate way to detect a replication mismatch than by directly comparing the data of the master node to the data of the slave node (or the replica node). If it is determined that there has been a replication mismatch, you should rebuild the database of the master node to the slave node (or the replica node) (see :ref:`rebuilding-replication`.)
 
 *   Execute **cubrid statdump** command and check **Time_ha_replication_delay**. When this value is bigger, replication latency can be larger; the bigger latency time shows the possibility of the larger replication mismatch.
 
-*   On the slave node, execute **cubrid applyinfo** to check the "Fail count" value. If the "Fail count" is 0, it can be determined that no transaction has failed in replication (see :ref:`cubrid-applyinfo`.) ::
+*   On the slave node (or the replica node), execute **cubrid applyinfo** to check the "Fail count" value. If the "Fail count" is 0, it can be determined that no transaction has failed in replication (see :ref:`cubrid-applyinfo`.) ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
          
@@ -3425,7 +3526,7 @@ Replication mismatch between replication nodes, indicating that data of the mast
         Fail count                     : 0
         ...
 
-*   To check whether copying replication logs has been delayed or not on the slave node, execute **cubrid applyinfo** and compare the "Append LSA" value of "Copied Active Info." to the "Append LSA" value of "Active Info.". If there is a big difference between the two values, it means that delay has occurred while copying the replication logs to the slave node (see :ref:`cubrid-applyinfo`.) ::
+*   To check whether copying replication logs has been delayed or not on the slave node (or the replica node), execute **cubrid applyinfo** and compare the "Append LSA" value of "Copied Active Info." to the "Append LSA" value of "Active Info.". If there is a big difference between the two values, it means that delay has occurred while copying the replication logs to the slave node (or the replica node) (see :ref:`cubrid-applyinfo`.) ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
      
@@ -3434,6 +3535,7 @@ Replication mismatch between replication nodes, indicating that data of the mast
          *** Copied Active Info. ***
         DB name                        : testdb
         DB creation time               : 11:28:00.000 AM 12/17/2010  (1292552880)
+        Vol creation time              : 11:28:10.000 AM 12/17/2010  (1292552890)
         EOF LSA                        : 1913 | 2976
         Append LSA                     : 1913 | 2976
         HA server state                : active
@@ -3441,13 +3543,14 @@ Replication mismatch between replication nodes, indicating that data of the mast
          ***  Active Info. ***
         DB name                        : testdb
         DB creation time               : 11:28:00.000 AM 12/17/2010  (1292552880)
+        Vol creation time              : 11:28:10.000 AM 12/17/2010  (1292552890)
         EOF LSA                        : 1913 | 2976
         Append LSA                     : 1913 | 2976
         HA server state                : active
 
 *   If a delay seems to occur when copying the replication logs, check whether the network line speed is slow, whether there is sufficient free disk space, disk I/O is normal, etc.
 
-*   To check the delay in applying the replication log in the slave node, execute **cubrid applyinfo** and compare the "Committed page" value of "Applied Info." to the "EOF LSA" value of "Copied Active Info.". If there is a big difference between the two values, it means that a delay has occurred while applying the replication logs to the slave database (see :ref:`cubrid-applyinfo`.) ::
+*   To check the delay in applying the replication log in the slave node (or the replica node), execute **cubrid applyinfo** and compare the "Committed page" value of "Applied Info." to the "EOF LSA" value of "Copied Active Info.". If there is a big difference between the two values, it means that a delay has occurred while applying the replication logs to the slave database (or the replica database) (see :ref:`cubrid-applyinfo`.) ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
      
@@ -3463,16 +3566,17 @@ Replication mismatch between replication nodes, indicating that data of the mast
          *** Copied Active Info. ***
         DB name                        : testdb
         DB creation time               : 11:28:00.000 AM 12/17/2010  (1292552880)
+        Vol creation time              : 11:28:10.000 AM 12/17/2010  (1292552890)
         EOF LSA                        : 1913 | 2976
         Append LSA                     : 1913 | 2976
         HA server state                : active
         ...
 
-*   If the delay in applying the replication logs is too long, it may be due to a transaction with a long execution time. If the transaction is performed normally, a delay in applying the replication logs may normally occur. To determine whether it is normal or abnormal, continuously execute **cubrid applyinfo** and check whether applylogdb continuously applies replication logs to the slave node or not.
+*   If the delay in applying the replication logs is too long, it may be due to a transaction with a long execution time. If the transaction is performed normally, a delay in applying the replication logs may normally occur. To determine whether it is normal or abnormal, continuously execute **cubrid applyinfo** and check whether applylogdb continuously applies replication logs to the slave node (or the replica node) or not.
 
 *   Check the error log message created by the copylogdb process and the applylogdb process (see the error message).
 
-*   Compare the number of records on the master database table to that on the slave database table.
+*   Compare the number of records on the master database table to that on the slave (or the replica)  database table.
 
 
 
@@ -3481,7 +3585,7 @@ Replication mismatch between replication nodes, indicating that data of the mast
 checksumdb
 ----------
 
-**checksumdb** provides a simple way to check replication integrity. Basically, it divides each table from a master node into fixed-size chunks and then calculates CRC32 values. The calculation itself, not the calculated value, is then replicated through CUBRID HA. Consequently, by comparing CRC32 values calculated on master and slave nodes, **checksumdb** can report the replication integrity. Note that **checksumdb** might affect master's performance even though it is designed to minimize the performance degradation. ::
+**checksumdb** provides a simple way to check replication integrity. Basically, it divides each table from a master node into fixed-size chunks and then calculates CRC32 values. The calculation itself, not the calculated value, is then replicated through CUBRID HA. Consequently, by comparing CRC32 values calculated on master and slave nodes (or replica nodes), **checksumdb** can report the replication integrity. Note that **checksumdb** might affect master's performance even though it is designed to minimize the performance degradation. ::
 
         cubrid checksumdb [options] <database-name>@<hostname>
 
@@ -3511,7 +3615,7 @@ checksumdb
     
 .. option:: -n, --table-name=STRING
 
-    You can specify a table name to save checksum results. (default: db_ha_checksum)
+    You can specify a table name to save checksum results. The table name must include the owner's name which can only be dba. (default: dba.db_ha_checksum)
     
 .. option:: -r, --report-only
 
@@ -3905,7 +4009,102 @@ The error messages that can be found in this stage are as follows:
 | -1036 | log applier: log applier is terminated by signal.    | error        | The replication log reflection process has been     | It will be recovered internally.                                     |
 |       |                                                      |              | terminated by a specified signal.                   |                                                                      |
 +-------+------------------------------------------------------+--------------+-----------------------------------------------------+----------------------------------------------------------------------+
-                                                                                                                         
+
+.. _failover-messages:
+
+Determine the Cause of Failover
+==================================
+
+**Fail-over, Fail-back messages**
+
+In an HA enviroment, messages for failover and fail-back are prefixed with [Failover], [Failback], respectively. These messages can be categorized into diagnosis messages, which are logged when failover or fail-back is determined, and result messages, which are logged when failover or fail-back is either canceled or successfully completed.
+
+Diagnosis messages indicate the reason why the failover or fail-back was initiated and are prefixed with [Diagnosis]. Result messages include the prefix [Cancelled] along with the reason if failover or fail-back is canceled, and the prefix [Success] along with the result if failover or fail-back is successfully completed.
+
+Fail-over and fail-back messages enable to determine the cause of failover. Below is a list of situations in which failover occurs and the corresponding failover and fail-back messages that may be logged. Fail-over messages are logged on the slave node, while fail-back messages are logged on the master node.
+
+Isolation of master node
+-----------------------------
+
+**Isolation of master node**
+
+When the master node determines that it is isolated from the network due to failing to receive heartbeat messages from all slave nodes, the fail-back of the master node and the failover of the slave nodes are decided. The **ha_ping_hosts** are used to verify whether the network of the master node is truly partitioned. Fail-back is successfully completed only if the master node’s network partition is confirmed through this verification.
+  
+Similarly, for slave nodes, failover is successfully completed only when a ping check using **ha_ping_hosts** confirms that there is no current network partition. Below is a list of failover and fail-back messages that could be logged when the master node is isolated.
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| Diagnosis Messages                                                                                                                                              | Description                                                                                                    |
++=================================================================================================================================================================+================================================================================================================+
+| [Failback] [Diagnosis] The master node has failed to receive heartbeat messages from all other slave nodes, resulting in a network partition.                   | Fail-over has been initiated since master node failed to received heartbeat messages from every slave nodes    |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| [Failover] [Diagnosis] The current node has failed to receive heartbeat messages from the master node (master_node_name).                                       | Fail-back has been initiated since slave node failed to received heartbeat messages from master node           |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Result Messages                                                                                                                                                 | Description                                                                                                                                                                    |
++=================================================================================================================================================================+================================================================================================================================================================================+
+| [Failback] [Cancelled] Ping check succeeded for the hosts registered in ha_ping_hosts, determining that it is not a network partition.                          | Fail-back has been cancelled since master node succeeded ping check to ha_ping_hosts                                                                                           |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failback] [Cancelled] No hosts are registered in ha_ping_hosts, or all registered hosts are invalid, making it impossible to determine the network partition.  | Fail-back has been cancelled due to the inability to determine the network partition of the master node, as the hosts registered in ha_ping_hosts are either empty or invalid. |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failback] [Success] Current node has been successfully demoted to slave.                                                                                       | Fail-back is successfully completed, and the master node has been demoted to a slave node                                                                                      |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Cancelled] Ping check has been failed to all hosts registered in ha_ping_hosts, indicating a network partition.                                     | Fail-over has been cancelled because the slave node determined a network partition due to a failed ping check and is unable to assume the master role.                         |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Success] Current node has been successfully promoted to master.                                                                                     | Fail-over is successfully completed, and the slave node has been promoted to a master node                                                                                     |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+Loss of the master node's role
+-----------------------------------
+
+**Loss of the master node's role**
+
+When the master node loses its role due to reasons such as the failure to restart cub_server or disk errors, a fail-back of the master node and a failover of the slave node are initiated. If a disk failure has been detected, an error message like "Disk failure has occurred: prev_eof_lsa(4096, 128), eof_lsa(4096, 128)" is logged in the server error log.
+
+For the slave node, failover is successfully completed only when a ping check using **ha_ping_hosts** confirms that there is no current network partition. Below is a list of failover and fail-back messages that could be logged when the master node loses its role.
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| Diagnosis Messages                                                                                                                                              | Description                                                                                                                                |
++=================================================================================================================================================================+============================================================================================================================================+
+| [Failback] [Diagnosis] The master node failed to restart the server process.                                                                                    | Fail-back has been initiated since the master node failed to restart a cub_server process that has been terminated abnormally              |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failback] [Diagnosis] The master node has lost its role due to server process problem, such as disk failure.                                                   | Fail-back has been initiated since the master node lost its role due to a disk failure or similar reasons.                                 |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Diagnosis] The master node (master_node_name) has lost its role due to server process problem, such as disk failure.                                | Fail-over has been initiated as the slave node determined that the master node has lost its role due to a disk failure or similar reasons. |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Result Messages                                                                                                                                                 | Description                                                                                                                                            |
++=================================================================================================================================================================+========================================================================================================================================================+
+| [Failback] [Success] Current node has been successfully demoted to slave.                                                                                       | Fail-back is successfully completed, and the master node has been demoted to a slave node                                                              |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Cancelled] Ping check has been failed to all hosts registered in ha_ping_hosts, indicating a network partition.                                     | Fail-over has been cancelled because the slave node determined a network partition due to a failed ping check and is unable to assume the master role. |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Success] Current node has been successfully promoted to master.                                                                                     | Fail-over is successfully completed, and the slave node has been promoted to a master node                                                             |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Multiple master node (split-brain)
+--------------------------------------------
+
+**Multiple master node (split-brain)**
+
+When there is an abnormal situation where two or more servers assume the master role in an HA environment, it is referred to as a "split-brain" scenario. In such cases, all master nodes, except for the one designated to perform the master role, will fail-back to slave nodes to resolve the split-brain situation. Below is a list of fail-back messages that may be logged during a split-brain scenario.
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
+| Diagnosis Messages                                                                                                                                              | Description                                                                                                                              |
++=================================================================================================================================================================+==========================================================================================================================================+
+| [Failback] [Diagnosis] Multiple master nodes (master_node_name1, master_node_name2) are detected.                                                               | Fail-back of the master nodes has been initiated to resolve the split-brain situation caused by the detection of multiple master nodes.  |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+| Result Messages                                                                                                                                                 | Description                                                                                                  |
++=================================================================================================================================================================+==============================================================================================================+
+| [Failback] [Success]  Current node has been successfully demoted to slave.                                                                                      | Fail-back is successfully completed, and the master node has been demoted to a slave node                    |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+
+
 .. _rebuilding-replication:
 
 Rebuilding Replication Script
@@ -3917,16 +4116,16 @@ When you rebuild only a slave because the slave is abnormal in the environment o
 
 1.  Backup the master database. 
 2.  Restore the database from slave.
-3.  Save backup time into the slave's HA meta table (db_ha_apply_info).
+3.  Save backup time into the slave's HA meta table (_db_ha_apply_info).
 4.  Start HA service from slave. (cubrid hb start)
 
 For rebuilding replications, the following environment must be the same in master, slave and replica nodes.
 
 *   CUBRID version
-*   Environmental variable (**$CUBRID**, **$CUBRID_DATABASES**, **$LD_LIBRARY_PATH, $PATH**)
+*   Environmental variable (**$CUBRID**, **$CUBRID_DATABASES**, **$LD_LIBRARY_PATH**, **$PATH**, **$CUBRID_TMP**, **$TMPDIR**)
 *   The paths of database volume, log, and replication
 *   Username and password of the Linux server
-*   HA-related parameters except for **ha_mode** and **ha_copy_sync_mode**, **ha_ping_hosts**
+*   HA-related parameters except for **ha_mode**, **ha_copy_sync_mode**, **ha_ping_hosts** and **ha_tcp_ping_hosts**
 
 You can rebuild replication by running **ha_make_slavedb.sh** script only in these cases.
 
@@ -3948,7 +4147,7 @@ ha_make_slavedb.sh Script
 
 To rebuild replications, use the **ha_make_slavedb.sh** script. This script is located in **$CUBRID/share/scripts/ha**. Before rebuilding replications, the following items must be configured for the environment of the user. This script is supported since the version 2008 R2.2 Patch 9 and its configuration is different from 2008 R4.1 Patch 2 or earlier. This document describes it in CUBRID 2008 R4.1 Patch 2 or later.
 
-*   **target_host** : The host name of the source node (master node in general) for rebuilding replication. It should be registered in **/etc/hosts**. A slave node can rebuild replication by using the master node or the replica node as the source. A replica node can rebuild replication by using the slave node or another replica node as the source.
+*   **target_host** : The hostname of the source node (master node in general) for rebuilding replication. It should be registered in **/etc/hosts**. A slave node can rebuild replication by using the master node or the replica node as the source. A replica node can rebuild replication by using the slave node or another replica node as the source.
 
 *   **repl_log_home** : Specifies the home directory of the replication log of the master node. It is usually the same as **$CUBRID_DATABASES**. You must enter an absolute path and should not use a symbolic link. You also cannot use a slash (/) after the path.
 
@@ -3963,6 +4162,8 @@ The following are optional items:
 *   **restore_option** : Specifies necessary options when executing **restoredb** in the target node in which replication will be rebuilt.
 
 *   **scp_option** : Specifies the **scp** option which enables backup of source node in which replication is rebuilt to copy into the target node. The default option is **-l 131072**, which does not impose an overload on network (limits the transfer rate to 16 MB).
+
+*   **ssh_port**  : Specifies the **port** number of the ssh and scp used in the script. This option also applies to **expect** run from the script. The default port number is **22**.
 
 Once the script has been configured, execute the **ha_make_slavedb.sh** script in the target node in which replication will be rebuilt. When the script is executed, rebuilding replication happens in a number of phases. To move to the next stage, the user must enter an appropriate value. The following are the descriptions of available values.
 
@@ -3990,4 +4191,4 @@ Once the script has been configured, execute the **ha_make_slavedb.sh** script i
 
     *   **Error while executing the rebuilding replication script**
     
-        The rebuilding replication script is not automatically rolled back to its previous stage even when an error occurs during the execution. This is because the slave node cannot provide normal service before rebuilding replication script is executed. To return to the phase before rebuilding replication script is executed, you must back up the existing replication logs and **db_ha_apply_info** information which is internal catalog of the master and slave nodes before building replication is executed.
+        The rebuilding replication script is not automatically rolled back to its previous stage even when an error occurs during the execution. This is because the slave node cannot provide normal service before rebuilding replication script is executed. To return to the phase before rebuilding replication script is executed, you must back up the existing replication logs and **_db_ha_apply_info** information which is internal catalog of the master and slave nodes before building replication is executed.

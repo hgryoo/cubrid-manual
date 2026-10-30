@@ -772,10 +772,10 @@ cci_connect
 
     A connection handle to the database server is assigned and it tries to connect to the server. If it has succeeded, the connection handle ID is returned; if fails, an error code is returned.
 
-    :param ip: (IN) A string that represents the IP address of the server (host name)
+    :param ip: (IN) A string that represents the IP address of the server (hostname)
     :param port: (IN) Broker port (The port configured in the **$CUBRID/conf/cubrid_broker.conf** file)
     :param db_name: (IN) Database name
-    :param db_user: (IN) Database user name
+    :param db_user: (IN) Database username
     :param db_passwd: (IN) Database user password
     :return: Success: Connection handle ID (int), Failure: Error code
 
@@ -793,10 +793,10 @@ cci_connect_ex
 
     The **cci_connect_ex** function returns **CCI_ER_DBMS** error and checks the error details in the database error buffer (*err_buf*) at the same time. In that point, it is different from :c:func:`cci_connect` and the others are the same as the :c:func:`cci_connect` function.
 
-    :param ip: (IN) A string that represents the IP address of the server (host name)
+    :param ip: (IN) A string that represents the IP address of the server (hostname)
     :param port: (IN) Broker port (The port configured in the **$CUBRID/conf/cubrid_broker.conf** file)
     :param db_name: (IN) Database name
-    :param db_user: (IN) Database user name
+    :param db_user: (IN) Database username
     :param db_passwd: (IN) Database user password
     :param err_buf: Database error buffer
     :return: Success: Connection handle ID (int), Failure: Error code
@@ -808,6 +808,8 @@ cci_connect_ex
         *   **CCI_ER_COMMUNICATION**
         *   **CCI_ER_CONNECT**
 
+.. _cci_connect_with_url:
+
 cci_connect_with_url
 --------------------
 
@@ -816,7 +818,7 @@ cci_connect_with_url
     The **cci_connect_with_url** function connects a database by using connection information passed with a *url* argument. If broker's HA feature is used in CCI, you must specify the connection information of the standby broker server with altHosts property, which is used for the failover, in the *url* argument of this function. It returns the ID of a connection handle on success; it returns an error code on failure. For details about HA features of broker, see :ref:`duplexing-brokers`.
 
     :param url: (IN) A string that contains server connection information. 
-    :param db_user: (IN) Database user name. If this is NULL, it becomes <*db_user*> in *url*. If this is an empty string ("") or <*db_user*> in *url* is not specified, DB user name becomes **PUBLIC**.
+    :param db_user: (IN) Database username. If this is NULL, it becomes <*db_user*> in *url*. If this is an empty string ("") or <*db_user*> in *url* is not specified, DB username becomes **PUBLIC**.
     :param db_passwd: (IN) Database user password. If this is NULL, <*db_password*> in *url* is used. If <*db_password*> in *url* is not specified, DB password becomes an empty string ("").
     :return: Success: Connection handle ID (int), Failure: Error code
 
@@ -843,6 +845,7 @@ cci_connect_with_url
                      | logSlowQueries=true|false[&slowQueryThresholdMillis=<milli_sec>]
                      | logTraceApi=true|false
                      | logTraceNetwork=true|false
+                     | useSSL=true|false
          
         <alternative_hosts> ::= <host>:<port> [,<host>:<port>]
          
@@ -852,7 +855,7 @@ cci_connect_with_url
 
     **altHosts** is the property related to connection target and **loginTimeout**, **queryTimeout**, and **disconnectOnQueryTimeout** are the properties related to timeout; **logSlowQueries**, **logTraceApi**, and **logTraceNetwork** are the properties related to log information configuration for debugging. Note that a property name which is a value to be entered in the *url* argument is not case sensitive.
 
-    *   *host*: A host name or IP address of the master database
+    *   *host*: A hostname or IP address of the master database
     *   *port*: A port number
     *   *db_name*: A name of the database
     *   *db_user*: A name of the database user
@@ -865,23 +868,28 @@ cci_connect_with_url
     *   **rcTime**: After the failure occurred on the first connected broker, the application connects to the broker specified by **altHosts**\(broker failover). Then it attempts to reconnect to the first connected broker at every **rcTime**\(default value: 600 seconds).
     
     *    **loadBalance**: When this value is true, the applications try to connect to the main host and alternative hosts specified with the **altHosts** property as a random order. (default value: false).
-    
+
     *   **login_timeout** | **loginTimeout**: Timeout value (unit: msec.) for database login. Upon timeout, a **CCI_ER_LOGIN_TIMEOUT** (-38) error is returned. The default value is  **30,000**\ (30 sec.). If this value is 0, it means infinite waiting. This value is also applied when internal reconnection occurs after the initial connection.
 
-    *   **query_timeout** | **queryTimeout**: If time specified in these properties has expired when calling :c:func:`cci_prepare`, :c:func:`cci_execute`, etc. a cancellation message for query request which was sent to a server will be delivered and called function returns a **CCI_ER_QUERY_TIMEOUT** (-39) error. The value returned upon timeout may vary depending on a value specified in **disconnect_on_query_timeout**. For details, see **disconnect_on_query_timeout**.
+    *   **query_timeout** | **queryTimeout**: If time specified in these properties has expired when calling :c:func:`cci_prepare`, :c:func:`cci_execute`, etc. a cancellation message for query request which was sent to a server will be delivered and called function returns a **CCI_ER_QUERY_TIMEOUT** (-39) error. The default value is 0. If this value is 0, it means infinite waiting. The value returned upon timeout may vary depending on a value specified in **disconnect_on_query_timeout**. For details, see **disconnect_on_query_timeout**.
 
         .. note:: If you use :c:func:`cci_execute_batch` or :c:func:`cci_execute_array`\ function, or set **CCI_EXEC_QUERY_ALL** in :c:func:`cci_execute` function to run multiple queries at once, query timeout is applied to one function, not to one query. In other words, if query timeout occurs after the start of a function, a function running is quit.
 
     *   **disconnect_on_query_timeout** | **disconnectOnQueryTimeout**: Whether to disconnect socket immediately after time for query request has expired. It determines whether to terminate a socket connection immediately or wait for server response after sending cancellation message for query request to a server when calling :c:func:`cci_prepare`, :c:func:`cci_execute`, etc. The default value is **false**, meaning that it will wait for server response. It this value is true, a socket will be closed immediately after sending a cancellation message to a server upon timeout and returns the **CCI_ER_QUERY_TIMEOUT** (-39) error. (If an error occurs on database server side, not on broker side, it returns -1. If you want to view error details, see error codes in "database error buffer." You can get information how to check error codes in :ref:`CCI Error Codes and Error Messages <cci-error-codes>`.) Please note that there is a possibility that a database server does not get a cancellation message and execute a query even after an error is returned.
 
-    *   **logFile**: A log file name for debugging (default value: **cci_** <*handle_id*> **.log**). <*handle_id*> indicates the ID of a connection handle returned by this function.
+    *   **logFile**: A log filename for debugging (default value: **cci_** <*handle_id*> **.log**). <*handle_id*> indicates the ID of a connection handle returned by this function.
     
-    *   **logBaseDir**: A directory where a debug log file is created. The file name including the path will be logBaseDir/logFile, and the relative path is possible.
+    *   **logBaseDir**: A directory where a debug log file is created. The filename including the path will be logBaseDir/logFile, and the relative path is possible.
     
     *   **logSlowQueries**: Whether to log slow query for debugging (default value: **false**)
     *   **slowQueryThresholdMillis**: Timeout for slow query logging if slow query logging is enabled (default value: **60000**, unit: milliseconds)
     *   **logTraceApi**: Whether to log the start and end of CCI functions
     *   **logTraceNetwork**: Whether to log network data content transferred of CCI functions
+
+    *   **useSSL**: Packet Encryption mode (Default: false)
+
+       *   Packet encryption: useSSL = true
+       *   Plain text: useSSL = false
 
     **Example** ::
 
@@ -893,6 +901,16 @@ cci_connect_with_url
          
         --connection URL string when properties(logSlowQueries,slowQueryThresholdMills, logTraceApi, logTraceNetwork) are specified for interface debugging
         URL = "cci:cubrid:192.168.0.1:33000:demodb:::?logSlowQueries=true&slowQueryThresholdMillis=1000&logTraceApi=true&logTraceNetwork=true"
+
+        --connection URL string when useSSL property specified for encrypted connection
+        URL = "cci:cubrid:192.168.0.1:33000:demodb:::?useSSL=true
+
+    .. warning::
+
+        * The **useSSL** flag must match with the mode of the broker trying to connect. If encryption mode is different from the server that trying to connect, that connection request will be rejected. Please refer to the following cases that are not allowed.
+
+           *   useSSL=true, connection request will be rejected when the broker is in 'normal mode' (**cubrid_broker.conf**: SSL = OFF)
+           *   useSSL=false, connection request will be rejected when the broker is in 'encryption mode' (**cubrid_broker.conf**: SSL = ON)
 
 cci_connect_with_url_ex
 -----------------------
@@ -1022,7 +1040,7 @@ cci_datasource_change_property
     ========================= =========== ============================== =========================================================================================================================
     Property name             Type        Value                          Description
     ========================= =========== ============================== =========================================================================================================================
-    default_autocommit        bool        true/false                     Whether auto-commit or not. The default is CCI_DEFAULT_AUTOCOMMIT in cubrid_broker.conf; the default of this is ON(true)
+    default_autocommit        bool        true/false                     Whether autocommit or not. The default is CCI_DEFAULT_AUTOCOMMIT in cubrid_broker.conf; the default of this is ON(true)
     default_lock_timeout      msec        number                         lock timeout                                                      
     default_isolation         string      See the table of               isolation level. The default is isolation_level in cubrid.conf; the default of this is "READ COMMITTED".
                                           :c:func:`cci_property_set`                                                                     
@@ -1154,7 +1172,7 @@ cci_end_tran
         *   **CCI_ER_COMMUNICATION**
         *   **CCI_ER_TRAN_TYPE**
 
-    You can configure the default value of auto-commit mode by using :ref:`CCI_DEFAULT_AUTOCOMMIT <cci_default_autocommit>` broker parameter upon startup of an application. If configuration on broker parameter is omitted, the default value is **ON**; use the :c:func:`cci_set_autocommit` function to change auto-commit mode within an application. If auto-commit mode is **OFF**, you must explicitly commit or roll back transaction by using the :c:func:`cci_end_tran` function.
+    You can configure the default value of autocommit mode by using :ref:`CCI_DEFAULT_AUTOCOMMIT <cci_default_autocommit>` broker parameter upon startup of an application. If configuration on broker parameter is omitted, the default value is **ON**; use the :c:func:`cci_set_autocommit` function to change autocommit mode within an application. If autocommit mode is **OFF**, you must explicitly commit or roll back transaction by using the :c:func:`cci_end_tran` function.
 
 cci_escape_string
 -----------------
@@ -1237,14 +1255,16 @@ cci_execute_array
     :param req_handle: (IN) Request handle of the prepared statement
     :param query_result: (OUT) Query results
     :param err_buf: (OUT) Database error buffer
-    :return: Success: The number of executed queries, Failure: Negative number
+    :return: 
+         * Success: The number of executed queries (it has nothing to do with query execution success/failure.)
+         * Failure: Negative number
     
-        *   **CCI_ER_REQ_HANDLE**
-        *   **CCI_ER_BIND**
-        *   **CCI_ER_DBMS**
-        *   **CCI_ER_COMMUNICATION**
-        *   **CCI_ER_QUERY_TIMEOUT**
-        *   **CCI_ER_LOGIN_TIMEOUT**
+            *   **CCI_ER_REQ_HANDLE**
+            *   **CCI_ER_BIND**
+            *   **CCI_ER_DBMS**
+            *   **CCI_ER_COMMUNICATION**
+            *   **CCI_ER_QUERY_TIMEOUT**
+            *   **CCI_ER_LOGIN_TIMEOUT**
        
     To bind the data, call the :c:func:`cci_bind_param_array_size` function to specify the size of the array, bind each value to the variable by using the :c:func:`cci_bind_param_array` function, and execute the query by calling the :c:func:`cci_execute_array` function. The query result will be stored on the array of **T_CCI_QUERY_RESULT** structure.
 
@@ -1359,15 +1379,17 @@ cci_execute_batch
     :param sql_stmt: (IN) SQL statement array
     :param query_result: (OUT) The results of *sql_stmt*
     :param err_buf: (OUT) Database error buffer
-    :return: Success: The number of executed queries, Failure: Negative number
-    
-        *   **CCI_ER_CON_HANDLE**
-        *   **CCI_ER_DBMS**
-        *   **CCI_ER_COMMUNICATION**
-        *   **CCI_ER_NO_MORE_MEMORY**
-        *   **CCI_ER_CONNECT**
-        *   **CCI_ER_QUERY_TIMEOUT**
-        *   **CCI_ER_LOGIN_TIMEOUT**
+    :return: 
+         * Success: The number of executed queries (it has nothing to do with query execution success/failure.)
+         * Failure: Negative number
+
+            *   **CCI_ER_CON_HANDLE**
+            *   **CCI_ER_DBMS**
+            *   **CCI_ER_COMMUNICATION**
+            *   **CCI_ER_NO_MORE_MEMORY**
+            *   **CCI_ER_CONNECT**
+            *   **CCI_ER_QUERY_TIMEOUT**
+            *   **CCI_ER_LOGIN_TIMEOUT**
 
     Executes *sql_stmt* as many times as *num_sql_stmt* specified as a parameter and returns the number of queries executed with the query_result variable. You can use :c:macro:`CCI_QUERY_RESULT_RESULT`, c:macro:`CCI_QUERY_RESULT_ERR_NO`, :c:macro:`CCI_QUERY_RESULT_ERR_MSG` and :c:macro:`CCI_QUERY_RESULT_STMT_TYPE` macros to get the result of each query. Regarding the summary of these macros, see the :c:func:`cci_execute_array` function.
     
@@ -1530,7 +1552,7 @@ cci_get_autocommit
 
 .. c:function:: CCI_AUTOCOMMIT_MODE cci_get_autocommit(int conn_handle)
 
-    The **cci_get_autocommit** function returns the auto-commit mode currently configured.
+    The **cci_get_autocommit** function returns the autocommit mode currently configured.
 
     :param conn_handle: (IN) Connection handle
     :return: 
@@ -1604,10 +1626,11 @@ cci_get_class_num_objs
 CCI_GET_COLLECTION_DOMAIN
 -------------------------
 
-.. c:macro:: #define CCI_GET_COLLECTION_DOMAIN(u_type)
+.. c:macro:: CCI_GET_COLLECTION_DOMAIN(u_type)
 
     If *u_type* is set, multiset, or sequence type, this macro gets the domain of the set, multiset or sequence. If *u_type* is not a set type, the return value is the same as *u_type*.
 
+    :param Type u_type: (IN)
     :return: Type (CCI_U_TYPE)
 
 cci_get_cur_oid
@@ -2039,121 +2062,121 @@ cci_get_result_info
 CCI_GET_RESULT_INFO_ATTR_NAME
 -----------------------------
 
-.. c:macro:: #define CCI_GET_RESULT_INFO_ATTR_NAME(T_CCI_COL_INFO* res_info, int index)
+.. c:macro:: CCI_GET_RESULT_INFO_ATTR_NAME(res_info, index)
 
     The **CCI_GET_RESULT_INFO_ATTR_NAME** macro gets the actual attribute name of the *index*-th column of a prepared **SELECT** list. If there is no name for the attribute (constant, function, etc), " " (empty string) is returned. It does not check whether the specified argument, *res_info*, is **NULL** and whether *index* is valid. You cannot delete the returned memory pointer with **free**\ ().
 
-    :param res_info: (IN) A pointer to the column information fetched by :c:func:`cci_get_result_info`
-    :param index: (IN) Column index
+    :param T_CCI_COL_INFO* res_info: (IN) A pointer to the column information fetched by :c:func:`cci_get_result_info`
+    :param int index: (IN) Column index
     :return: Attribute name (char \*)
 
 CCI_GET_RESULT_INFO_CLASS_NAME
 ------------------------------
 
-.. c:macro:: #define CCI_GET_RESULT_INFO_CLASS_NAME(T_CCI_COL_INFO* res_info, int index)
+.. c:macro:: CCI_GET_RESULT_INFO_CLASS_NAME(res_info, index)
 
     The **CCI_GET_RESULT_INFO_CLASS_NAME** macro gets the *index*-th column's class name of a prepared **SELECT** list. It does not check whether the specified argument, *res_info*, is **NULL** and whether *index* is valid. You cannot delete the returned memory pointer with **free** (). The return value can be **NULL**.
 
-    :param res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
-    :param index: (IN) Column index
+    :param T_CCI_COL_INFO* res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
+    :param int index: (IN) Column index
     :return: Class name (char \*)
 
 CCI_GET_RESULT_INFO_IS_NON_NULL
 -------------------------------
 
-.. c:macro:: #define CCI_GET_RESULT_INFO_IS_NON_NULL(T_CCI_COL_INFO* res_info, int index)
+.. c:macro:: CCI_GET_RESULT_INFO_IS_NON_NULL(res_info, index)
 
     The **CCI_GET_RESULT_INFO_IS_NON_NULL** macro gets a value indicating whether the *index*-th column of a prepared **SELECT** list is nullable. It does not check whether the specified argument, *res_info*, is **NULL** and whether *index* is valid.
 
     When a column of a **SELECT** list is not a column but an expression, CUBRID cannot judge it's NON_NULL or not; therefore, CCI_GET_RESULT_INFO_IS_NON_NULL macro always returns 0.
 
-    :param res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
-    :param index: (IN) Column index
+    :param T_CCI_COL_INFO* res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
+    :param int index: (IN) Column index
     :return: 0: nullable, 1: non **NULL**
 
 CCI_GET_RESULT_INFO_NAME
 ------------------------
 
-.. c:macro:: #define CCI_GET_RESULT_INFO_NAME(T_CCI_COL_INFO* res_info, int index)
+.. c:macro:: CCI_GET_RESULT_INFO_NAME(res_info, index)
 
     The **CCI_GET_RESULT_INFO_NAME** macro gets the *index*-th column's name of a prepared **SELECT** list. It does not check whether the specified argument, *res_info*, is **NULL** and whether *index* is valid. You cannot delete the returned memory pointer with **free** ().
 
-    :param res_info: (IN) Column info pointer to :c:func:`cci_get_result_info`
-    :param index: (IN) Column index
+    :param T_CCI_COL_INFO* res_info: (IN) Column info pointer to :c:func:`cci_get_result_info`
+    :param int index: (IN) Column index
     :return: Column name (char \*)
 
 CCI_GET_RESULT_INFO_PRECISION
 -----------------------------
 
-.. c:macro:: #define CCI_GET_RESULT_INFO_PRECISION(T_CCI_COL_INFO* res_info, int index)
+.. c:macro:: CCI_GET_RESULT_INFO_PRECISION(res_info, index)
 
     The **CCI_GET_RESULT_INFO_PRECISION** macro gets the *index*-th column's precision of a prepared **SELECT** list. It does not check whether the specified argument, *res_info*, is **NULL** and whether *index* is valid.
 
-    :param res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
-    :param index: (IN) Column index
+    :param T_CCI_COL_INFO* res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
+    :param int index: (IN) Column index
     :return: precision (int)
 
 CCI_GET_RESULT_INFO_SCALE
 -------------------------
 
-.. c:macro:: #define CCI_GET_RESULT_INFO_SCALE(T_CCI_COL_INFO* res_info, int index)
+.. c:macro:: CCI_GET_RESULT_INFO_SCALE(res_info, index)
 
     The **CCI_GET_RESULT_INFO_SCALE** macro gets the *index*-th column's scale of a prepared **SELECT** list. It does not check whether the specified argument, *res_info*, is **NULL** and whether *index* is valid. 
     
-    :param res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
-    :param index: (IN) Column index
+    :param T_CCI_COL_INFO* res_info: (IN) Column info pointer by :c:func:`cci_get_result_info`
+    :param int index: (IN) Column index
     :return: scale (int)
 
 CCI_GET_RESULT_INFO_TYPE
 ------------------------
 
-.. c:macro:: #define CCI_GET_RESULT_INFO_TYPE(T_CCI_COL_INFO* res_info, int index)
+.. c:macro:: CCI_GET_RESULT_INFO_TYPE(res_info, index)
 
     The **CCI_GET_RESULT_INFO_TYPE** macro gets the *index*-th column's type of a prepared **SELECT** list. It does not check whether the specified argument, *res_info*, is **NULL** and whether *index* is valid.
 
     If you want to check which column is a SET type or not, use :c:macro:`CCI_IS_SET_TYPE`.
 
-    :param res_info: (IN) pointer to the column information fetched by :c:func:`cci_get_result_info`
-    :param index: (IN) Column index
+    :param T_CCI_COL_INFO* res_info: (IN) pointer to the column information fetched by :c:func:`cci_get_result_info`
+    :param int index: (IN) Column index
     :return: Column type (**T_CCI_U_TYPE**)
 
 CCI_IS_SET_TYPE
 ---------------
 
-.. c:macro:: #define CCI_IS_SET_TYPE(u_type)
+.. c:macro:: CCI_IS_SET_TYPE(u_type)
 
     The CCI_IS_SET_TYPE macro check whether *u_type* is set type.
 
-    :param u_type: (IN)
+    :param Type u_type: (IN)
     :return: 1 : set, 0 : not set
 
 CCI_IS_MULTISET_TYPE
 --------------------
-.. c:macro:: #define CCI_IS_MULTISET_TYPE(u_type)
+.. c:macro:: CCI_IS_MULTISET_TYPE(u_type)
 
     The CCI_IS_SET_TYPE macro check whether *u_type* is multiset type.
 
-    :param u_type: (IN)
+    :param Type u_type: (IN)
     :return: 1 : multiset, 0 : not multiset
 
 CCI_IS_SEQUENCE_TYPE
 --------------------
 
-.. c:macro:: #define CCI_IS_SEQUENCE_TYPE(u_type)
+.. c:macro:: CCI_IS_SEQUENCE_TYPE(u_type)
 
     The CCI_IS_SET_TYPE macro check whether *u_type* is sequence type.
 
-    :param u_type: (IN)
+    :param Type u_type: (IN)
     :return: 1 : sequence, 0 : not sequence
 
 CCI_IS_COLLECTION_TYPE
 ----------------------
 
-.. c:macro:: #define CCI_IS_COLLECTION_TYPE(u_type)
+.. c:macro:: CCI_IS_COLLECTION_TYPE(u_type)
 
     The CCI_IS_SET_TYPE macro check whether *u_type* is collection (set, multiset, sequence) type.
 
-    :param u_type: (IN)
+    :param Type u_type: (IN)
     :return: 1 : collection (set, multiset, sequence), 0 : not collection
 
 cci_get_version
@@ -2541,7 +2564,7 @@ cci_property_set
     ============================= =========== =============================================== ==========================================================================================================
     Property name                 Type        Default                                         Description
     ============================= =========== =============================================== ==========================================================================================================
-    user                          string                                                      DB user name.
+    user                          string                                                      DB username.
     password                      string                                                      DB user password.
     url                           string                                                      Connection URL. For specifying connection URL string, see :c:func:`cci_connect_with_url`.
     pool_size                     int         10                                              Maximum number of connections which a connection pool can have.
@@ -2648,43 +2671,43 @@ cci_query_result_free
 CCI_QUERY_RESULT_ERR_NO
 -----------------------
 
-.. c:macro:: #define CCI_QUERY_RESULT_ERR_NO(T_CCI_QUERY_RESULT* query_result, int index)
+.. c:macro:: CCI_QUERY_RESULT_ERR_NO(query_result, index)
 
     Since query results performed by :c:func:`cci_execute_batch`, :c:func:`cci_execute_array`, or :c:func:`cci_execute_result` function are stored as an array of **T_CCI_QUERY_RESULT** structure, you need to check the query result for each item of the array.
     
     **CCI_QUERY_RESULT_ERR_NO** fetches the error number for the array item specified as *index*, if it is not an error, it returns 0. 
 
-    :param query_result: (IN) Query result to retrieve
-    :param index: (IN) Index of the result array(base :1). It represents a specific location of the result array.
+    :param T_CCI_QUERY_RESULT* query_result: (IN) Query result to retrieve
+    :param int index: (IN) Index of the result array(base :1). It represents a specific location of the result array.
     
     :return: Error number
 
 CCI_QUERY_RESULT_ERR_MSG
 ------------------------
 
-.. c:macro:: #define CCI_QUERY_RESULT_ERR_MSG(T_CCI_QUERY_RESULT* query_result, int index)
+.. c:macro:: CCI_QUERY_RESULT_ERR_MSG(query_result, index)
 
     The **CCI_QUERY_RESULT_ERR_MSG** macro gets error messages about query results executed by :c:func:`cci_execute_batch`, :c:func:`cci_execute_array` or :c:func:`cci_execute_result` function. If there is no error message, this macro returns ""(empty string). It does not check whether the specified argument, *query_result*, is **NULL**, and whether *index* is valid.
 
-    :param query_result: (IN) Query results of to be executed
-    :param index: (IN) Column index (base: 1)
+    :param T_CCI_QUERY_RESULT* query_result: (IN) Query results of to be executed
+    :param int index: (IN) Column index (base: 1)
     :return: Error message
 
 CCI_QUERY_RESULT_RESULT
 -----------------------
 
-.. c:macro:: #define CCI_QUERY_RESULT_RESULT(T_CCI_QUERY_RESULT* query_result, int index)
+.. c:macro:: CCI_QUERY_RESULT_RESULT(query_result, index)
 
     The **CCI_QUERY_RESULT_RESULT** macro gets the result count executed by :c:func:`cci_execute_batch`, :c:func:`cci_execute_array` or :c:func:`cci_execute_result` function. It does not check whether the specified argument, *query_result*, is **NULL** and whether *index* is valid.
 
-    :param query_result: (IN) Query results to be retrieved
-    :param index: (IN) Column index (base: 1)
+    :param T_CCI_QUERY_RESULT* query_result: (IN) Query results to be retrieved
+    :param int index: (IN) Column index (base: 1)
     :return: result count
 
 CCI_QUERY_RESULT_STMT_TYPE
 --------------------------
 
-.. c:macro:: #define CCI_QUERY_RESULT_STMT_TYPE(T_CCI_QUERY_RESULT* query_result, int index)
+.. c:macro:: CCI_QUERY_RESULT_STMT_TYPE(query_result, index)
 
     Since query results performed by :c:func:`cci_execute_batch`, :c:func:`cci_execute_array` or :c:func:`cci_execute_result` fuction are stored as an array of T_CCI_QUERY_RESULT  type, you need to check the query result for each item of the array. 
     
@@ -2692,8 +2715,8 @@ CCI_QUERY_RESULT_STMT_TYPE
     
     It does not check whether the specified argument, *query_result*, is **NULL** and whether *index* is valid.
 
-    :param query_result: (IN) Query results to be retrieved
-    :param index: (IN) Column index (base: 1)
+    :param T_CCI_QUERY_RESULT* query_result: (IN) Query results to be retrieved
+    :param int index: (IN) Column index (base: 1)
     :return: statement type (**T_CCI_CUBRID_STMT**)
 
 cci_register_out_param
@@ -2701,7 +2724,7 @@ cci_register_out_param
 
 .. c:function:: int cci_register_out_param(int req_handle, int index)
 
-    The **cci_register_out_param** function is used to bind the parameters as outbind in Java Stored Procedure. The index value begins from 1.
+    The **cci_register_out_param** function is used to bind parameters as outbind in a stored procedure. The index value starts from 1.
     To call this function, **CCI_PREPARE_CALL** flag of **cci_prepare** function should be specified.
 
     :param req_handle: (IN) Request handle
@@ -2712,19 +2735,16 @@ cci_register_out_param
         *    **CCI_ER_CON_HANDLE**
         *    **CCI_ER_USED_CONNECTION**
     
-    The following shows to print out "Hello, CUBRID" string with Java Stored Procedure.
-    
-    To use Java Stored Procedure, firstly specify **java_stored_procedure** parameter in cubrid.conf as **yes**, then start the database.
+    The following shows how to print the string "Hello, CUBRID" string using a stored procedure.
     
     ::
     
         $ vi cubrid.conf
-        java_stored_procedure=yes
     
         $ cubrid service start
         $ cubrid server start demodb
     
-    Implement and compile the class to be used as Java Stored Procedure.
+    Implement and compile the class to be used as a stored procedure.
     
     .. code-block:: java
     
@@ -3525,17 +3545,17 @@ cci_set_autocommit
 
 .. c:function:: int cci_set_autocommit (int conn_handle, CCI_AUTOCOMMIT_MODE  autocommit_mode)
 
-    The **cci_set_autocommit** function configures the auto-commit mode of current database connection. It is only used to turn ON/OFF of auto-commit mode. When this function is called, every transaction being processed is committed regardless of configured mode.
+    The **cci_set_autocommit** function configures the autocommit mode of current database connection. It is only used to turn ON/OFF of autocommit mode. When this function is called, every transaction being processed is committed regardless of configured mode.
 
     .. note:: :ref:`CCI_DEFAULT_AUTOCOMMIT <cci_default_autocommit>` in **cubrid_broker.conf** determines the default autocommit mode upon program startup.
 
     :param conn_handle: (IN) Connection handle
-    :param autocommit_mode: (IN) Configures the auto-commit mode. It has one of the following value: CCI_AUTOCOMMIT_FALSE or CCI_AUTOCOMMIT_TRUE
+    :param autocommit_mode: (IN) Configures the autocommit mode. It has one of the following value: CCI_AUTOCOMMIT_FALSE or CCI_AUTOCOMMIT_TRUE
     :return: Error code (0: success)
 
     .. note::
     
-        **CCI_DEFAULT_AUTOCOMMIT**, a broker parameter configured in the **cubrid_broker.conf** file, determines whether it is in auto-commit mode upon program startup.
+        **CCI_DEFAULT_AUTOCOMMIT**, a broker parameter configured in the **cubrid_broker.conf** file, determines whether it is in autocommit mode upon program startup.
 
 cci_set_db_parameter
 ---------------------

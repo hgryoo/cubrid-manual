@@ -214,6 +214,7 @@ AVG
 
 .. function:: AVG ([ DISTINCT | DISTINCTROW | UNIQUE | ALL ] expression)
 .. function:: AVG ([ DISTINCT | DISTINCTROW | UNIQUE | ALL ] expression) OVER (<analytic_clause>)
+   :noindex:
 
     The **AVG** function is used as an aggregate function or an analytic function. It calculates the arithmetic average of the value of an expression representing all rows. Only one *expression* is specified as a parameter. You can get the average without duplicates by using the **DISTINCT** or **UNIQUE** keyword in front of the expression or the average of all values by omitting the keyword or by using **ALL**.
 
@@ -286,15 +287,18 @@ COUNT
 
 .. function:: COUNT (*)
 .. function:: COUNT (*) OVER (<analytic_clause>)
+   :noindex:
 .. function:: COUNT ([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
+   :noindex:
 .. function:: COUNT ([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:
 
-    The **COUNT** function is used as an aggregate function or an analytic function. It returns the number of rows returned by a query. If an asterisk (*) is specified, the number of all rows satisfying the condition (including the rows with the **NULL** value) is returned. If the **DISTINCT** or **UNIQUE** keyword is specified in front of the expression, only the number of rows that have a unique value (excluding the rows with the **NULL** value) is returned after duplicates have been removed. Therefore, the value returned is always an integer and **NULL** is never returned.
+    The **COUNT** function is used as an aggregate function or an analytic function. It returns the number of rows returned by a query. If an asterisk (*) is specified, the number of all rows satisfying the condition (including the rows with the **NULL** value) is returned. If the **DISTINCT** or **UNIQUE** keyword is specified in front of the expression, only the number of rows that have a unique value (excluding the rows with the **NULL** value) is returned after duplicates have been removed. Therefore, the value returned is always a big integer and **NULL** is never returned.
 
     :param expression: Specifies an expression.
     :param ALL: Gets the number of rows given in the *expression* (default).
     :param DISTINCT,DISTINCTROW,UNIQUE: Gets the number of rows without duplicates.
-    :rtype: INT
+    :rtype: BIGINT
     
 A column that has collection type and object domain (user-defined class) can also be specified in the *expression*.
 
@@ -308,9 +312,9 @@ The following example shows how to retrieve the number of Olympic Games that hav
     
 ::
 
-         count(*)
-    =============
-                9
+                  count(*)
+    ======================
+                         9
 
 The following example shows how to output the number of players whose nation_code is 'AUT' in *demodb* by accumulating the number of events when the event is changed. The last row shows the number of all players.
 
@@ -321,32 +325,33 @@ The following example shows how to output the number of players whose nation_cod
     
 ::
 
-       nation_code           event                 name                           co
-    ===============================================================================
-      'AUT'                 'Athletics'           'Kiesl Theresia'                2
-      'AUT'                 'Athletics'           'Graf Stephanie'                2
-      'AUT'                 'Equestrian'          'Boor Boris'                    6
-      'AUT'                 'Equestrian'          'Fruhmann Thomas'               6
-      'AUT'                 'Equestrian'          'Munzner Joerg'                 6
-      'AUT'                 'Equestrian'          'Simon Hugo'                    6
-      'AUT'                 'Judo'                'Heill Claudia'                 9
-      'AUT'                 'Judo'                'Seisenbacher Peter'            9
-      'AUT'                 'Judo'                'Hartl Roswitha'                9
-      'AUT'                 'Rowing'              'Jonke Arnold'                 11
-      'AUT'                 'Rowing'              'Zerbst Christoph'             11
-      'AUT'                 'Sailing'             'Hagara Roman'                 15
-      'AUT'                 'Sailing'             'Steinacher Hans Peter'        15
-      'AUT'                 'Sailing'             'Sieber Christoph'             15
-      'AUT'                 'Sailing'             'Geritzer Andreas'             15
-      'AUT'                 'Shooting'            'Waibel Wolfram Jr.'           17
-      'AUT'                 'Shooting'            'Planer Christian'             17
-      'AUT'                 'Swimming'            'Rogan Markus'                 18
+      nation_code           event                 name                                    co
+    ========================================================================================
+      'AUT'                 'Athletics'           'Kiesl Theresia'                         2
+      'AUT'                 'Athletics'           'Graf Stephanie'                         2
+      'AUT'                 'Equestrian'          'Boor Boris'                             6
+      'AUT'                 'Equestrian'          'Fruhmann Thomas'                        6
+      'AUT'                 'Equestrian'          'Munzner Joerg'                          6
+      'AUT'                 'Equestrian'          'Simon Hugo'                             6
+      'AUT'                 'Judo'                'Heill Claudia'                          9
+      'AUT'                 'Judo'                'Seisenbacher Peter'                     9
+      'AUT'                 'Judo'                'Hartl Roswitha'                         9
+      'AUT'                 'Rowing'              'Jonke Arnold'                          11
+      'AUT'                 'Rowing'              'Zerbst Christoph'                      11
+      'AUT'                 'Sailing'             'Hagara Roman'                          15
+      'AUT'                 'Sailing'             'Steinacher Hans Peter'                 15
+      'AUT'                 'Sailing'             'Sieber Christoph'                      15
+      'AUT'                 'Sailing'             'Geritzer Andreas'                      15
+      'AUT'                 'Shooting'            'Waibel Wolfram Jr.'                    17
+      'AUT'                 'Shooting'            'Planer Christian'                      17
+      'AUT'                 'Swimming'            'Rogan Markus'                          18
 
 CUME_DIST
 =========
 
 .. function:: CUME_DIST(expression[, expression] ...) WITHIN GROUP (<order_by_clause>)
 .. function:: CUME_DIST() OVER ([<partition_by_clause>] <order_by_clause>)
+   :noindex:
 
     **CUME_DIST** function is used as an aggregate function or an analytic function. It returns the value of cumulated distribution about the specified value within the group. The range of a return value by CUME_DIST is 0> and 1<=. The return value of **CUME_DIST** about the same input argument is evaluated as the same cumulated distribution value.
 
@@ -360,7 +365,7 @@ CUME_DIST
 
 If it is used as an aggregate function, **CUME_DIST** sorts the data by the order specified in **ORDER BY** clause; then it returns the relative position of a hypothetical row in the rows of aggregate group. At this time, the position is calculated as if a hypothetical row is newly inserted. That is, **CUME_DIST** returns ("cumulated RANK of a hypothetical row" + 1)/("the number of total rows in an aggregate group").
 
-If it is used as an analytic function, **CUME_DIST** returns the relative position in the value of the group after sorting each row(**ORDER BY**) with each partitioned group(**PARTITION BY**). The relative position is that the number of rows which have values less than or equal to the input argument is divided by the number of total rows within the group(rows grouped by the partition_by_clause or the total rows). That is, it returns (cumulated RANK of a certain row)/(the number or rows within the group). For example, the number of rows which has the RANK 1 is 2, **CUME_DUST** values of the first and the second rows will be "2/10 = 0.2".
+If it is used as an analytic function, **CUME_DIST** returns the relative position of a value in the group after sorting each row (**ORDER BY**) within each partitioned group (**PARTITION BY**). The relative position is calculated by dividing the number of rows with values less than or equal to the input argument by the total number of rows in the group (rows grouped by the partition_by_clause or all rows if no partition is specified). That is, it returns (cumulative rank of a certain row)/(number of rows within the group). For example, if the number of rows with RANK 1 is 2, the **CUME_DIST** values of the first and second rows will be "2/10 = 0.2".
 
 The following is a schema and data to use in the example of this function.
 
@@ -469,9 +474,9 @@ The following is an example to be used as an analytic function; it returns the c
        11           95           90  'A'                             2     1.000000000000000e+00
        13           95           90  'A'                             2     1.000000000000000e+00
 
-In the above result, the row that *id* is 1, is located at the first and the second on the total 10 rows, and the value of CUME_DUST is 2/10, that is, 0.2.
+In the above result, the row that *id* is 1, is located at the first and the second on the total 10 rows, and the value of CUME_DIST is 2/10, that is, 0.2.
 
-The row that *id* is 5, is located at the fifth on the total 10 rows, and the value of **CUME_DUST** is 5/10, that is, 0.5.
+The row that *id* is 5, is located at the fifth on the total 10 rows, and the value of **CUME_DIST** is 5/10, that is, 0.5.
 
 DENSE_RANK
 ==========
@@ -647,7 +652,7 @@ GROUP_CONCAT
     :param SEPARATOR: Specifies the separator to divide the result values. If it is omitted, the default character, comma (,) will be used as a separator.
     :rtype: STRING
 
-The maximum size of the return value follows the configuration of the system parameter, **group_concat_max_len**. The default is **1024** bytes, the minimum value is 4 bytes and the maximum value is 33,554,432 bytes.
+The maximum size of the return value follows the configuration of the system parameter, **group_concat_max_len**. The default is **1024** bytes, the minimum value is 4 bytes and the maximum value is IN_MAX(about 2G) bytes.
 
 This function is affected by **string_max_size_bytes** parameter; if the value of **group_concat_max_len** is larger than the value **string_max_size_bytes** and the result size of **GROUP_CONCAT** exceeds the value of **string_max_size_bytes**, an error occurs.
 
@@ -693,6 +698,10 @@ To use the **GROUP_CONCAT** function, you must meet the following conditions.
       group_concat(i*2+1 order by 1 separator '')
     ======================
       '35791113'
+
+.. note::
+
+    **GROUP_CONCAT** performance for processing large numbers of rows has been improved starting from CUBRID 11.3 through optimization of internal string operations.
 
 LAG
 ===
@@ -893,6 +902,7 @@ MAX
 
 .. function:: MAX([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: MAX([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:
 
     The **MAX** function is used as an aggregate function or an analytic function. It gets the greatest value of expressions of all rows. Only one *expression* is specified. For expressions that return character strings, the string that appears later in alphabetical order becomes the maximum value; for those that return numbers, the greatest value becomes the maximum value.
 
@@ -943,6 +953,7 @@ MEDIAN
 
 .. function:: MEDIAN(expression)
 .. function:: MEDIAN(expression) OVER ([<partition_by_clause>])
+   :noindex:
 
     **MEDIAN** function is used as an aggregate function or an analytic function. It returns the median value. The median value is the value which is located on the middle between the minimum value and the maximum value.
     
@@ -996,6 +1007,7 @@ MIN
 
 .. function:: MIN([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: MIN([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:
 
     The **MIN** function is used as an aggregate function or an analytic function. It gets the smallest value of expressions of all rows. Only one *expression* is specified. For expressions that return character strings, the string that appears earlier in alphabetical order becomes the minimum value; for those that return numbers, the smallest value becomes the minimum value.
 
@@ -1190,6 +1202,7 @@ PERCENT_RANK
 
 .. function:: PERCENT_RANK(expression[, expression] ...) WITHIN GROUP (<order_by_clause>)
 .. function:: PERCENT_RANK() OVER ([<partition_by_clause>] <order_by_clause>)
+   :noindex:
 
     **PERCENT_RANK** function is used as an aggregate function or an analytic function. It returns the relative position of the row in the group as a ranking percent. It is similar to **CUME_DIST** function(returns cumulated distribution value). The range of this function is from 0 to 1. The first value of **PERCENT_RANK** is always 0.
 
@@ -1687,7 +1700,9 @@ STDDEV, STDDEV_POP
 .. function:: STDDEV([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: STDDEV_POP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: STDDEV([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:
 .. function:: STDDEV_POP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:
 
     The functions **STDDEV** and **STDDEV_POP** are used interchangeably and they are used as an aggregate function or an analytic function. They return a standard variance of the values calculated for all rows. The **STDDEV_POP** function is a standard of the SQL:1999. Only one *expression* is specified as a parameter. If the **DISTINCT** or **UNIQUE** keyword is inserted before the expression, they calculate the sample standard variance after deleting duplicates; if keyword is omitted or **ALL**, they it calculate the sample standard variance for all values.
 
@@ -1760,6 +1775,7 @@ STDDEV_SAMP
 
 .. function:: STDDEV_SAMP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: STDDEV_SAMP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:
 
     The **STDDEV_SAMP** function is used as an aggregate function or an analytic function. It calculates the sample standard variance. Only one *expression* is specified as a parameter. If the **DISTINCT** or **UNIQUE** keyword is inserted before the expression, it calculates the sample standard variance after deleting duplicates; if a keyword is omitted or **ALL**, it calculates the sample standard variance for all values.
 
@@ -1830,6 +1846,7 @@ SUM
 
 .. function:: SUM ( [ DISTINCT | DISTINCTROW | UNIQUE | ALL ] expression )
 .. function:: SUM ( [ DISTINCT | DISTINCTROW | UNIQUE | ALL ] expression ) OVER (<analytic_clause>)
+   :noindex:
 
     The **SUM** function is used as an aggregate function or an analytic function. It returns the sum of expressions of all rows. Only one *expression* is specified as a parameter. You can get the sum without duplicates by inserting the **DISTINCT** or **UNIQUE** keyword in front of the expression, or get the sum of all values by omitting the keyword or by using **ALL**.
 
@@ -1916,7 +1933,9 @@ VARIANCE, VAR_POP
 .. function:: VARIANCE([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: VAR_POP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: VARIANCE([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:	
 .. function:: VAR_POP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:	
 
     The functions **VARPOP** and **VARIANCE** are used interchangeably and they are used as an aggregate function or an analytic function. They return a variance of expression values for all rows. Only one *expression* is specified as a parameter. If the **DISTINCT** or **UNIQUE** keyword is inserted before the expression, they calculate the population variance after deleting duplicates; if the keyword is omitted or **ALL**, they calculate the sample population variance for all values.
 
@@ -1986,6 +2005,7 @@ VAR_SAMP
 
 .. function:: VAR_SAMP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression)
 .. function:: VAR_SAMP([DISTINCT | DISTINCTROW | UNIQUE | ALL] expression) OVER (<analytic_clause>)
+   :noindex:
 
     The **VAR_SAMP** function is used as an aggregate function or an analytic function. It returns the sample variance. The denominator is the number of all rows - 1. Only one *expression* is specified as a parameter. If the **DISTINCT** or **UNIQUE** keyword is inserted before the expression, it calculates the sample variance after deleting duplicates and if the keyword is omitted or **ALL**, it calculates the sample variance for all values.
 

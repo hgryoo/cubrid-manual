@@ -296,8 +296,10 @@ The **DATE** data type is used to represent the year (yyyy), month (mm) and day 
 
 *   All fields must be entered as integer.
 *   The date value is displayed in the type of 'MM/DD/YYYY' in CSQL, and it is displayed in the type of 'YYYY-MM-DD' in JDBC application programs and the CUBRID Manager.
+*   You can store the date value of the system in the **DATE** type by using the :c:macro:`SYS_DATE`\ (or :c:macro:`SYSDATE`, :c:macro:`CURRENT_DATE`). 
 *   The :func:`TO_DATE` function is used to convert a character string type into a **DATE** type. 
 *   0 is not allowed to input in year, month, and day; however, '0000-00-00', which every digit consisting of year, month, and day is 0, is allowed as an exception.
+*   If the year is two digits and the value is greater than or equal to 70, it is recognized as the 1900s, otherwise it is recognized as the 2000s.
 *   **DEFAULT** constraint can be specified in a column of this type.
 
 ::
@@ -320,6 +322,7 @@ The **TIME** data type is used to represent the hour (hh), minute (mm) and secon
 *   AM/PM time notation is used to display time in the CSQL; while the 24-hour notation is used in the CUBRID Manager.
 *   AM/PM can be specified in the 24-hour notation. An error occurs if the time specified does not follow the AM/PM format.
 *   Every time value is stored in the 24-hour notation. 
+*   You can store the time value of the system in the **TIME** type by using the :c:macro:`SYS_TIME`\ (or :c:macro:`SYSTIME`, :c:macro:`CURRENT_TIME`). 
 *   The :func:`TO_TIME` function is used to return a character string type into a TIME type.
 *   **DEFAULT** constraint can be specified in a column of this type.
 
@@ -683,7 +686,7 @@ Date/Time types with timezone are date/time types which can be input or output b
 Timezone information are considered in the Date/Time types if TZ or LTZ is followed after the existing Date/Time types; TZ means timezone, and LTZ means local timezone.
 
 *   TZ type can be represented as <date/time type> WITH TIME ZONE. This stores UTC time and timezone information (decided by a user or session timezone) when this is created. TZ type requires 4 bytes more to store timezone information.
-*   LTZ type can be represented as <date/time type> WITH LOCAL TIME ZONE. This stores UTC time internally; when this value is output, this is  converted as a value of a local (current session) time zone.
+*   LTZ type can be represented as <date/time type> WITH LOCAL TIME ZONE. This stores UTC time internally; when this value is output, this is  converted as a value of a local (current session) timezone.
 
 This table describes date/time types to compare date/time types with timezone together.
 
@@ -963,7 +966,7 @@ IANA Timezone
 
 In IANA(Internet Assigned Numbers Authority) timezone database, there are lots of codes and data which represent the history of localtime for many representative locations around the globe.
 
-This database is periodically updated to reflect changes made by political bodies to time zone boundaries, UTC offsets, and daylight-saving rules. Its management procedure is described in `BCP 175: Procedures for Maintaining the Time Zone Database <https://tools.ietf.org/html/rfc6557>`_. For more details, see http://www.iana.org/time-zones.
+This database is periodically updated to reflect changes made by political bodies to timezone boundaries, UTC offsets, and daylight-saving rules. Its management procedure is described in `BCP 175: Procedures for Maintaining the Time Zone Database <https://datatracker.ietf.org/doc/html/rfc6557>`_. For more details, see http://www.iana.org/time-zones.
 
 CUBRID supports IANA timezone, and a user can use the IANA timezone library in the CUBRID installation package as it is. If you want to update as the recent timezone, update timezone first, compile timezone library, and restart the database. 
 
@@ -1047,6 +1050,7 @@ A variable-length bit string is represented as **BIT VARYING** (*n*), where *n* 
     INSERT INTO bitvar_tbl VALUES (0b1010, 0b1010);
     INSERT INTO bitvar_tbl VALUES (0xaa, 0xaa);
     INSERT INTO bitvar_tbl(a1) VALUES (0xaaa);
+    INSERT INTO bitvar_tbl(a2) VALUES (0xaaa);
     SELECT * FROM bitvar_tbl;
 
 ::
@@ -1057,14 +1061,7 @@ A variable-length bit string is represented as **BIT VARYING** (*n*), where *n* 
       X'a'                  X'a'
       X'aa'                 X'aa'
       X'aaa'                NULL
-
-.. code-block:: sql
-
-    INSERT INTO bitvar_tbl(a2) VALUES (0xaaa);
-
-::
-
-    ERROR: Data overflow coercing X'aaa' to type bit varying.
+      NULL                  X'aa'
 
 .. _char-data-type:
 
@@ -1103,11 +1100,12 @@ The following are the rules that are applied when using the character string typ
 
     Specify the number of a character string.
 
-    When the length of the character string entered exceeds the length specified, the excess characters are truncated.
+    When the length of the character string entered exceeds the length specified, the excess characters may be truncated in the insert/update operation if the allow_truncated_string configuration value is "yes" otherwise error occurs.
 
     For a fixed-length character string type such as **CHAR**, the length is fixed at the declared length. Therefore, the right part (trailing space) of the character string is filled with space characters when the string is stored. For a variable-length character string type such as **VARCHAR**, only the entered character string is stored, and the space is not filled with space characters.
 
-    The maximum length of a **CHAR** or **VARCHAR** type to be specified is 1,073,741,823.
+    The maximum length of a **CHAR** type to be specified is 268,435,455.
+    The maximum length of a **VARCHAR** type to be specified is 1,073,741,823.
     
     Also, the maximum length that can be input or output in a CSQL statement is 8,192 KB.
 
@@ -1141,13 +1139,13 @@ CHAR(n)
 
 A fixed-length character string is represented as **CHAR** *(n)*, in which *n* represents the number of characters. If *n* is not specified, the value is specified as 1, default value.
 
-When the length of a character string exceeds *n*, they are truncated. When character string which is shorter than *n* is stored, whitespace characters are used to fill up the trailing space.
+When the length of a character string exceeds *n*, they may be truncated in the insert/update operation if the allow_truncated_string configuration value is "yes" otherwise error occurs. When character string which is shorter than *n* is stored, whitespace characters are used to fill up the trailing space.
 
 **CHAR** (*n*) and **CHARACTER** (*n*) are used interchangeably.
 
-.. note:: In the earlier versions of CUBRID 9.0, *n* represents bite length, not the number of characters.
+.. note:: In the earlier versions of CUBRID 9.0, *n* represents byte length, not the number of characters.
 
-*   *n* is an integer between 1 and 1,073,741,823 (1G).
+*   *n* specifies the number of bytes, ranging from 1 to 2048, and defines a fixed-length character type that allocates storage of the specified size.
 
 *   Empty quotes (' ') are used to represent a blank string. In this case, the return value of the **LENGTH** function is not 0, but is the fixed length defined in **CHAR** (*n*). That is, if you enter a blank string into a column with **CHAR** (10), the **LENGTH** is 10; if you enter a blank value into a **CHAR** with no length specified, the **LENGTH** is the default value 1.
 
@@ -1155,9 +1153,9 @@ When the length of a character string exceeds *n*, they are truncated. When char
 
 ::
 
-    If you specify 'pacesetter' as CHAR(12), 'pacesetter ' is stored (a 10-character string plus two whitespace characters).
-    If you specify 'pacesetter ' as CHAR(10), 'pacesetter' is stored (a 10-character string; two whitespace characters are truncated).
-    If you specify 'pacesetter' as CHAR(4), 'pace' is stored (truncated as the length of the character string is greater than 4).
+    If you specify 'pacesetter' as CHAR(12), 'pacesetter ' is stored (a 10-character string plus two white space characters).
+    If you specify 'pacesetter ' as CHAR(10), 'pacesetter' is stored (a 10-character string; two white space characters are truncated).
+    If you specify 'pacesetter' as CHAR(4), 'pace' may be stored or error occurs depending on the configuration value of allow_truncated_string (truncated as the length of the character string is greater than 4).
     If you specify 'p ' as CHAR, 'p' is stored (if n is not specified, the length is set to the default value 1).
 
 *   **DEFAULT** constraint can be specified in a column of this type.
@@ -1167,11 +1165,11 @@ VARCHAR(n)/CHAR VARYING(n)
 
 Variable-length character strings are represented as **VARCHAR** (*n*), where *n* represents the number of characters. If *n* is not specified, the value is specified as 1,073,741,823, the maximum length.
 
-When the length of a character string exceeds *n*, they are truncated. When character string which is shorter than *n* is stored, whitespace characters are used to fill up the trailing space for **VARCHAR** (*n*), the length of string used are stored. 
+When the length of a character string exceeds *n*, they may be truncated in the insert/update operation if the allow_truncated_string configuration value is **yes** or error occurs if not.  When character string which is shorter than *n* is stored, for **VARCHAR** (*n*), the length of string used are stored without any trailing spaces.
 
 **VARCHAR** (*n*), **CHARACTER, VARYING** (*n*), and **CHAR VARYING** (*n*) are used interchangeably.
 
-.. note:: In the earlier versions of CUBRID 9.0, *n* represents bite length, not the number of characters.
+.. note:: In the earlier versions of CUBRID 9.0, *n* represents byte length, not the number of characters.
 
 *   **STRING** is the same as the **VARCHAR** (maximum length).
 *   *n* is an integer between 1 and 1,073,741,823 (1G).
@@ -1179,11 +1177,11 @@ When the length of a character string exceeds *n*, they are truncated. When char
 
 ::
 
-    If you specify 'pacesetter' as CHAR(4), 'pace' is stored (truncated as the length of the character string is greater than 4).
+    If you specify 'pacesetter' as VARCHAR(4), 'pace' may be stored or error occurs depending on the configuration value of allow_truncated_string (truncated as the length of the character string is greater than 4).
     If you specify 'pacesetter' as VARCHAR(12), 'pacesetter' is stored (a 10-character string).
-    If you specify 'pacesetter ' as VARCHAR(12), 'pacesetter ' is stored (a 10-character string plus two whitespace characters).
-    If you specify 'pacesetter ' as VARCHAR(10), 'pacesetter' is stored (a 10-character string; two whitespace characters are truncated).
-    If you specify 'p ' as VARCHAR, 'p' is stored (if n is not specified, the default value 1,073,741,823 is used, and the trailing space is not filled with whitespace characters).
+    If you specify 'pacesetter ' as VARCHAR(12), 'pacesetter ' is stored (a 11-character string).
+    If you specify 'pacesetter ' as VARCHAR(10), 'pacesetter' may be stored or error occurs depending on the configuration value of allow_truncated_string (a 10-character string; two white space characters can be truncated).
+    If you specify 'p ' as VARCHAR, 'p ' is stored (if n is not specified, the default value 1,073,741,823 is used, and the trailing space is not filled with white space characters).
 
 *   **DEFAULT** constraint can be specified in a column of this type.
 
@@ -1333,6 +1331,28 @@ If you want use other character than a backslash as an escape character, you can
 .. code-block:: sql
 
     SELECT a FROM t1 WHERE a LIKE 'aaa#%' ESCAPE '#';
+
+Comparison Rules
+----------------
+
+When two string values are compared, the followings are the comparison rules about the behavior of trailing spaces:
+
+*   Comparison for trailing space insensitive
+*   Comparison for trailing space sensitive
+
+**Trailing space insensitive**
+
+If the two string values are both fixed-length types (CHAR-type), the comparison ignores trailing spaces as below example.
+comparing 'abc ' with 'abc   ' results equal
+
+**Trailing space sensitive**
+
+If two string values are both of variable-length types (VARCHAR-type), the comparison does not ignore trailing spaces as below example.
+comparing 'abc ' with 'abc   ' results 'abc   ' greater than 'abc '
+
+**Exceptions**
+
+When comparing two string values, if one is a fixed-type and the other is a variable-type, CUBRID follows "trailing space sensitive" rule.
 
 ENUM Data Type
 ==============
@@ -1766,8 +1786,8 @@ When you get a **LOB** type column, the data stored in a file to which the colum
 
       doc_id                content               image
     ==================================================================
-      'doc-1'               file:/home1/data1/ces_658/doc_t.00001282208855807171_7329  file:/home1/data1/ces_318/image_t.00001282208855809474_7474
-      'doc-2'               file:/home1/data1/ces_180/doc_t.00001282208854194135_5598  file:/home1/data1/ces_519/image_t.00001282208854205773_1215
+      'doc-1'               file:ces_658/doc_t.00001282208855807171_7329  file:ces_318/image_t.00001282208855809474_7474
+      'doc-2'               file:ces_180/doc_t.00001282208854194135_5598  file:ces_519/image_t.00001282208854205773_1215
      
     2 rows selected.
      
@@ -1814,8 +1834,8 @@ When you get a **LOB** type column, the data stored in a file to which the colum
 
       doc_id                content
     ============================================
-      'doc-1'               file:/home1/data1/ces_004/doc_t.00001366272829040346_0773
-      'doc-2'               file:/home1/data1/ces_256/doc_t.00001366272815153996_1229
+      'doc-1'               file:ces_004/doc_t.00001366272829040346_0773
+      'doc-2'               file:ces_256/doc_t.00001366272815153996_1229
     
 .. code-block:: sql
 
@@ -1825,6 +1845,30 @@ When you get a **LOB** type column, the data stored in a file to which the colum
 ::
 
     ERROR: doc_t.content can not be an ORDER BY column
+
+.. note::
+
+    *   From CUBRID 11.4, the locator, which represents the LOB file path, **changed from an absolute file path to a relative one**. The relative path starts from '**lob-base-path**' in databases.txt. With this change, LOB file path management has become more flexible, and LOB file path problems have been reduced during database moves, backups, and restores.
+    *   For example, if the '**lob-base-path**' path defined in databases.txt is /home1/data1, an example of the locator for each CUBRID version is as follows.
+
+        * **CUBRID 11.4** (**relative**): `file:ces_004/doc_t.00001366272829040346_0773`
+        * up to CUBRID 11.3 (**absolute**): `file:/home1/data1/ces_004/doc_t.00001366272829040346_0773`
+    *   Due to the locator being stored as a relative path, if ‘**lob-base-path**’ in databases.txt is changed,
+
+        * Previously created LOB data cannot be retrieved.
+        * To retrieve previously created LOB data, it should be moved to the updated '**lob-base-path**' directory.
+
+       ::
+
+          # example:
+          % cp -r /home1/data1/* /home2/data2
+
+    *   LOB data created in CUBRID 11.3 or earlier, even though they store the locator as an absolute file path, can be retrieved in CUBRID 11.4 without any changes.
+
+    *   Advantages during database moves and restores: Even if the database is moved to another location, there is no need to manually modify the LOB file path because the path is managed based on **lob-base-path**.
+
+    *   The adoption of the **relative LOB file path** is one of the notable improvements in CUBRID 11.4, and it significantly enhances database management efficiency.
+
 
 Functions and Operators for LOB
 -------------------------------
@@ -2078,11 +2122,13 @@ LIST/SEQUENCE
     ============================================
       {'a', 'b', 'c'}  {'a', 'b', 'b', 'c', 'c', 'c'}
 
+.. _json-data-type:
+
 JSON Data Type
 ==============
 
-CUBRID 10.2 adds support for native **JSON** data type, as defined by
-`RFC 7159 <https://tools.ietf.org/html/rfc7159>`__. **JSON** data type
+From CUBRID 10.2, native **JSON** data type is supported as defined by
+`RFC 7159 <https://datatracker.ietf.org/doc/html/rfc7159>`__. **JSON** data type
 offers automatic validation and allows fast access and operations on
 JSON data.
 
@@ -2158,10 +2204,10 @@ the string is not a valid JSON.
   Invalid JSON: 'abc'.
 
 JSON type columns with stricter validation rules can be defined using the
-`draft JSON Schema standard <https://json-schema.org/specification.html>`_.
+`draft JSON Schema standard <https://json-schema.org/specification>`_.
 If you are not familiar with JSON Schema, you may refer to
 `Understanding JSON Schema
-<https://json-schema.org/understanding-json-schema/index.html>`_.
+<https://json-schema.org/understanding-json-schema/reference>`_.
 
 A simple example of how schema can be used:
 
@@ -2194,7 +2240,7 @@ JSON Value Types
 
 A JSON value must be an object, an array or a scalar (string, number, boolean
 or null), as defined by `RFC 7159
-<https://tools.ietf.org/html/rfc7159#section-3>`__.
+<https://datatracker.ietf.org/doc/html/rfc7159#section-3>`__.
 
 A table of JSON value types:
 
@@ -2335,7 +2381,7 @@ will be done to UTF-8.
 JSON Pointers
 -------------
 
-JSON Pointers, as defined by https://tools.ietf.org/html/rfc6901 provide an
+JSON Pointers, as defined by https://datatracker.ietf.org/doc/html/rfc6901 provide an
 alternative to JSON paths.
 JSON Pointers, like JSON Paths and JSON text, should be encoded using ASCII
 or UTF-8 character set. If other character sets are used, a coercion will be

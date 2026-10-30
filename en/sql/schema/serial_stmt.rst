@@ -13,22 +13,24 @@ Serial is an object that creates a unique sequence number, and has the following
 
 *   The serial is useful in creating a unique sequence number in multi-user environment.
 *   Generated serial numbers are not related with table so, you can use the same serial in multiple tables.
-*   All users including **PUBLIC** can create a serial object. Once it is created, all users can get the number by using **CURRENT_VALUE** and **NEXT_VALUE**.
+*   All users including **PUBLIC** can create a serial object. Once it is created, all users can get the number by using **CURRENT_VALUE(equivalent to CURRVAL)** and **NEXT_VALUE(equivalent to NEXTVAL)**.
 *   Only owner of a created serial object and **DBA** can update or delete a serial object. If an owner is **PUBLIC**, all users can update or delete it.
 
 You can create a serial object in the database by using the **CREATE SERIAL** statement. Regarding writing serial name, :doc:`/sql/identifier`. 
 
 ::
 
-    CREATE SERIAL serial_name
+    CREATE SERIAL [schema_name.]serial_name
     [START WITH initial]
     [INCREMENT BY interval]
     [MINVALUE min | NOMINVALUE]
     [MAXVALUE max | NOMAXVALUE]
+    [CYCLE | NOCYCLE]
     [CACHE cached_num | NOCACHE]
     [COMMENT 'comment_string'];
 
-*   *serial_identifier*: specifies the name of the serial to be generated(maximum: 254 bytes).
+*   *schema_name*: Specifies the schema name of the serial(maximum: 31 bytes). If omitted, the schema name of the current session is used.
+*   *serial_name*: specifies the name of the serial to be generated(maximum: 222 bytes).
 
 *   **START WITH** *initial*: Specifies the initial value of serial. The range of this value is between -1,000,000,000,000,000,000,000,000,000,000,000,000(-10^36) and    9,999,999,999,999,999,999,999,999,999,999,999,999(10^37-1). The default value of ascending serial is 1 and that of descending serial is -1.
 
@@ -48,7 +50,7 @@ You can create a serial object in the database by using the **CREATE SERIAL** st
 
 *   **CACHE**: Stores as many serials as the number specified by "cached_num" in the cache to improve the performance of the serials and fetches a serial value when one is requested. If all cached values are used up, as many serials as "cached_num" are fetched again from the disk to the memory. If the database server stops accidentally, all cached serial values are deleted. For this reason, the serial values before and after the restart of the database server may be discontinuous. Because the transaction rollback does not affect the cached serial values, the request for the next serial will return the next value of the value used (or fetched) lastly when the transaction is rolled back. The "cached_num" after the **CACHE** keyword cannot be omitted. If the "cached_num" is equal to or smaller than 1, the serial cache is not applied.
 
-*   **NOCACHE**: Specifies that the serial cache is not used, and serial value is updated for each time.
+*   **NOCACHE**: Specifies that the serial cache is not used, and serial value is updated for each time. The default value is **NOCACHE**.
 
 *   *comment_string*: specifies a comment of a serial.
 
@@ -63,12 +65,12 @@ You can create a serial object in the database by using the **CREATE SERIAL** st
     --creating serial with specifying the number of cached serial values
     CREATE SERIAL order_no START WITH 10000 INCREMENT BY 2 MAXVALUE 20000 CACHE 3;
      
-    --selecting serial information from the db_serial class
-    SELECT * FROM db_serial;
+    --selecting serial information from the db_serial
+    SELECT name, current_val, increment_val, max_val, min_val, cyclic, started, cached_num, attr_name FROM db_serial;
 
 ::
 
-      name            current_val      increment_val         max_val         min_val         cyclic      started       cached_num        att_name
+      name            current_val      increment_val         max_val         min_val         cyclic      started       cached_num        attr_name
     ====================================================================================================================================================
     'order_no'      10006            2                     20000           10000                0            1                3            NULL
 
@@ -120,15 +122,17 @@ With the **ALTER SERIAL** statement, you can update the increment of the serial 
 
 ::
 
-    ALTER SERIAL serial_identifier
+    ALTER SERIAL [schema_name.]serial_name
     [INCREMENT BY interval]
     [START WITH initial_value]
     [MINVALUE min | NOMINVALUE]
     [MAXVALUE max | NOMAXVALUE]
+    [CYCLE | NOCYCLE]
     [CACHE cached_num | NOCACHE]
     [COMMENT 'comment_string'];
 
-*   *serial_identifier*: specifies the name of the serial to be created(maximum: 254 bytes).
+*   *schema_name*: Specifies the schema name of the serial(maximum: 31 bytes). If omitted, the schema name of the current session is used.
+*   *serial_name*: specifies the name of the serial to be created(maximum: 222 bytes).
 
 *   **INCREMENT BY** *interval*: specifies the increment of the serial. For the *interval*, you can specify any integer with 38 digits or less except zero. The absolute value of the *interval* must be smaller than the difference between **MAXVALUE** and **MINVALUE**. If a negative number is specified, the serial is in descending order; otherwise, it is in ascending order. The default value is **1**.
 
@@ -148,7 +152,7 @@ With the **ALTER SERIAL** statement, you can update the increment of the serial 
 
 *   **CACHE**: stores as many serials as the number specified by *integer* in the cache to improve the performance of the serials and fetches a serial value when one is requested. The *integer* after the **CACHE** keyword cannot be omitted. If a number equal to or smaller than 1 is specified, the serial cache is not applied.
 
-*   **NOCACHE**: It does not use the serial cache feature. The serial value is updated every time and a new serial value is fetched from the disk upon each request.
+*   **NOCACHE**: It does not use the serial cache feature. The serial value is updated every time and a new serial value is fetched from the disk upon each request. The default is **NOCACHE**.
 
 *   *comment_string*: specifies a comment of a serial.
 
@@ -196,9 +200,10 @@ If you also specify **IF EXISTS** clause, no error will be happened even if a ta
 
 ::
 
-    DROP SERIAL [ IF EXISTS ] serial_identifier ;
+    DROP SERIAL [ IF EXISTS ] [schema_name.]serial_name ;
 
-*   *serial_identifier*: Specifies the name of the serial to be dropped.
+*   *schema_name*: Specifies the schema name of the serial. If omitted, the schema name of the current session is used.
+*   *serial_name*: Specifies the name of the serial to be dropped.
 
 The following example shows how to drop the *order_no* serial.
 
@@ -215,11 +220,15 @@ Pseudocolumns
 
 You can access and update a serial by serial name and a pseudocolumn pair. ::
 
-    serial_identifier.CURRENT_VALUE
-    serial_identifier.NEXT_VALUE
+    [schema_name.]serial_name.CURRENT_VALUE
+    [schema_name.]serial_name.CURRVAL
 
-*   *serial_identifier*.\ **CURRENT_VALUE**: Returns the current serial value.
-*   *serial_identifier*.\ **NEXT_VALUE**: Increments the serial value and returns the result.
+    [schema_name.]serial_name.NEXT_VALUE
+    [schema_name.]serial_name.NEXTVAL
+
+*   *schema_name*: Specifies the schema name of the serial. If omitted, the schema name of the current session is used.
+*   *[schema_name.]serial_name*.\ **CURRENT_VALUE**, *[schema_name.]serial_name*.\ **CURRVAL**: Returns the current serial value.
+*   *[schema_name.]serial_name*.\ **NEXT_VALUE**, *[schema_name.]serial_name*.\ **NEXTVAL**: Increments the serial value and returns the result.
 
 The following example shows how to create a table *athlete_idx* where athlete numbers and names are stored and how to create the instances by using a serial *order_no*.
 
@@ -232,7 +241,8 @@ The following example shows how to create a table *athlete_idx* where athlete nu
     INSERT INTO athlete_idx VALUES (order_no.NEXT_VALUE, 'Choo');
     INSERT INTO athlete_idx VALUES (order_no.NEXT_VALUE, 'Lee');
     SELECT * FROM athlete_idx;
-    
+    SELECT order_no.CURRENT_VALUE;
+
 ::
      
              code  name
@@ -242,6 +252,10 @@ The following example shows how to create a table *athlete_idx* where athlete nu
             10004  'Choo'
             10006  'Lee'
 
+            serial_current_value(order_no)
+    ======================
+            10006
+
 .. note:: 
 
     When you use a serial for the first time after creating it, **NEXT_VALUE** returns the initial value. Subsequently, the sum of the current value and the increment are returned.
@@ -249,11 +263,12 @@ The following example shows how to create a table *athlete_idx* where athlete nu
 Functions
 ---------
 
-.. function:: SERIAL_CURRENT_VALUE (serial_name)
-.. function:: SERIAL_NEXT_VALUE (serial_name, number)
+.. function:: SERIAL_CURRENT_VALUE ([schema_name.]serial_name)
+.. function:: SERIAL_NEXT_VALUE ([schema_name.]serial_name, number)
 
     The **Serial** function consists of the **SERIAL_CURRENT_VALUE** and **SERIAL_NEXT_VALUE** functions.
     
+    :param schema_name: The schema name of the serial
     :param serial_name: Serial name
     :param number: The number of serials to be obtained
     :rtype:  NUMERIC(38,0)
@@ -294,6 +309,6 @@ For example, if you create a serial starting 101 and increasing by 1 and call **
 
     120
 
-.. note:: \
+.. note::
 
     If you create a serial and calls the **SERIAL_NEXT_VALUE** function for the first time, a value of (serial interval) * (desired number of serials - 1) added to the current value is returned. If you call the **SERIAL_NEXT_VALUE** function in succession, a value of (serial interval) * (desired number of serials) added to the current is returned (see the example above).

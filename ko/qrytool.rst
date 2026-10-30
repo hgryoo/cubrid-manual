@@ -10,7 +10,7 @@ CSQL 인터프리터
 
 CSQL 인터프리터는 CUBRID에서 명령어 방식으로 SQL 질의를 수행하고 수행 결과를 조회할 수 있는 프로그램이다. 입력된 SQL 문장과 그 결과는 나중에 사용하기 위해서 파일에 저장될 수도 있다. 자세한 내용은 :ref:`csql-intro` 및 :ref:`csql-exec-mode`\ 를 참고한다.
 
-CUBRID는 CSQL 인터프리터 이외에도 편리한 GUI 방식의 "CUBRID 매니저" 제공하며, 이 도구들을 이용하여 CUBRID 매니저의 질의 편집기에서도 모든 SQL 문을 수행하고 결과를 조회할 수 있다. CUBRID 매니저와 쿼리 브라우저에 대한 자세한 내용은 :ref:`cm-cqb`\ 를 참고한다.
+CUBRID는 CSQL 인터프리터 이외에도 편리한 GUI 방식의 "CUBRID 매니저" 제공하며, 이 도구들을 이용하여 CUBRID 매니저의 질의 편집기에서도 모든 SQL 문을 수행하고 결과를 조회할 수 있다. CUBRID 매니저와 질의 브라우저에 대한 자세한 내용은 :ref:`cm-cqb`\ 를 참고한다.
 
 본 장에서는 Linux 환경에서 CSQL 인터프리터를 사용하는 경우를 설명한다.
 
@@ -42,29 +42,33 @@ CSQL 인터프리터는 셸에서 다음과 같이 시작할 수 있다. 처음 
        ;EXit                       - exit program.
 
        ;CLear                      - clear command buffer.
-       ;EDIT                       - invoke system editor with command buffer.
+       ;EDIT   [format/fmt]        - invoke system editor [after formatter] with command buffer.
        ;LISt                       - display the content of command buffer.
 
        ;RUn                        - execute sql in command buffer.
        ;Xrun                       - execute sql in command buffer,
                                      and clear the command buffer.
-       ;COmmit                     - commit the current transaction.
+       ;COMmit                     - commit the current transaction.
        ;ROllback                   - roll back the current transaction.
        ;AUtocommit [ON|OFF]        - enable/disable auto commit mode.
-       ;REStart                    - restart database.
+       ;REStart                    - reconnect to the current database in a CSQL session.
+       ;CHeckpoint                 - execute the checkpoint(CSQL with --sysadm only).
+       ;Killtran                   - check transaction status information or end a specific transaction.(CSQL with --sysadm only).
 
-       ;SHELL_Cmd  [shell-cmd]     - set default shell, editor, print and pager
+       ;SHELL_Cmd  [shell-cmd]     - set default shell, editor, print, pager and formatter
        ;EDITOR_Cmd [editor-cmd]      command to new one, or display the current
        ;PRINT_Cmd  [print-cmd]       one, respectively.
        ;PAger_cmd  [pager-cmd]
+       ;FOrmatter_cmd [formatter-cmd]
 
        ;DATE                       - display the local time, date.
        ;DATAbase                   - display the name of database being accessed.
        ;SChema class-name          - display schema information of a class.
-       ;SYntax [sql-cmd-name]      - display syntax of a command.
-       ;TRigger [`*'|trigger-name] - display trigger definition.
+       ;TRIgger [`*'|trigger-name] - display trigger definition.
        ;Get system_parameter       - get the value of a system parameter.
-       ;SEt system_parameter=value - set the value of a system parameter.
+       ;SET system_parameter=value - set the value of a system parameter.
+       ;STring-width [width]       - set width that each column which is a string type is displayed.
+       ;COLumn-width [name]=[width]- set width that a specific column is displayed.
        ;PLan [simple/detail/off]   - show query execution plan.
        ;Info <command>             - display internal information.
        ;TIme [ON/OFF]              - enable/disable to display the query
@@ -73,7 +77,14 @@ CSQL 인터프리터는 셸에서 다음과 같이 시작할 수 있다. 처음 
        ;HISTORYList                - display list of the executed queries.
        ;HISTORYRead <history_num>  - read entry on the history number into command buffer.
        ;TRAce [ON/OFF] [text/json] - enable/disable sql auto trace.
-       ;HElp                       - display this help message.
+       ;SIngleline [ON|OFF]        - enable/disable single-line mode.
+       ;CONnect username [dbname | dbname@hostname]
+                                   - connect to the current or other databases as a username.
+       ;.Hist [ON/OFF]             - start/stop collecting statistics information in CSQL(available DBA only).
+       ;.Clear_hist                - clear the CSQL statistics information in the buffer.
+       ;.Dump_hist                 - display the CSQL statistics information in CSQL.
+       ;.X_hist                    - display the CSQL statistics information in CSQL with statistics data initialized.
+       ;HElp                       - display this help message.       
 
 **CSQL에서 SQL 실행**
 
@@ -113,7 +124,7 @@ csql을 실행하고 난 후에는 csql> 프롬프트에서 원하는 SQL문을 
 |                          | 4) CUBRID Manager 서버를 통해 DB 접속                                       |                                                                 |
 +--------------------------+-----------------------------------------------------------------------------+-----------------------------------------------------------------+
 | CUBRID Migration Toolkit | 소스 DB(MySQL, Oracle, CUBRID)에서 CUBRID로 데이터 및 스키마를 이전하는     | `CUBRID Migration Toolkit Download                              |
-|                          | Java 기반 틀라이언트 도구이다.                                              | <http://ftp.cubrid.org/CUBRID_Tools/CUBRID_Migration_Toolkit>`_ |
+|                          | Java 기반 클라이언트 도구이다.                                              | <http://ftp.cubrid.org/CUBRID_Tools/CUBRID_Migration_Toolkit>`_ |
 |                          |                                                                             |                                                                 |
 |                          | 1) JAVA 기반 관리 도구(JRE 1.6 이상 요구)                                   |                                                                 |
 |                          |                                                                             |                                                                 |
@@ -217,8 +228,6 @@ CUBRID가 지원하는 드라이버는 다음과 같다.
 *   :doc:`CUBRID PDO driver <api/pdo>` (`Downloads PDO <http://ftp.cubrid.org/CUBRID_Drivers/PHP_Driver/PDO/>`_)
 
 *   :doc:`CUBRID ODBC driver <api/odbc>` (`Downloads ODBC <http://ftp.cubrid.org/CUBRID_Drivers/ODBC_Driver/>`_)
-
-*   :doc:`CUBRID OLE DB driver <api/oledb>` (`Downloads OLE DB <http://ftp.cubrid.org/CUBRID_Drivers/OLEDB_Driver/>`_)
 
 *   :doc:`CUBRID ADO.NET driver <api/adodotnet>` (`Downloads ADO.NET <http://ftp.cubrid.org/CUBRID_Drivers/ADO.NET_Driver/>`_)
 

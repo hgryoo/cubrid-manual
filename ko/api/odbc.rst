@@ -79,7 +79,7 @@ CUBRID ODBC Driver는 CUBRID 설치 시 자동으로 설치되며, [제어판] >
 
 마이크로소프트 윈도우즈 64비트 플랫폼은 32비트 응용 프로그램이 64비트 환경에서 수행 가능한 환경을 제공하는데, 이를 WOW64(Windows-32-on-Windows-64)라고 한다. 이 환경은 32비트 전용 레지스트리 복사본을 유지하고 있다.
 
-**DNS 설정**
+**DSN 설정**
 
 CUBRID ODBC Driver가 확인되었다면 응용 프로그램에서 접속하려는 데이터베이스로 DSN을 설정한다. DSN 설정을 위해 ODBC 데이터 원본 관리자에서 [추가] 버튼을 클릭하면 다음과 같은 대화 상자가 나타난다. **CUBRID Driver** 를 선택하고 [마침] 버튼을 클릭한다.
 
@@ -98,6 +98,9 @@ CUBRID ODBC Driver가 확인되었다면 응용 프로그램에서 접속하려�
 
   .. image:: /images/image80.png
 
+* **Charset** : 데이터베이스의 문자셋(charSet) 입력한다.
+* **Autocommit** : Autocommit mode를 입력한다. 기본값은 OFF이다.
+* **Omit Schema** : 스키마 개념을 지원하는 11.2 버전 이상의 데이터베이스 서버에서 스키마 정보 관련 함수 사용시 로그인한 사용자가 생성한 스키마만을  제공하는 기능이다. 이 기능은 **ERWin**:sup:`TM` 이 CUBRID 11.2 버전 이상을 사용할 경우 필요하다 (omit_schema=yes). **YES** 인 경우 로그인한 사용자가 소유한 테이블/뷰/Primary Key/Foreign Key만 제공되며, 이때 소유자의 이름은 제거된다. 기본값은 **NO** 이다
 * **FETCH_SIZE** : ODBC 드라이버가 내부적으로 사용하는 CCI 라이브러리의 :c:func:`cci_fetch` 함수를 호출할 때마다 서버로부터 fetch하는 레코드의 개수를 설정한다.
 
 위와 같이 입력한 후 [확인]을 클릭하면 다음과 같이 [User Data Sources]에 데이터 원본이 추가된 것을 확인할 수 있다.
@@ -143,10 +146,14 @@ CUBRID ODBC 프로그래밍을 할 때 연결 문자열(connection string)은 �
 +--------------+-----------------------+-----------------------------------------------------------+
 | CHARSET      | utf-8                 | 문자셋                                                    |
 +--------------+-----------------------+-----------------------------------------------------------+
+| AUTOCOMMIT   | ON                    | Autocommit mode                                           |
++--------------+-----------------------+-----------------------------------------------------------+
+| OMIT_SCHEMA  | NO                    | 단일 스키마 특징 제공 (11.2버전 이상만 적용)              |
++--------------+-----------------------+-----------------------------------------------------------+
 
 위의 예를 이용한 연결 문자열은 다음과 같다. ::
 
-    "DRIVER={CUBRID Driver Unicode};UID=PUBLIC;PWD=xxx;FETCH_SIZE=100;PORT=33000;SERVER=127.0.0.1;DB_NAME=demodb;DESCRIPTION=cubrid_test;CHARSET=utf-8"
+    "DRIVER={CUBRID Driver Unicode};UID=PUBLIC;PWD=xxx;FETCH_SIZE=100;PORT=33000;SERVER=127.0.0.1;DB_NAME=demodb;DESCRIPTION=cubrid_test;CHARSET=utf-8;OMIT_SCHEMA=YES"
 
 UTF-8 유니코드를 사용하는 경우, 파일 이름 중간에 "unicode"가 쓰여있는 유니코드 전용 드라이버를 설치하고, 연결 문자열에서 드라이버의 이름을 "Driver={CUBRID Driver Unicode}"와 같이 입력한다. 유니코드는 9.3.0.0002 버전 이상에서만 지원된다.
 
@@ -298,7 +305,7 @@ ASP 예제를 실행할 가상 디렉터리의 '기본 웹 사이트' 항목에�
 ODBC API
 ========
 
-ODBC API에 대한 자세한 내용은 ODBC API Reference 문서( https://docs.microsoft.com/en-us/sql/odbc/reference/syntax/odbc-api-reference?view=sql-server-ver15 )를 참고한다. CUBRID ODBC에서 지원하는 함수 목록, ODBC Spec 버전 및 호환성은 다음과 같다.
+ODBC API에 대한 자세한 내용은 ODBC API Reference 문서( https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/odbc-api-reference?view=sql-server-ver15 )를 참고한다. CUBRID ODBC에서 지원하는 함수 목록, ODBC Spec 버전 및 호환성은 다음과 같다.
 
 +---------------------+------------------------+--------------------------+---------------------+
 | API                 | Version Introduced     | Standards Compliance     | Support             |

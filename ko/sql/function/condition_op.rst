@@ -1,5 +1,5 @@
 
-:meta-keywords: cubrid any, cubrid some, cubrid all, cubrid between, cubrid exists, cubrid in, cubrid like, cubrid regexp, cubrid rlike, cubrid case clause
+:meta-keywords: cubrid any, cubrid some, cubrid all, cubrid between, cubrid exists, cubrid in, cubrid like, cubrid case clause
 :meta-description: A comparison expression is an expression that is included in the WHERE clause of the SELECT, UPDATE and DELETE statements, and in the HAVING clause of the SELECT statement.
 
 ***********
@@ -18,7 +18,7 @@
 **단순 비교 조건식에서 사용할 수 있는 연산자**
 
 +-------------+-------------------------------------------------------+---------+----------+
-| 비교 연산자 | 설명                                                  | 조건식  | 리턴 값  |
+| 비교 연산자 | 설명                                                  | 조건식  | 반환 값  |
 +=============+=======================================================+=========+==========+
 | **=**       | 왼쪽 및 오른쪽 피연산자의 값이 같다.                  | 1=2     | 0        |
 +-------------+-------------------------------------------------------+---------+----------+
@@ -349,242 +349,6 @@ LIKE 조건식의 이스케이프 문자 인식은 **cubrid.conf** 파일의 **n
                 2  'Moy       '          'sales'                   3000000
                 5  'Kim       '          'account'                 3800000
 
-.. _regexp-rlike:
-
-REGEXP, RLIKE
-=============
-
-**REGEXP**, **RLIKE**\ 는 동일하며, 정규 표현식을 이용한 패턴을 매칭하기 위해 사용된다. 정규 표현식은 복잡한 검색 패턴을 표현하는 강력한 방법이다. CUBRID는 Henry Spencer가 구현한 정규 표현식을 사용하며, 이는 POSIX 1003.2 표준을 따른다. 이 페이지는 정규 표현식에 대한 세부 사항을 설명하지는 않으므로, 정규 표현식에 대한 자세한 사항은 Henry Spencer의 regex(7)을 참고한다.
-
-다음은 정규 표현식 패턴의 일부이다.
-
-*   "."은 문자 하나와 매칭된다(줄바꿈 문자(new line)와 캐리지 리턴 문자(carriage return)를 포함).
-
-*   "[...]"은 대괄호 안의 문자 중 하나와 매칭된다. 예를 들어, "[abc]"는 "a", "b" 또는 "c"와 매칭된다. 문자의 범위를 나타내려면 대시(-)를 사용한다. "[a-z]"은 임의의 알파벳 문자 하나와 매칭되고, "[0-9]"는 임의의 숫자 하나와 매칭된다.
-
-*   "*"은 앞의 문자 또는 문자열이 0번 이상 연속으로 나열된 문자열과 매칭된다. 예를 들어, "xabc*"는 "xab", "xabc", "xabcc", "xabcxabc" 등과 매칭되며, "[0-9][0-9]*"는 어떤 숫자와도 매칭된다. 그리고 ".*"은 모든 문자열과 매칭된다.
-
-*   "\\n", "\\t", "\\r", "\\"의 특수 문자를 매칭하기 위해서는 시스템 파라미터 **no_backslash_escapes** (기본값: yes)를 no로 설정하여 백슬래시(\\)를 이스케이프 문자로 허용해야 한다. **no_backslash_escapes**\ 에 대한 자세한 설명은 :ref:`escape-characters`\ 를 참고한다.
-
-**REGEXP**\ 와 **LIKE**\ 의 차이는 다음과 같다.
-
-* **LIKE** 절은 입력값 전체가 패턴과 매칭되어야 성공한다.
-* **REGEXP**\ 는 입력값의 일부가 패턴과 매칭되면 성공한다. **REGEXP**\ 에서 전체 값에 대한 패턴 매칭을 하려면, 패턴의 시작에는 "^"을, 끝에는 "$"을 사용해야 한다.
-* **LIKE** 절의 패턴은 대소문자를 구분하지만 **REGEXP**\ 에서 정규 표현식의 패턴은 대소문자를 구분하지 않는다. 대소문자를 구분하려면 **REGEXP BINARY** 구문을 사용해야 한다.
-* **REGEXP**, **REGEXP BINARY**\ 는 피연산자의 콜레이션을 고려하지 않고 ASCII 인코딩으로 동작한다. 
-
-.. code-block:: sql
-    
-    SELECT ('a' collate utf8_en_ci REGEXP BINARY 'A' collate utf8_en_ci); 
-
-::
-
-    0
-
-.. code-block:: sql
-    
-    SELECT ('a' collate utf8_en_cs REGEXP BINARY 'A' collate utf8_en_cs); 
-
-::
-
-    0
-    
-.. code-block:: sql
-
-    SELECT ('a' COLLATE iso88591_bin REGEXP 'A' COLLATE iso88591_bin);
-
-::
-
-    1
-    
-.. code-block:: sql
-
-    SELECT ('a' COLLATE iso88591_bin REGEXP BINARY 'A' COLLATE iso88591_bin);
-
-::
-
-    0
-
-아래 구문에서 *expression*\ 에 매칭되는 패턴 *pattern*\ 이 존재하면 1을 반환하며, 그렇지 않은 경우 0을 반환한다. *expression*\ 과 *pattern* 중 하나가 **NULL**\ 이면 **NULL**\ 을 반환한다.
-
-**NOT**\ 을 사용하는 두 번째 구문과 세 번째 구문은 같은 의미이다.
-
-::
-
-    expression REGEXP | RLIKE [BINARY] pattern
-    expression NOT REGEXP | RLIKE pattern
-    NOT (expression REGEXP | RLIKE pattern)
-
-*   *expression* : 칼럼 또는 입력 표현식
-*   *pattern* : 정규 표현식에 사용될 패턴. 대소문자 구분 없음
-
-.. code-block:: sql
-
-    -- When REGEXP is used in SELECT list, enclosing this with parentheses is required. 
-    -- But used in WHERE clause, no need parentheses.
-    -- case insensitive, except when used with BINARY.
-    SELECT name FROM athlete where name REGEXP '^[a-d]';
-
-::
-    
-    name
-    ======================
-    'Dziouba Irina'
-    'Dzieciol Iwona'
-    'Dzamalutdinov Kamil'
-    'Crucq Maurits'
-    'Crosta Daniele'
-    'Bukovec Brigita'
-    'Bukic Perica'
-    'Abdullayev Namik'
-     
-.. code-block:: sql
-
-    -- \n : match a special character, when no_backslash_escapes=no
-    SELECT ('new\nline' REGEXP 'new
-    line');
-
-
-::
-    
-    ('new
-    line' regexp 'new
-    line')
-    =====================================
-    1
-     
-.. code-block:: sql
-
-    -- ^ : match the beginning of a string
-    SELECT ('cubrid dbms' REGEXP '^cub');
-    
-::
-
-    ('cubrid dbms' regexp '^cub')
-    ===============================
-    1
-     
-.. code-block:: sql
-
-    -- $ : match the end of a string
-    SELECT ('this is cubrid dbms' REGEXP 'dbms$');
-    
-::
-
-    ('this is cubrid dbms' regexp 'dbms$')
-    ========================================
-    1
-     
-.. code-block:: sql
-
-    --.: match any character
-    SELECT ('cubrid dbms' REGEXP '^c.*$');
-    
-::
-
-    ('cubrid dbms' regexp '^c.*$')
-    ================================
-    1
-     
-.. code-block:: sql
-
-    -- a+ : match any sequence of one or more a characters. case insensitive.
-    SELECT ('Aaaapricot' REGEXP '^A+pricot');
-    
-::
-
-    ('Aaaapricot' regexp '^A+pricot')
-    ================================
-    1
-     
-.. code-block:: sql
-
-    -- a? : match either zero or one a character.
-    SELECT ('Apricot' REGEXP '^Aa?pricot');
-    
-::
-
-    ('Apricot' regexp '^Aa?pricot')
-    ==========================
-    1
-    
-.. code-block:: sql
-
-    SELECT ('Aapricot' REGEXP '^Aa?pricot');
-    
-::
-
-    ('Aapricot' regexp '^Aa?pricot')
-    ===========================
-    1
-     
-.. code-block:: sql
-
-    SELECT ('Aaapricot' REGEXP '^Aa?pricot');
-    
-::
-
-    ('Aaapricot' regexp '^Aa?pricot')
-    ============================
-    0
-     
-.. code-block:: sql
-
-    -- (cub)* : match zero or more instances of the sequence abc.
-    SELECT ('cubcub' REGEXP '^(cub)*$');
-    
-::
-
-    ('cubcub' regexp '^(cub)*$')
-    ==========================
-    1
-     
-.. code-block:: sql
-
-    -- [a-dX], [^a-dX] : matches any character that is (or is not, if ^ is used) either a, b, c, d or X.
-    SELECT ('aXbc' REGEXP '^[a-dXYZ]+');
-    
-::
-
-    ('aXbc' regexp '^[a-dXYZ]+')
-    ==============================
-    1
-     
-.. code-block:: sql
-
-    SELECT ('strike' REGEXP '^[^a-dXYZ]+$');
-    
-::
-
-    ('strike' regexp '^[^a-dXYZ]+$')
-    ================================
-    1
-
-.. note::
-
-    다음은 **REGEXP** 조건식을 구현하기 위해 사용한 라이브러리인 RegEx-Specer의 라이선스이다. ::
-
-        Copyright 1992, 1993, 1994 Henry Spencer. All rights reserved.
-        This software is not subject to any license of the American Telephone
-        and Telegraph Company or of the Regents of the University of California.
-         
-        Permission is granted to anyone to use this software for any purpose on
-        any computer system, and to alter it and redistribute it, subject
-        to the following restrictions:
-         
-        1. The author is not responsible for the consequences of use of this
-        software, no matter how awful, even if they arise from flaws in it.
-         
-        2. The origin of this software must not be misrepresented, either by
-        explicit claim or by omission. Since few users ever read sources,
-        credits must appear in the documentation.
-         
-        3. Altered versions must be plainly marked as such, and must not be
-        misrepresented as being the original software. Since few users
-        ever read sources, credits must appear in the documentation.
-         
-        4. This notice may not be removed or altered.
-
 .. _case-expr:
 
 CASE
@@ -616,9 +380,9 @@ CASE
 
 **CASE** 수식이 반환하는 값의 데이터 타입은 다음과 같은 규칙에 따라 결정된다.
 
-*   **THEN** 절에 명시된 모든 *result* 의 데이터 타입이 같으면, 해당 타입이 리턴 값의 데이터 타입이 된다.
-*   모든 *result* 의 데이터 타입이 같지 않더라도 어느 하나의 공통 데이터 타입으로 변환 가능하면, 해당 타입이 리턴 값의 데이터 타입이 된다.
-*   *result* 중 어느 하나가 가변 길이 문자열인 경우, 리턴 값의 데이터 타입은 가변 길이 문자열이 된다. 또한, *result* 가 모두 고정 길이 문자열인 경우에는 가장 긴 길이를 가지는 문자열 또는 비트열이 결과로 반환된다.
+*   **THEN** 절에 명시된 모든 *result* 의 데이터 타입이 같으면, 해당 타입이 반환 값의 데이터 타입이 된다.
+*   모든 *result* 의 데이터 타입이 같지 않더라도 어느 하나의 공통 데이터 타입으로 변환 가능하면, 해당 타입이 반환 값의 데이터 타입이 된다.
+*   *result* 중 어느 하나가 가변 길이 문자열인 경우, 반환 값의 데이터 타입은 가변 길이 문자열이 된다. 또한, *result* 가 모두 고정 길이 문자열인 경우에는 가장 긴 길이를 가지는 문자열 또는 비트열이 결과로 반환된다.
 *   *result* 중 어느 하나가 근사치로 표현되는 수치형이면, 근사치로 표현되고 이때 소수점 이하 자릿수는 모든 *result* 의 유효 숫자를 표현할 수 있도록 결정된다.
 
 .. code-block:: sql

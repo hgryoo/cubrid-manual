@@ -1,3 +1,5 @@
+.. _operators-and-functions:
+
 *************
 연산자와 함수
 *************
@@ -13,6 +15,7 @@
     containment_op.rst
     bit_fn.rst
     string_fn.rst
+    regex_fn.rst
     numeric_fn.rst
     datetime_fn.rst
     json_fn.rst

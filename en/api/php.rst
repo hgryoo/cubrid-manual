@@ -8,7 +8,7 @@ PHP Driver
 
 CUBRID PHP driver implements an interface to enable access from application in PHP to CUBRID database. Every function offered by CUBRID PHP driver has a prefix **cubrid_** such as cubrid_connect() and cubrid_connect_with_url().
 
-The official one is available as a PECL package. PECL is a repository for PHP extensions, providing a directory of all known extensions and holding facilities for downloading and development of PHP extensions. For more information about PECL, visit http://pecl.php.net/ .
+The official one is available as a PECL package. PECL is a repository for PHP extensions, providing a directory of all known extensions and holding facilities for downloading and development of PHP extensions. For more information about PECL, visit https://pecl.php.net/ .
 
 CUBRID PHP driver is written based on CCI API so affected by CCI configurations such as **CCI_DEFAULT_AUTOCOMMIT**.
 
@@ -29,7 +29,7 @@ For Linux
 *   Operating system: 32-bit or 64-bit Linux
 *   Web server: Apache
 *   PHP: version 5.x, or version 7.x (https://www.php.net/downloads.php)
-*	We refer to the latest PHP versions 5.6.x and 7.1.x as a convenience.
+*	We refer to the latest PHP versions 5.6.x ,7.1.x and 7.4.x as a convenience.
 
 **Installing CUBRID PHP Driver using PECL**
 
@@ -104,7 +104,8 @@ For Windows
 *   CUBRID: 9.3.x or later
 *   Operating system: 32-bit or 64 bit Windows
 *   Web server: Apache or IIS
-*   PHP: 5.6.x or 7.1.x (https://windows.php.net/download/)
+*   PHP: 5.6.x, 7.1.x or 7.4.x (https://windows.php.net/download/)
+*   For PHP 7.1.x or 7.4.x, you need to install Microsoft Visual C++ 2015 Redistributable Package for 32bit or 64bit.
 
 **Using CUBRID PHP Driver Installer**
 
@@ -188,6 +189,8 @@ After you download the driver, you will see the **php_cubrid.dll** file for CUBR
     
 #.  Restart your web server to apply changes.
 
+.. _how-to-php-driver-build:
+
 Building CUBRID PHP Driver from Source Code
 ===========================================
 
@@ -199,9 +202,10 @@ In this section, we will introduce the way of building CUBRID PHP driver for Lin
 **Configuring the environment**
 
 *   CUBRID: Install CUBRID. Make sure the environment variable **%CUBRID%** is defined in your system.
-*   PHP 5.6.x or 7.1.x source code: You can download PHP source code from https://www.php.net/downloads.php .
+*   PHP 5.6.x, 7.1.x or 7.4.x source code: You can download PHP source code from https://www.php.net/downloads.php .
 *   Apache 2: It can be used to test PHP.
 *   CUBRID PHP driver source code: You can download the source code from https://www.cubrid.org/downloads#php . Make sure that the version you download is the same as the version of CUBRID which has been installed on your system.
+*   IF building CCI driver In Linux Or Mac, GNU Developer Toolset 8 or higher is required.
 
 **Compiling CUBRID PHP driver**
 
@@ -218,8 +222,8 @@ In this section, we will introduce the way of building CUBRID PHP driver for Lin
     
         cubrid-php>./configure --with-cubrid --with-php-config=/usr/local/bin/php-config
     
-    *   --with-cubrid=shared: Includes CUBRID support.
-    *   --with-php-config=PATH: Enters an absolute path of php-config including the file name.
+    *   \-\-with-cubrid=shared: Includes CUBRID support.
+    *   \-\-with-php-config=PATH: Enters an absolute path of php-config including the file name.
     
 #.  Build the project. If it is successfully compiled, the **cubrid.so** file will be created in the **/modules** directory.
     
@@ -260,7 +264,7 @@ In this section, we will introduce the way of building CUBRID PHP driver for Lin
         $> tar zxvf php-<version>.tar.gz (or tar jxvf php-<version>.tar.bz2)
         $> cd php-<version>
     
-#.  Configure the project, build, and install it. You can specify the directory you want install PHP by using the option, **--prefix**. ::
+#.  Configure the project, build, and install it. You can specify the directory you want install PHP by using the option, **\-\-prefix**. ::
     
         php-root> ./configure --prefix=prefix_dir; make; make install
     
@@ -481,11 +485,11 @@ The first step of database applications is to use `cubrid_connect <https://www.p
 Transactions and Auto-Commit
 ----------------------------
 
-CUBRID PHP supports transaction and auto-commit mode. Auto-commit mode means that every query that you run has its own implicit transaction. You can use the `cubrid_get_autocommit <https://www.php.net/manual/en/function.cubrid-get-autocommit.php>`_ () function to get the status of current connection auto-commit mode and use the `cubrid_set_autocommit <https://www.php.net/manual/en/function.cubrid-set-autocommit.php>`_ () function to enable/disable auto-commit mode of current connection. In auto-commit mode, any transactions being executed are committed regardless of whether it is set to **ON** or **OFF**.
+CUBRID PHP supports transaction and autocommit mode. Auto-commit mode means that every query that you run has its own implicit transaction. You can use the `cubrid_get_autocommit <https://www.php.net/manual/en/function.cubrid-get-autocommit.php>`_ () function to get the status of current connection autocommit mode and use the `cubrid_set_autocommit <https://www.php.net/manual/en/function.cubrid-set-autocommit.php>`_ () function to enable/disable autocommit mode of current connection. In autocommit mode, any transactions being executed are committed regardless of whether it is set to **ON** or **OFF**.
 
-The default value of auto-commit mode upon application startup is configured by the **CCI_DEFAULT_AUTOCOMMIT** (broker parameter). If the broker parameter value is not configured, the default value is set to **ON**. 
+The default value of autocommit mode upon application startup is configured by the **CCI_DEFAULT_AUTOCOMMIT** (broker parameter). If the broker parameter value is not configured, the default value is set to **ON**. 
 
-If you set auto-commit mode to **OFF** in the `cubrid_set_autocommit <https://www.php.net/manual/en/function.cubrid-set-autocommit.php>`_ () function, you can handle transactions by specifying a proper function; to commit transactions, use the `cubrid_commit <https://www.php.net/manual/en/function.cubrid-commit.php>`_ () function and to roll back transactions, use the `cubrid_rollback <https://www.php.net/manual/en/function.cubrid-rollback.php>`_ () function. If you use the `cubrid_disconnect <https://www.php.net/manual/en/function.cubrid-disconnect.php>`_ () function, transactions will be disconnected and jobs which have not been committed will be rolled back.
+If you set autocommit mode to **OFF** in the `cubrid_set_autocommit <https://www.php.net/manual/en/function.cubrid-set-autocommit.php>`_ () function, you can handle transactions by specifying a proper function; to commit transactions, use the `cubrid_commit <https://www.php.net/manual/en/function.cubrid-commit.php>`_ () function and to roll back transactions, use the `cubrid_rollback <https://www.php.net/manual/en/function.cubrid-rollback.php>`_ () function. If you use the `cubrid_disconnect <https://www.php.net/manual/en/function.cubrid-disconnect.php>`_ () function, transactions will be disconnected and jobs which have not been committed will be rolled back.
 
 Processing Queries
 ------------------

@@ -45,7 +45,7 @@ CUBRID에 존재하는 모든 데이터베이스의 위치 정보는 **databases
     % set | grep CUBRID_DATABASES
     CUBRID_DATABASES=/home1/user/CUBRID/databases
 
-만약 **CUBRID_DATABASES** 환경 변수에서 유효하지 않은 디렉터리 경로가 설정되는 경우에는 에러가 발생하며, 설정된 디렉터리 경로는 유효하나 데이터베이스 위치 정보 파일이 존재하지 않는 경우에는 새로운 위치 정보 파일을 생성한다. 또한, **CUBRID_DATABASES** 환경 변수가 아예 설정되지 않은 경우에는 현재 작업 디렉터리에서 위치 정보 파일을 검색한다.
+만약 **CUBRID_DATABASES** 환경 변수에서 유효하지 않은 디렉터리 경로가 설정되는 경우에는 오류가 발생하며, 설정된 디렉터리 경로는 유효하나 데이터베이스 위치 정보 파일이 존재하지 않는 경우에는 새로운 위치 정보 파일을 생성한다. 또한, **CUBRID_DATABASES** 환경 변수가 아예 설정되지 않은 경우에는 현재 작업 디렉터리에서 위치 정보 파일을 검색한다.
 
 .. _database-volume:
 
@@ -57,9 +57,13 @@ CUBRID 데이터베이스의 볼륨은 크게 영구적 볼륨, 일시적 볼륨
 *   영구적 볼륨 중
  
     *   영구적 데이터를 저장하지만 일시적 데이터도 저장할 수 있는 데이터 볼륨이 있다.
-    *   활성 로그, 보관 로그 및 백그라운드 보관 로그로 세분화할 수 있는 로그 볼륨이 있다.
+    *   데이터베이스의 최근 변경 사항을 포함하고 있는 활성 로그(active log) 볼륨이 있다.
     
-*   일시적 볼륨에는 일시적 데이터만 저장된다.
+*   일시적 볼륨 중
+
+    *   임시 데이터를 저장할 수 있는 일시적 볼륨(temporary temp volume)이 있다.
+    *   활성 로그에서 밀려난 로그를 저장하기 위한 보관 로그(archive log) 볼륨이 있다. 
+    *   백그라운드에서 로그 보관 작업을 수행할 때 사용되는 백그라운드 보관 로그(background archive log) 볼륨이 있다.
 
 볼륨에 대한 자세한 내용은 :ref:`database-volume-structure`\ 를 참고한다.
 
@@ -71,7 +75,7 @@ CUBRID 데이터베이스의 볼륨은 크게 영구적 볼륨, 일시적 볼륨
 | testdb         | 512MB | | permanent     | | Database     | | DB 생성시 최초로 생성되는 볼륨                                                                     |
 |                |       | | data          | | volume       | | 이 볼륨은 영구 데이터를 저장한다. (시스템,힙과 인덱스 파일들)                                      |
 |                |       |                 |                | | 이 볼륨은 데이터베이스 메타 정보를 포함한다.                                                       |
-|                |       |                 |                | | **cubrid createdb** 는 **cubrid.conf** 의 **db_volume_size** 에 명시된 디폴트 크기를 사용한다.     |
+|                |       |                 |                | | **cubrid createdb** 는 **cubrid.conf** 의 **db_volume_size** 에 명시된 기본 크기를 사용한다.       |
 +----------------+-------+-----------------+                +------------------------------------------------------------------------------------------------------+
 | testdb_perm    | 512MB | | permanent     |                | | **cubrid addvoldb** 유틸리티를 사용해 수동으로 생성된 볼륨                                         |
 |                |       | | data          |                | | 이 볼륨은 영구 데이터를 저장한다. (시스템,힙과 인덱스 파일들)                                      |
@@ -113,7 +117,7 @@ CUBRID 데이터베이스의 볼륨은 크게 영구적 볼륨, 일시적 볼륨
 *   데이터베이스 볼륨 파일
 
     *  위의 표에서 *testdb*, *testdb_perm*, *testdb_temp*, *testdb_x003* ~ *testdb_x006* 은 데이터베이스 볼륨 파일로 분류된다.
-    *  파일 크기는 **cubrid createdb** 및 **cubrid addvoldb** 의 **--db-volume-size** 옵션과 **cubrid.conf** 의  **db_volume_size** 에 의해 결정된다.
+    *  파일 크기는 **cubrid createdb** 및 **cubrid addvoldb** 의 **\-\-db-volume-size** 옵션과 **cubrid.conf** 의  **db_volume_size** 에 의해 결정된다.
     *  데이터베이스에 저장 공간이 부족해지면 새 볼륨이 자동 생성된다. 
 
 *   일시적 볼륨 
@@ -124,11 +128,11 @@ CUBRID 데이터베이스의 볼륨은 크게 영구적 볼륨, 일시적 볼륨
 *   로그 볼륨 파일
 
     *   위의 표에서 *testdb_lgar_t*, *testdb_lgar224* 및 *testdb_lgat* 는 로그 볼륨 파일로 분류된다.
-    *   파일 크기는 **cubrid.conf** 의 **log_volume_size** 또는 **cubrid createdb** 의 **--log-volume-size** 옵션에 의해 결정된다.
+    *   파일 크기는 **cubrid.conf** 의 **log_volume_size** 또는 **cubrid createdb** 의 **\-\-log-volume-size** 옵션에 의해 결정된다.
 
 *   이중 쓰기 버퍼 (Double Write Buffer, DWB) 파일
       
-    *   DWB 파일은 부분 쓰기 (Partial Write)로 인한 I/O 에러를 방지하기 위한 저장공간이다.
+    *   DWB 파일은 부분 쓰기 (Partial Write)로 인한 I/O 오류를 방지하기 위한 저장공간이다.
     *   모든 데이터 페이지는 DWB 에 먼저 쓰여지고 난 후에 영구 데이터 볼륨에 있는 데이터 위치에 쓰여진다.
     *   데이터베이스가 재시작될 때, 부분적으로 쓰여진 페이지들이 탐지되고 DWB 에서 대응되는 페이지로 대치된다.
     *   파일 크기는 **cubrid.conf** 의 **double_write_buffer_size** 에 의해 결정된다. 만약 0으로 설정되었다면, DWB 는 사용되지 않고 DWB 파일도 생성되지 않는다.

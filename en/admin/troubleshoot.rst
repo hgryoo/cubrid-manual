@@ -1,5 +1,5 @@
 
-:meta-keywords: cubrid logging, slow query, error log, deadlock detect, cubrid fail-over, cubrid fail-back
+:meta-keywords: cubrid logging, slow query, error log, deadlock detect, cubrid failover, cubrid fail-back
 :meta-description: Troubleshoot CUBRID database and High Availability nodes by consulting logs.
 
 ***************
@@ -16,7 +16,7 @@ SQL log of CAS
 
 When a specific error occurs, generally you can check SQL logs of broker application server(CAS)
 
-One SQL log file is generated per each CAS; it is hard to find an SQL log in which an error occurred because SQL log files are many when CAS processes are many. However, SQL log file name includes CAS ID in the end part, you can find easily if you know the CAS ID in which an error occurred.
+One SQL log file is generated per each CAS; it is hard to find an SQL log in which an error occurred because SQL log files are many when CAS processes are many. However, SQL log filename includes CAS ID in the end part, you can find easily if you know the CAS ID in which an error occurred.
 
 .. note:: SQL log file name in a CAS is <broker_name>_<app_server_num>.sql.log(see :ref:`broker-logs`); <app_server_num> is CAS ID.
 
@@ -33,13 +33,16 @@ Function getting CAS information
 Application log
 ---------------
 
-If you specify the connection URL for printing out the log in the application, you can check the CAS ID which brought an error when an error occurs in the specific query. The following are examples that an application log is written when an error occurs.
+If you configure the application to print out the log, you can check the CAS ID which brought an error when an error occurs in the specific query. For JDBC, the level of **cubrid.jdbc** must be set to **FINE** or lower in **java.util.logging**, and the format of the log is also determined by the **java.util.logging** configuration of the application. The following are examples that an application log is written when an error occurs; the JDBC example is the output with the configuration in :ref:`jdbc-logging-conf` (**SimpleFormatter**).
 
 **JDBC application log**
   
 :: 
  
-    Syntax: syntax error, unexpected IdName [CAS INFO - localhost:33000,1,30560],[SESSION-16],[URL-jdbc:cubrid:localhost:33000:demodb::********:?logFile=driver_1.log&logSlowQueries=true&slowQueryThresholdMillis=5]. 
+    May 9, 2013 4:25:08 PM cubrid.jdbc.jci.UConnection logException
+    FINE: DUMP EXCEPTION
+    [cubrid.jdbc.driver.CUBRIDException]
+    cubrid.jdbc.driver.CUBRIDException: Syntax: syntax error, unexpected IdName [CAS INFO - localhost:33000,1,30560],[SESSION-16],[URL-jdbc:cubrid:localhost:33000:demodb::********:?logSlowQueries=true&slowQueryThresholdMillis=5].
 
 **CCI application log**
 
@@ -59,17 +62,19 @@ There is a slow query in the application log but that is not printed as slow que
 Some examples are as below.
  
 *   Check if there is a low speed of the network between application and broker.
-*   Check if there is a case that CAS was restarted by watching the broker log(exists in **$CUBRID/log/broker** directory). If it is revealed as CASes are not enough, you should enlarge the number of CASes; to do so, the value of :ref:`MAX_NUM_APPL_SERVER <max-num-appl-server>` should be enlarged properly. Also the value of :ref:`max_clients <max_clients>` should be enlarged if needed.
+*   Check if there is a case where CAS was restarted by checking the broker log (located in the **$CUBRID/log/broker** directory). If it is revealed that the number of CASes is insufficient (please tune for any slow queries first), you should increase the number of CASes. To do so, the value of :ref:`MAX_NUM_APPL_SERVER <max-num-appl-server>` should be increased appropriately. Also, increase the value of :ref:`max_clients <max_clients>` if needed.
+
 
 If application log and CAS SQL log show the slow query log together and there is almost no gab between the slow query times of application log and the CAS SQL log, the cause which the query was slow will exist between the broker and DB server. For example, the query execution in the DB server was slow.
 
-There are examples of each application log when a slow query occurs.
+There are examples of each application log when a slow query occurs. The JDBC example is the output with the configuration in :ref:`jdbc-logging-conf` (**SimpleFormatter**).
 
 **JDBC application log** 
  
 :: 
  
-    2013-05-09 16:25:08.831|INFO|SLOW QUERY 
+    May 9, 2013 4:25:08 PM cubrid.jdbc.jci.UConnection logSlowQuery
+    FINEST: SLOW QUERY
     [CAS INFO] 
     localhost:33000, 1, 12916 
     [TIME] 
@@ -85,7 +90,9 @@ There are examples of each application log when a slow query occurs.
 
 Slow query information in an application and in a broker is stored in each file when the setting is as following.
      
-*   The slow query information in application is stored in application log file when the value of **logSlowQueries** property in the connection URL is set to **yes** and the value of **slowQueryThresholdMillis** is set; it is stored to the application logfile specified with the **logFile** property (see :func:`cci_connect_with_url` and :ref:`jdbc-connection-conf`).
+*   The slow query information in a CCI application is stored in the application log file specified with the **logFile** property when the value of the **logSlowQueries** property in the connection URL is set to **yes** and the value of **slowQueryThresholdMillis** is set (see :func:`cci_connect_with_url`).
+
+*   The slow query information in a JDBC application is printed when the value of the **logSlowQueries** property in the connection URL is set to **true**, the value of **slowQueryThresholdMillis** is set, and the level of **cubrid.jdbc** is set to **FINEST** in **java.util.logging** (see :ref:`jdbc-logging-conf`).
 
 *   The slow query information in broker is stored in the $CUBRID/log/broker/sql_log directory when **SLOW_LOG** of :ref:`broker-configuration` is set to ON and **LONG_QUERY_TIME** is set.
 
@@ -137,6 +144,7 @@ Detecting a Deadlock
 --------------------
 
 Locks related information is written to the server error log.
+The server error log file is saveed in the **$CUBRID/log/server** directory as named in  *<databases>_<date>_<time>.err*.
 
 ::
 
@@ -163,48 +171,68 @@ To resolve the split-brain status, one of two is dead for itself; cub_master log
  
 :: 
 
-    Time: 05/31/13 17:38:29.138 - ERROR *** file ../../src/executables/master_heartbeat.c, line 714 ERROR CODE = -988 Tran = -1, EID = 19 
-    Node event: More than one master detected and local processes and cub_master will be terminated. 
-  
-    Time: 05/31/13 17:38:32.337 - ERROR *** file ../../src/executables/master_heartbeat.c, line 4493 ERROR CODE = -988 Tran = -1, EID = 20 
-    Node event:HA Node Information 
-    ================================================================================ 
-     * group_id : hagrp host_name : testhost02 state : unknown 
-    -------------------------------------------------------------------------------- 
-    name priority state score missed heartbeat 
-    -------------------------------------------------------------------------------- 
-    testhost03 3 slave 3 0 
-    testhost02 2 master 2 0 
-    testhost01 1 master -32767 0 
-    ================================================================================ 
+    Time: 01/10/25 13:46:34.782 - ERROR *** file ../../src/executables/master_heartbeat.c, line 873 ERROR CODE = -988, Tran = -1, EID = 35
+    Node event: [Failback] [Diagnosis] Multiple master nodes (testhost02, testhost01) are detected.
+
+    Time: 01/10/25 13:46:34.782 - ERROR *** file ../../src/executables/master_heartbeat.c, line 876 ERROR CODE = -988, Tran = -1, EID = 36
+    Node event: HA Node Info
+    ================================================================================
+    * group_id : hagrp   host_name : testhost02   state : master
+    --------------------------------------------------------------------------------
+    name                 priority   state           score      missed heartbeat
+    --------------------------------------------------------------------------------
+    testhost02               2          master          -32766     0
+    testhost01               1          master          -32767     0
+    ================================================================================
+
+    Time: 01/10/25 13:46:34.782 - ERROR *** file ../../src/executables/master_heartbeat.c, line 889 ERROR CODE = -988, Tran = -1, EID = 37
+    Node event: HA Ping Host Info
+    ================================================================================
+    * PING check is enabled
+    --------------------------------------------------------------------------------
+    hostname             PING check result
+    --------------------------------------------------------------------------------
+    8.8.8.8              SUCCESS
+    ================================================================================
+
+    Time: 01/10/25 13:46:34.782 - ERROR *** file ../../src/executables/master_heartbeat.c, line 1371 ERROR CODE = -988, Tran = -1, EID = 38
+    Node event: [Failback] [Success] Current node has been successfully demoted to slave.
 
 Above example is the information to print out into the cub_master log when testhost02 server detects split-brain status and it is dead for itself.    
      
 Detecting Fail-over, Fail-back
 ------------------------------
   
-If fail-over or fail-back occurs, a node changes its role.
+If failover or fail-back occurs, a node changes its role.
   
-The following is the log file of the cub_master that is changed as slave node after fail-back or master node after fail-over; it includes the following node information.
+The following is the log file of the cub_master that changes to a slave node after fail-back or to a master node after failover; log messages for failover and fail-back are prefixed with [Failover] or [Failback].
+
+The log messages for failover and fail-back include both diagnosis and result messages.
+
+A diagnosis message is logged when a failover or fail-back is triggered for a specific reason. These messages indicate the reason why the failover or fail-back was initiated and are prefixed with [Diagnosis].
+
+A result message is logged when a failover or fail-back is either canceled or successfully completed. If the failover or fail-back is canceled, the result message logs the reason for the cancellation and is prefixed with [Canceled]. If the failover or fail-back is completed successfully, the result message logs the outcome and is prefixed with [Success]. For details, see :ref:`failover-messages`.
   
 :: 
   
-    Time: 06/04/13 15:23:28.056 - ERROR *** file ../../src/executables/master_heartbeat.c, line 957 ERROR CODE = -988 Tran = -1, EID = 25 
-    Node event: Failover completed. 
-  
-    Time: 06/04/13 15:23:28.056 - ERROR *** file ../../src/executables/master_heartbeat.c, line 4484 ERROR CODE = -988 Tran = -1, EID = 26 
-    Node event: HA Node Information 
-    ================================================================================ 
-     * group_id : hagrp host_name : testhost02 state : master 
-    -------------------------------------------------------------------------------- 
-    name priority state score missed heartbeat 
-    -------------------------------------------------------------------------------- 
-    testhost03 3 slave 3 0 
-    testhost02 2 to-be-master -4094 0 
-    testhost01 1 unknown 32767 0 
-    ================================================================================ 
-  
-Above example is an information which is printed out to the cub_master log; it is the process that the 'testhost02' host changes the role from slave to master because of the fail-over.
+    Time: 01/09/25 16:14:13.005 - ERROR *** file ../../src/executables/master_heartbeat.c, line 924 ERROR CODE = -988, Tran = -1, EID = 6
+    Node event: [Failover] [Diagnosis] The master node (testhost01) has lost its role due to server process problem, such as disk failure.
+
+    Time: 01/09/25 16:14:13.614 - ERROR *** file /../../src/executables/master_heartbeat.c, line 1179 ERROR CODE = -988, Tran = -1, EID = 7
+    Node event: [Failover] [Success] Current node has been successfully promoted to master.
+
+    Time: 01/09/25 16:14:13.614 - ERROR *** file ../../src/executables/master_heartbeat.c, line 1196 ERROR CODE = -988, Tran = -1, EID = 8
+    Node event: HA Node Info
+    ================================================================================
+    * group_id : hagrp   host_name : testhost02   state : master
+    --------------------------------------------------------------------------------
+    name                 priority   state           score      missed heartbeat
+    --------------------------------------------------------------------------------
+    testhost02           2          to-be-master    -4094      0
+    testhost01           1          unknown         32767      1
+    ================================================================================
+
+The above example shows information which is printed in the cub_master log; it describes the process where the 'testhost02' host changes its role from slave to master during a failover because the master node 'testhost01' has lost its role due to server process issue.
 
 Failure on HA Start
 ===================
@@ -245,7 +273,7 @@ The following describes the error messages when **copylogdb** or **applylogdb** 
 | are already deleted.                                          |                                                                                                  |
 |                                                               | Internal error: logical log page 81 may be corrupted.                                            |
 +---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
-| Different between db_ha_apply_info catalog time and           | HA generic: Failed to initialize db_ha_apply_info.                                               |
+| Different between _db_ha_apply_info catalog time and          | HA generic: Failed to initialize _db_ha_apply_info.                                              |
 | DB creation time in the current replication logs.             |                                                                                                  |
 | That is, it's not the previous log to be being applied.       |                                                                                                  |
 +---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
@@ -260,5 +288,5 @@ How to fix when a Failure on HA start
 Status                                                            How to fix                                                         
 ================================================================= ==================================================================================================
 When the source node, the cause of failure, is in master status.  Rebuild replication.
-When the source node, the cause of failure, is in slave status.   Initialize replicated logs and db_ha_apply_info catalog then restart.
+When the source node, the cause of failure, is in slave status.   Initialize replicated logs and _db_ha_apply_info catalog then restart.
 ================================================================= ==================================================================================================

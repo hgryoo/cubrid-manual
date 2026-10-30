@@ -52,7 +52,7 @@ CUBRID HA 노드는 하나의 마스터 프로세스(cub_master), 하나 이상�
 
 .. image:: /images/image15.png
 
-*   **복제 로그 반영 프로세스(applylogdb)** : 복제 로그 복사 프로세스에 의해 복사된 로그를 노드에 반영한다. 반영한 복제 정보는 내부 카탈로그(db_ha_apply_info)에 저장하며, 이 정보는 :ref:`cubrid-applyinfo` 유틸리티로 확인할 수 있다.
+*   **복제 로그 반영 프로세스(applylogdb)** : 복제 로그 복사 프로세스에 의해 복사된 로그를 노드에 반영한다. 반영한 복제 정보는 내부 카탈로그(_db_ha_apply_info)에 저장하며, 이 정보는 :ref:`cubrid-applyinfo` 유틸리티로 확인할 수 있다.
 
 .. image:: /images/image16.png
 
@@ -76,7 +76,7 @@ CUBRID HA 노드는 하나의 마스터 프로세스(cub_master), 하나 이상�
 *   **to-be-active** : 스탠바이 서버가 failover 등의 이유로 인해 액티브 서버가 되기 전의 상태이다. 기존의 마스터 노드로부터 받은 트랜잭션 로그를 자신의 서버에 반영하는 등 액티브 서버가 되기 위한 준비를 한다. 해당 상태의 노드에는 SELECT 질의만 수행할 수 있다.
 *   기타: 내부적으로 사용하는 상태이다.
 
-노드 상태가 변경되면 cub_master 프로세스 로그와 cub_server 프로세스 로그에 각각 다음과 같은 에러 메시지가 저장된다. 단, **cubrid.conf**\에서 **error_log_level**\의 값이 **error** 이하인 경우에 저장된다.
+노드 상태가 변경되면 cub_master 프로세스 로그와 cub_server 프로세스 로그에 각각 다음과 같은 오류 메시지가 저장된다. 단, **cubrid.conf**\에서 **error_log_level**\의 값이 **error** 이하인 경우에 저장된다.
 
 *   cub_master 프로세스의 로그 정보는 **$CUBRID/log/**\ *<hostname>*\ **_master.err** 파일에 저장되며 다음의 내용이 기록된다. ::
 
@@ -210,7 +210,7 @@ CUBRID는 3-tier DBMS로, 응용 프로그램과 데이터베이스 서버를 �
 
 .. image:: /images/image25.png
 
-다음은 마스터 노드, 슬레이브 노드의 각 장비 내에 Read Write(RW) 브로커와 Read Only(RO) 브로커를 구성한 예이다. *app1*과 *app2* URL의 첫 번째 접속은 각각 *broker A1* (RW), *broker B2* (RO) 이고, 두 번째 접속(**altHosts**)은 각각 *broker A2* (RO), *broker B1* (RW)이다. *nodeA* 를 포함한 장비가 고장나면, *app1*과 *app2*는 *nodeB* 를 포함한 장비의 브로커에 접속한다.
+다음은 마스터 노드, 슬레이브 노드의 각 장비 내에 Read Write(RW) 브로커와 Read Only(RO) 브로커를 구성한 예이다. *app1*\과 *app2*\  URL의 첫 번째 접속은 각각 *broker A1* (RW), *broker B2* (RO) 이고, 두 번째 접속(**altHosts**)은 각각 *broker A2* (RO), *broker B1* (RW)이다. *nodeA* 를 포함한 장비가 고장나면, *app1*\과 *app2*\는 *nodeB*\ 를 포함한 장비의 브로커에 접속한다.
 
 .. image:: /images/image26.png
 
@@ -334,7 +334,7 @@ CUBRID HA에 포함할 데이터베이스를 모든 CUBRID HA 노드에서 동�
 
 **cubrid_ha.conf**
 
-**$CUBRID/conf/cubrid_ha.conf** 의 **ha_port_id**, **ha_node_list**, **ha_db_list** 를 모든 HA 노드에 동일하게 설정한다. 다음 예에서 마스터 노드의 호스트 이름은 *nodeA*, 슬레이브 노드의 호스트 이름은 *nodeB*\라고 가정한다.::
+**$CUBRID/conf/cubrid_ha.conf** 의 **ha_port_id**, **ha_node_list**, **ha_db_list** 를 모든 HA 노드에 동일하게 설정한다. 다음 예에서 마스터 노드의 호스트 이름은 *nodeA*, 슬레이브 노드의 호스트 이름은 *nodeB*\라고 가정한다. ::
 
     [common]
     ha_port_id=59901
@@ -369,14 +369,14 @@ CUBRID HA 그룹 내의 각 노드에서 **cubrid heartbeat start**\ 를 수행�
 
 CUBRID HA 그룹 내의 각 노드에서 **cubrid heartbeat status**\ 를 수행하여 구성 상태를 확인한다. ::
 
-    [nodeA]$ cubrid heartbeat status
+    [cubrid@nodeA]$ cubrid heartbeat status
     @ cubrid heartbeat list
-     HA-Node Info (current nodeA-node-name, state master)
+     HA-Node Info (current nodeA, state master)
        Node nodeB-node-name (priority 2, state slave)
        Node nodeA-node-name (priority 1, state master)
      HA-Process Info (nodeA 9289, state nodeA)
-       Applylogdb testdb@localhost:/home1/cubrid1/DB/testdb_nodeB.cub (pid 9423, state registered)
-       Copylogdb testdb@nodeB-node-name:/home1/cubrid1/DB/testdb_nodeB.cub (pid 9418, state registered)
+       Applylogdb testdb@localhost:/home1/cubrid1/DB/testdb_nodeB (pid 9423, state registered)
+       Copylogdb testdb@nodeB-node-name:/home1/cubrid1/DB/testdb_nodeB (pid 9418, state registered)
        Server testdb (pid 9306, state registered_and_active)
      
     [nodeA]$
@@ -543,7 +543,7 @@ CUBRID HA 기능을 사용하면 기본적으로 복제 로그 복사 프로세�
 
 *   **log_buffer_size** : 로그 버퍼 크기. 서버와 로그를 복사하는 **copylogdb** 간 프로토콜에 영향을 주는 부분이므로 반드시 동일해야 한다.
 
-*   **log_volume_size** : 로그 볼륨 크기. CUBRID HA는 원본 트랜잭션 로그와 복제 로그의 형태와 내용이 동일하므로 반드시 동일해야 한다. 그 외 각 노드에서 별도로 DB를 생성하는 경우 **cubrid createdb** 옵션(**--db-volume-size**, **--db-page-size**, **--log-volume-size**, **--log-page-size** 등)이 동일해야 한다.
+*   **log_volume_size** : 로그 볼륨 크기. CUBRID HA는 원본 트랜잭션 로그와 복제 로그의 형태와 내용이 동일하므로 반드시 동일해야 한다. 그 외 각 노드에서 별도로 DB를 생성하는 경우 **cubrid createdb** 옵션(**\-\-db-volume-size**, **\-\-db-page-size**, **\-\-log-volume-size**, **\-\-log-page-size** 등)이 동일해야 한다.
 
 *   **cubrid_port_id** : 서버와의 연결 생성을 위한 TCP 포트 번호. 서버와 로그를 복사하는 **copylogdb** 의 연결을 위해 반드시 동일해야 한다.
 
@@ -554,6 +554,7 @@ CUBRID HA 기능을 사용하면 기본적으로 복제 로그 복사 프로세�
     *   레플리카 노드의 **ha_mode** 파라미터
     *   **ha_copy_sync_mode** 파라미터
     *   **ha_ping_hosts** 파라미터
+    *   **ha_tcp_ping_hosts** 파라미터
 
 **예시**
 
@@ -601,7 +602,7 @@ CUBRID HA 그룹 내에서 사용할 그룹 이름과 failover의 대상이 되�
 
     이 파라미터에서 명시한 멤버 노드들의 호스트 이름은 IP로 대체할 수 없으며, 사용자는 반드시 **/etc/hosts** 에 등록되어 있는 것을 사용해야 한다. 
     
-    호스트 이름이 제대로 설정되지 않은 경우 server.err 에러 로그 파일에 다음과 같은 메시지가 출력된다.
+    호스트 이름이 제대로 설정되지 않은 경우 server.err 오류 로그 파일에 다음과 같은 메시지가 출력된다.
     
     ::
     
@@ -627,10 +628,6 @@ CUBRID HA 그룹 내에서 사용할 그룹 이름과 레플리카 노드 이름
 
 CUBRID HA 모드로 구동할 데이터베이스 이름을 명시한다. 기본값은 **NULL** 이다. 여러 개의 데이터베이스 이름은 쉼표(,) 또는 콜론(:)으로 구분한다.
 
-.. note::
-
-    이 파라미터에서 명시한 멤버 노드들의 호스트 이름은 IP로 대체할 수 없으며, 사용자는 반드시 **/etc/hosts** 에 등록되어 있는 것을 사용해야 한다. 
-
 접속
 ^^^^
 
@@ -650,6 +647,16 @@ CUBRID는 1시간 주기로 **ha_ping_hosts**\에 명시된 호스트를 점검�
 
 이 파라미터를 설정하면 불안정한 네트워크로 인해 상대 마스터 노드가 비정상 종료된 것으로 오인한 슬레이브 노드가 마스터 노드로 역할이 변경되면서 동시에 두 개의 마스터 노드가 존재하게 되는 split-brain 현상을 방지할 수 있다.
 
+그러나 ICMP 프로토콜이 비활성화 되어 있는 경우 핑 체크는 정상적으로 동작하지 않는다. CUBRID는 이 경우를 대비하여 **ha_tcp_ping_hosts**\를 지원한다.
+
+이 파라미터는 동적으로 변경할 수 있으며, 변경하면 :ref:`cubrid heartbeat reload <cubrid-heartbeat>`\ 를 실행해야 한다.
+
+**ha_tcp_ping_hosts**
+
+**ha_tcp_ping_hosts**\는 ICMP 프로토콜이 비활성화 되어 **ha_ping_hosts**\를 사용할 수 없는 경우 대안으로 사용될 수 있다. **ha_tcp_ping_hosts**\는 **ha_ping_hosts**\와 똑같이 동작하지만 핑 체크를 위해 IP 계층 대신 TCP 계층을 사용한다는 차이가 있다. 기본값은 **NULL**\이며, 여러 개의 호스트 이름은 쉼표(,)로 호스트 이름과 포트 번호는 콜론(:)으로 구분한다. 예를들어, "ha_tcp_ping_hosts=host1:port1,host2:port2"와 같은 형식으로 설정할 수 있다. TCP 계층을 이용한 핑 체크가 정상적으로 동작하기 위해서는 반드시 **ha_tcp_ping_hosts**\에 설정된 호스트 상에서 해당 포트 번호를 갖는 소켓이 네트워크 요청을 정상적으로 수신할 수 있어야 하며, 방화벽에 의해 네트워크 요청이 차단되지 않아야 한다. **ha_ping_hosts**\가 설정된 경우 **ha_tcp_ping_hosts**\는 사용되지 않고 무시된다.
+
+이 파라미터는 동적으로 변경할 수 있으며, 변경하면 :ref:`cubrid heartbeat reload <cubrid-heartbeat>`\ 를 실행해야 한다.
+
 복제
 ^^^^
 
@@ -663,9 +670,13 @@ CUBRID는 1시간 주기로 **ha_ping_hosts**\에 명시된 호스트를 점검�
 
 **ha_copy_log_base**
 
-복제 로그를 저장할 위치를 지정한다. 기본값은 **$CUBRID_DATABASES**/\ *<db_name>*\_\ *<host_name>*\ 이다.
+복제 로그를 저장할 상위 경로를 지정한다. 기본값은 $CUBRID_DATABASES 환경 변수에 설정된 디렉터리 경로이다.  복제 로그들은 서버와 데이터베이스명에 따라  <db_name>_<host_name>의 하위 디렉터리에 저장된다.
 
-자세한 내용은 :ref:`log-multiplexing`\ 를 참고한다.
+복제 로그 경로는 상대 경로 또는 절대 경로 설정이 가능하다. 
+다음은 각각의 설정 예제이다.
+
+예1) ha_copy_log_base=copylog : 상대 경로로 간주되어, 복제 로그 경로로 $CUBRID_DATABASES/copylog가 설정된다.
+예2) ha_copy_log_base=/log/copy_log : 절대 경로로 간주되어, 복제 로그 경로로 /log/copy_log copylog base가 설정된다.
 
 .. _ha_copy_log_max_archives:
 
@@ -681,16 +692,16 @@ CUBRID HA의 복제 로그 반영 프로세스가 사용할 수 있는 최대 �
 
 **ha_applylogdb_ignore_error_list**
 
-CUBRID HA의 복제 로그 반영 프로세스에서 에러가 발생해도 이를 무시하고 계속 복제를 진행하기 위해 이 값을 설정한다. 쉼표(,)로 구분하여 무시할 에러 코드를 나열한다. 이 설정 값은 높은 우선순위를 가지므로, **ha_applylogdb_retry_error_list** 파라미터나 "재시도 에러 리스트"에 의해 설정된 에러 코드와 값이 겹치면 이들을 무시하고 해당 에러를 유발한 작업을 재시도하지 않는다. "재시도 에러 리스트"는 아래 **ha_applylogdb_retry_error_list** 의 설명을 참고한다.
+CUBRID HA의 복제 로그 반영 프로세스에서 오류가 발생해도 이를 무시하고 계속 복제를 진행하기 위해 이 값을 설정한다. 쉼표(,)로 구분하여 무시할 오류 코드를 나열한다. 이 설정 값은 높은 우선순위를 가지므로, **ha_applylogdb_retry_error_list** 파라미터나 "재시도 오류 리스트"에 의해 설정된 오류 코드와 값이 겹치면 이들을 무시하고 해당 오류를 유발한 작업을 재시도하지 않는다. "재시도 오류 리스트"는 아래 **ha_applylogdb_retry_error_list** 의 설명을 참고한다.
 
 **ha_applylogdb_retry_error_list**
 
-CUBRID HA의 복제 로그 반영 프로세스에서 에러가 발생하면 해당 에러를 유발한 작업이 성공할 때까지 반복적으로 재시도하기 위해 이 값을 설정한다. 쉼표(,)로 구분하여 재시도할 에러 코드를 나열한다. 이 값을 설정하지 않아도 기본으로 설정된 "재시도 에러 리스트"는 다음 표와 같다. 하지만 이 값들이 **ha_applylogdb_ignore_error_list** 에 존재하면 에러를 무시하고 계속 복제를 진행한다.
+CUBRID HA의 복제 로그 반영 프로세스에서 오류가 발생하면 해당 오류를 유발한 작업이 성공할 때까지 반복적으로 재시도하기 위해 이 값을 설정한다. 쉼표(,)로 구분하여 재시도할 오류 코드를 나열한다. 이 값을 설정하지 않아도 기본으로 설정된 "재시도 오류 리스트"는 다음 표와 같다. 하지만 이 값들이 **ha_applylogdb_ignore_error_list** 에 존재하면 오류를 무시하고 계속 복제를 진행한다.
 
-    **재시도 에러 리스트**
+    **재시도 오류 리스트**
 
     +-------------------------------------+-----------+
-    | 에러 코드 이름                      | 에러 코드 |
+    | 오류 코드 이름                      | 오류 코드 |
     +=====================================+===========+
     | ER_LK_UNILATERALLY_ABORTED          | -72       |
     +-------------------------------------+-----------+
@@ -757,7 +768,7 @@ CUBRID HA의 복제 로그 반영 프로세스에서 에러가 발생하면 해�
 
 복제 지연으로 인해 우선 순위가 낮은 DB에 연결된 CAS는 **cubrid_broker.conf**\의 :ref:`RECONNECT_TIME <reconnect_time>` 파라미터로 명시한 시간이 경과하면 복제 지연이 해소되었을 것으로 기대하여, 우선 순위가 높은 standby DB에 재접속을 시도한다. 
 
-**ha_copy_log_timeout**
+**ha_delay_limit_delta**
 
 위에 기술한 **ha_delay_limit** 을 참조하라.
 
@@ -765,12 +776,12 @@ CUBRID HA의 복제 로그 반영 프로세스에서 에러가 발생하면 해�
 
 어떤 노드의 데이터베이스 서버 프로세스가 상대방 노드의 복제 로그 복사 프로세스로부터 응답을 대기하는 최대 시간이다. 기본값은 5(초)이다. 이 값이 -1이면 무한 대기한다. 오직 **SYNC** 로그 복제 모드(**ha_copy_sync_mode**) 파라미터와 함께 작동한다.
 
-**ha_monitor_disk_failure_interval** 
+**ha_check_disk_failure_interval** 
   
-이 파라미터 값에 설정한 시간마다 디스크 장애 여부를 판단한다. 기본값은 30초이며, 단위는 초이다. 
+이 파라미터 값에 설정한 시간마다 디스크 장애 여부를 판단한다. 기본값은 15초이며, 단위는 초이다. 
   
-*   **ha_copy_log_timeout** 파라미터의 값이 -1인 경우, **ha_monitor_disk_failure_interval**\의 값은 무시되며 디스크 장애 여부를 판단하지 않는다. 
-*   **ha_monitor_disk_failure_interval**\의 값이 **ha_copy_log_timeout**\의 값보다 작게 설정된 경우, **ha_copy_log_timeout** + 20초의 시간마다 디스크 장애 여부를 판단한다.
+*   **ha_copy_log_timeout** 파라미터의 값이 -1인 경우, **ha_check_disk_failure_interval**\의 값은 무시되며 디스크 장애 여부를 판단하지 않는다. 
+*   **ha_check_disk_failure_interval**\의 값이 **ha_copy_log_timeout**\의 값보다 작게 설정된 경우, **ha_copy_log_timeout** + 20초의 시간마다 디스크 장애 여부를 판단한다.
 
 **ha_unacceptable_proc_restart_timediff**
 
@@ -788,8 +799,9 @@ SQL 로깅
 로그 파일 이름의 형식은 *<db name>_<master hostname>*\ **.sql.log.**\ *<id>*\ 이며, *<id>*\ 는 0부터 시작한다. 
 **ha_sql_log_max_size_in_mbytes**\에서 지정한 크기를 초과하면 *<id>*\ 의 값이 하나 증가된 새로운 파일이 생성된다.
 예를 들어, "ha_sql_log_max_size_in_mbytes=100"이면 demodb_nodeA.sql.log.0 파일이 100MB가 되면서 demodb_nodeA.sql.log.1이 새로 생성된다.
+*<id>*\ 는 최대값(4,294,967,295)을 초과하게 되면 0부터 재사용하게 된다.
 
-이 파라미터를 켜는 경우 SQL 로그 파일이 계속 쌓이므로, 사용자는 디스크 여유 공간을 확보하기 위해 로그 파일들을 직접 삭제해야 한다.
+기본적으로, 2개의 최신 SQL 로그 파일만 유지되며, **ha_sql_log_max_count** 설정을 통해 유지할 최대 파일 개수를 조정할 수 있다.
 
 SQL 로그 형식은 다음과 같다.
 
@@ -834,6 +846,14 @@ SQL 로그 형식은 다음과 같다.
 **ha_sql_log_max_size_in_mbytes**
 
 **applylogdb** 프로세스가 DB에 반영하는 SQL이 로깅될 때 생성하는 파일의 최대 크기이다. 이 크기를 초과하면 새로운 파일이 생성된다. 
+
+**ha_sql_log_max_count**
+
+유지해야할 최대 SQL 로그 파일 개수를 나타내며, SQL 로그 파일이 이를 초과하여 생성될 경우 가장 오래된 로그 파일부터 삭제된다. 이 파라미터의 기본값은 2이며, 2에서 5 범위의 정수값을 설정할 수 있다. **ha_sql_log_max_count**\와 **ha_sql_log_max_size_in_mbytes** 설정을 통해 적절한 양의 SQL 로그를 유지할 수 있다.
+
+**ha_sql_log_path**
+
+SQL 로그 파일이 생성될 디렉터리 경로를 나타내며, 상대 경로 또는 절대 경로로 설정할 수 있다. 상대 경로로 설정되는 경우 **ha_enable_sql_logging**\에서 설명한 복제 로그 디렉터리를 기준으로 상대 경로를 판단한다. 데이터베이스 서버 프로세스(cub_server)는 반드시 지정된 경로에 SQL 로그 파일을 생성할 수 있는 권한이 있어야 한다. 이 파라미터가 설정되지 않은 경우에는 **ha_enable_sql_logging**\에서 설명한 복제 로그 디렉터리 경로에 SQL 로그 파일을 생성한다.
 
 .. _ha-cubrid-broker-conf:
 
@@ -914,7 +934,7 @@ CAS가 연결할 호스트 순서를 결정할 때 **$CUBRID_DATABASES/databases
 *   *host4* : standby 상태, 복제 지연
 *   *host5* : standby 상태, 복제 지연 없음
 
-이면 브로커는 먼저 복제 지연 상태인 2개의 호스트 *host2* , *host4* 까지 접속을 시도하고, *ho:1106st4* 에 접속하는 것으로 결정한다.
+이면 브로커는 먼저 복제 지연 상태인 2개의 호스트 *host2* , *host4* 까지 접속을 시도하고, *host4* 에 접속하는 것으로 결정한다.
 
 이렇게 동작하는 이유는 **MAX_NUM_DELAYED_HOSTS_LOOKUP**\ 에서 명시한 개수까지만 복제 지연이 있다면 이후의 호스트들에도 복제 지연이 있을 것이라는 가정을 하기 때문이며, 따라서 더 이상 뒤의 호스트에 대해 접속 시도를 하지 않고 복제 지연이 있지만 가장 마지막에 접속을 시도했던 호스트에 접속하기로 결정하는 것이다. 단, **PREFERRED_HOSTS**\ 가 같이 명시되는 경우 **PREFERRED_HOSTS**\ 에 명시된 모든 호스트들에 대해 접속을 먼저 시도한 후 다시 db-host 리스트의 처음부터 접속을 시도한다. 
 
@@ -926,7 +946,7 @@ CAS가 연결할 호스트 순서를 결정할 때 **$CUBRID_DATABASES/databases
 
 *   2차 연결: 1차 연결 실패 후 실패한 위치에서부터 두번째로 접속을 시도하는 단계. DB 상태(active/standby)와 복제 지연 여부를 무시. 단, **SO** 브로커는 항상 standby DB에만 접속 허용.
 
-    이때는 DB의 상태(active/standby) 및 복제 지연 여부와 무관하게 접속이 가능하면 접속을 결정한다. 하지만 질의 수행 단계에서 에러가 발생할 수 있다. 예를 들어 **ACCESS_MODE** 가 **RW**인데 standby 상태의 서버에 접속하면 INSERT 질의 수행 시 에러가 발생한다. 에러 발생과는 무관하게, standby로 연결되어 트랜잭션이 수행된 이후에는 1차 연결을 다시 시도한다. 단, **SO** 브로커는 절대로 active DB에 연결될 수 없다.
+    이때는 DB의 상태(active/standby) 및 복제 지연 여부와 무관하게 접속이 가능하면 접속을 결정한다. 하지만 질의 수행 단계에서 오류가 발생할 수 있다. 예를 들어 **ACCESS_MODE** 가 **RW**\인데 standby 상태의 서버에 접속하면 INSERT 질의 수행 시 오류가 발생한다. 오류 발생과는 무관하게, standby로 연결되어 트랜잭션이 수행된 이후에는 1차 연결을 다시 시도한다. 단, **SO**\ 브로커는 절대로 active DB에 연결될 수 없다.
     
 **MAX_NUM_DELAYED_HOSTS_LOOKUP**\ 의 값에 따라 접속을 시도하는 호스트의 개수가 제한되는 방법은 다음과 같다:
 
@@ -1049,10 +1069,10 @@ HA 환경에서 브로커는 여러 개의 DB 서버 중 하나와 접속을 결
 |            |                      |                               | 가장 마지막에 확인한                                                  |
 |            |                      |                               | 호스트와 연결.                                                        |
 |            |                      |                               |                                                                       |
-|            |                      |                               | * -1: databases.txt에 명시한 모든                                     | 
-|            |                      |                               |       호스트의 복제 지연 여부를 확인.                                 | 
-|            |                      |                               | * 0: 복제 지연 여부를 확인하지 않고                                   | 
-|            |                      |                               |      바로 2차 연결을 수행.                                            | 
+|            |                      |                               | * -1: databases.txt에 명시한 모든 호스트의 복제 지연 여부를 확인.     | 
+|            |                      |                               |                                                                       | 
+|            |                      |                               | * 0: 복제 지연 여부를 확인하지 않고 바로 2차 연결을 수행.             | 
+|            |                      |                               |                                                                       | 
 |            |                      |                               | * n(>0): n개의 호스트까지 복제 지연 여부를 확인.                      | 
 |            |                      +-------------------------------+-----------------------------------------------------------------------+
 |            |                      | RECONNECT_TIME                | 적합하지 않은 DB 서버에 연결된 이후 재연결을 시도하는 시간.           |
@@ -1375,9 +1395,60 @@ CUBRID HA 그룹 정보와 CUBRID HA 구성 요소의 정보를 확인할 수 �
      
      
      HA-Process Info (master 2143, state slave)
-       Applylogdb testdb@localhost:/home/cubrid/DB/testdb_nodeB (pid 2510, state registered)
+       Applylogdb testdb@localhost:/home/cubrid/DB/testdb_nodeA (pid 2510, state registered)
        Copylogdb testdb@nodeA:/home/cubrid/DB/testdb_nodeA (pid 2505, state registered)
        Server testdb (pid 2393, state registered_and_standby)
+
+
+-v의 경우, 해당노드의 상세정보를 출력한다.
+**score**\는 노드의 우선순위를 나타내며, 낮을 수록 높은 우선순위를 가진다.
+**missed heartbeat**\은 서로의 노드를 인식하는 heartbeat의 유실율을 나타내며, 해당 값이 높은 경우 환경설정/네트워크/방화벽 등을 점검해야 한다.
+
+Applylogdb, Copylogdb, Server 프로세스의 이벤트 발생 시간이며,이벤트가 발생하지 않은 경우 00:00:00.000으로 표기된다.
+
+* registered-time : 명령어를 통하여 프로세스 구동 요청 시간
+* deregistered-time : 명령어를 통하여 원격 프로세스 정지 요청 시간 (copylogdb와 applylogdb만 해당)
+* shutdown-time : HA 매니저(cub_master)가 프로세스를 정지한 시간
+* start-time : HA 매니저(cub_master)가 프로세스를 재 구동시간 
+
+**예시** 
+
+::
+
+    $ cubrid heartbeat status -v
+    @ cubrid heartbeat status
+
+    HA-Node Info (current cubrid1, state master)
+      Node cubrid2 (priority 2, state slave)
+        - score 2
+        - missed heartbeat 0
+      Node cubrid1 (priority 1, state master)
+        - score -32767
+        - missed heartbeat 0
+        
+    HA-Process Info (master 7392, state master)
+    Copylogdb testdb@cubrid2:/home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 (pid 7841, state registered)
+     - exec-path [/home/cubha/CUBRID-11.4-latest-Linux.x86_64/bin/cub_admin]
+     - argv      [cub_admin copylogdb -L /home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 -m sync testdb@bagus2 ]
+     - registered-time   08/26/24 14:28:37.019
+     - deregistered-time 00/00/00 00:00:00.000
+     - shutdown-time     08/26/24 14:28:35.010
+     - start-time        08/26/24 14:28:36.012
+    Applylogdb testdb@localhost:/home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 (pid 7746, state registered)
+     - exec-path [/home/cubha/CUBRID-11.4-latest-Linux.x86_64/bin/cub_admin]
+     - argv      [cub_admin applylogdb -L /home/cubha/CUBRID-11.4-latest-Linux.x86_64/databases/testdb_cubrid2 --max-mem-size=300 testdb@localhost ]
+     - registered-time   08/26/24 14:27:14.566
+     - deregistered-time 00/00/00 00:00:00.000
+     - shutdown-time     08/26/24 14:27:12.552
+     - start-time        08/26/24 14:27:13.558
+    Server testdb (pid 7904, state registered_and_active)
+     - exec-path [/home/cubha/CUBRID-11.4-latest-Linux.x86_64/bin/cub_server]
+     - argv      [cub_server testdb ]
+     - registered-time   08/26/24 14:29:28.955
+     - deregistered-time 00/00/00 00:00:00.000
+     - shutdown-time     08/26/24 14:29:27.593
+     - start-time        08/26/24 14:29:28.594
+
 
 .. note:: CUBRID 9.0 미만 버전에서 사용되었던 **act**, **deact**, **deregister** 명령은 더 이상 사용되지 않는다.
 
@@ -1453,13 +1524,14 @@ CUBRID HA의 복제 로그 복사 및 반영 상태를 확인한다. ::
 
 *   Applied Info. : 슬레이브 노드가 복제 로그를 반영한 상태 정보를 나타낸다.
 *   Copied Active Info. : 슬레이브 노드가 복제 로그를 복사한 상태 정보를 나타낸다.
+*   Copied Archive Info. : 슬레이브 노드가 복사한 보관로그의 상태 정보를 나타낸다.
 *   Active Info. : 마스터 노드가 트랜잭션 로그를 기록한 상태 정보를 나타낸다.
 *   Delay in Copying Active Log: 트랜잭션 로그 복사 지연 상태를 나타낸다. 
 *   Delay in Applying Copied Log: 트랜잭션 로그 반영 지연 상태를 나타낸다. 
 
 ::
 
-    [nodeB] $ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a -i 3 testdb
+    [nodeB] $ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a -p 0 -i 3 testdb
      
      *** Applied Info. *** 
     Insert count                   : 289492
@@ -1472,13 +1544,27 @@ CUBRID HA의 복제 로그 복사 및 반영 상태를 확인한다. ::
      *** Copied Active Info. *** 
     DB name                        : testdb
     DB creation time               : 04:29:00.000 PM 11/04/2012 (1352014140)
+    Vol creation time              : 04:29:10.000 PM 11/04/2012 (1352014150)
     EOF LSA                        : 27722 | 10088
     Append LSA                     : 27722 | 10088
     HA server state                : active
 
+     *** Copied Archive Info. ***
+    DB name                        : testdb
+    DB creation time               : 04:29:00.000 PM 11/04/2012 (1352014140)
+    Vol creation time              : 04:29:20.000 PM 11/04/2012 (1352014160)
+    Archive number                 : 0
+    Log page 0 (phy: 1 pageid: 0, offset 0)
+    offset:0000 (tid:1 bck p:-1,o:-1 frw p:0,o:96 type:3)
+    offset:0096 (tid:1 bck p:0,o:0 frw p:0,o:320 type:5)
+    offset:0320 (tid:1 bck p:0,o:96 frw p:0,o:552 type:4)
+    offset:0552 (tid:1 bck p:0,o:320 frw p:0,o:608 type:4)
+    ...
+
      ***  Active Info. *** 
     DB name                        : testdb
     DB creation time               : 04:29:00.000 PM 11/04/2012 (1352014140)
+    Vol creation time              : 04:29:10.000 PM 11/04/2012 (1352014150)
     EOF LSA                        : 27726 | 2512
     Append LSA                     : 27726 | 2512
     HA server state                : active
@@ -1496,9 +1582,9 @@ CUBRID HA의 복제 로그 복사 및 반영 상태를 확인한다. ::
 *   Applied Info.
 
     *   Committed page : 복제 로그 반영 프로세스에 의해 마지막으로 반영된 트랜잭션의 커밋된 pageid와 offset 정보. 이 값과 "Copied Active Info."의 EOF LSA 값의 차이만큼 복제 반영의 지연이 있다.
-    *   Insert Count : 복제 로그 반영 프로세스가 반영한 Insert 쿼리의 개수
-    *   Update Count : 복제 로그 반영 프로세스가 반영한 Update 쿼리의 개수
-    *   Delete Count : 복제 로그 반영 프로세스가 반영한 Delete 쿼리의 개수
+    *   Insert Count : 복제 로그 반영 프로세스가 반영한 Insert 질의의 개수
+    *   Update Count : 복제 로그 반영 프로세스가 반영한 Update 질의의 개수
+    *   Delete Count : 복제 로그 반영 프로세스가 반영한 Delete 질의의 개수
     *   Schema Count : 복제 로그 반영 프로세스가 반영한 DDL 문의 개수
     *   Commit Count : 복제 로그 반영 프로세스가 반영한 트랜잭션의 개수
     *   Fail Count : 복제 로그 반영 프로세스가 반영에 실패한 DML 및 DDL 문의 개수
@@ -1507,6 +1593,7 @@ CUBRID HA의 복제 로그 복사 및 반영 상태를 확인한다. ::
 
     *   DB name : 복제 로그 복사 프로세스가 로그를 복사하는 대상 데이터베이스의 이름
     *   DB creation time : 복제 로그 복사 프로세스가 복사하는 데이터베이스의 생성 시간
+    *   Vol creation time : 복제 로그 복사 프로세스가 복사하는 볼륨의 생성 시간
 
     *   EOF LSA : 복제 로그 복사 프로세스가 대상 노드에서 복사한 로그의 마지막 pageid와 offset 정보. 이 값과 "Active Info."의 EOF LSA 값의 차이 및 "Copied Active Info."의 Append LSA 값의 차이만큼 로그 복사의 지연이 있다.
 
@@ -1514,10 +1601,20 @@ CUBRID HA의 복제 로그 복사 및 반영 상태를 확인한다. ::
 
     *   HA server state : 복제 로그 복사 프로세스가 로그를 받아오는 데이터베이스 서버 프로세스의 상태. 상태에 대한 자세한 설명은 :ref:`ha-server` 를 참고하도록 한다.
 
+*   Copied Archive Info.
+
+    *   DB name : 복제 로그 복사 프로세스가 로그를 복사하는 대상 데이터베이스의 이름
+    *   DB creation time : 복제 로그 복사 프로세스가 복사하는 데이터베이스의 생성 시간
+    *   Vol creation time : 복제 로그 복사 프로세스가 복사하는 볼륨의 생성 시간
+    *   Archive number : 복제 로그 복사 프로세스가 복사하는 보관로그의 번호
+    *   Log page : 복제 로그 복사 프로세스가 복사하는 로그의 페이지 정보. pageid와 offset 정보를 포함한다.
+    *   offset : 로그 페이지의 offset 정보. 이 값은 pageid와 offset 정보를 포함한다.
+
 *   Active Info.
 
     *   DB name : **-r** 옵션에 설정한 노드의 데이터베이스의 이름
     *   DB creation time : **-r** 옵션에 설정한 노드의 데이터베이스 생성 시간
+    *   Vol creation time : **-r** 옵션에 설정한 노드의 볼륨 생성 시간
     *   EOF LSA : **-r** 옵션에 설정한 노드의 데이터베이스 트랜잭션 로그의 마지막 pageid와 offset 정보. 이 값과 "Copied Active Info."의 EOF LSA 값의 차이만큼 복제 로그 복사의 지연이 있다.
     
     *   Append LSA : **-r** 옵션에 설정한 노드의 데이터베이스 서버가 디스크에 실제로 쓴 트랜잭션 로그의 마지막 pageid와 offset 정보
@@ -1564,7 +1661,7 @@ CUBRID HA의 복제 로그 복사 및 반영 상태를 확인한다. ::
     *   Last applied log record time: 레플리카 노드에서 최근 반영한 복제 로그가 마스터 노드에서 반영된 시간
     *   Will apply log records up to: 해당 시간까지 마스터 노드에서 반영된 복제 로그를 레플리카 노드에 반영
 
-ha_replica_time_bound 시간이 되어 applylogdb가 복제 반영을 완전히 멈춘 경우  **$CUBRID/log/**\ *db-name*\ **@**\ *local-node-name*\ **_applylogdb_**\ *db-name*\ **_**\ *remote-node-name*\ **.err** \에 출력되는 에러 메시지는 다음과 같다.
+ha_replica_time_bound 시간이 되어 applylogdb가 복제 반영을 완전히 멈춘 경우  **$CUBRID/log/**\ *db-name*\ **@**\ *local-node-name*\ **_applylogdb_**\ *db-name*\ **_**\ *remote-node-name*\ **.err** \에 출력되는 오류 메시지는 다음과 같다.
 
 ::
 
@@ -1597,7 +1694,7 @@ CUBRID HA의 서버 상태를 확인하고 변경한다. ::
     
     *   서버의 상태가 **maintenance**\이면 **standby**\로 변경할 수 있다.
     
-    *   서버의 상태가 **to-be-active**이면 **active**\로 변경할 수 있다. 단, --force 옵션과 함께 사용해야 한다. 아래 --force 옵션의 설명을 참고한다.
+    *   서버의 상태가 **to-be-active**\이면 **active**\로 변경할 수 있다. 단, **\-\-force** 옵션과 함께 사용해야 한다. 아래 **\-\-force** 옵션의 설명을 참고한다.
 
 .. option:: -f, --force
 
@@ -1678,7 +1775,7 @@ HA 기본 구성
 
 CUBRID HA의 가장 기본적인 구성으로, 하나의 마스터 노드와 하나의 슬레이브 노드로 구성된다.
 
-CUBRID HA 고유의 기능인 장애 시 무중단(nonstop) 서비스 기능에 초점을 맞춘 구성으로, 작은 서비스에서 적은 리소스를 투입하여 구성할 수 있다. HA 기본 구성은 하나의 마스터 노드와 하나의 슬레이브 노드로 서비스를 제공하므로, 읽기 부하를 분산하려면 다중 슬레이브 노드 구성 또는 부하 분산 구성이 좋다. 또한, 슬레이브 노드 또는 레플리카 노드 등의 특정 노드에 읽기 전용으로 접속하려면 Read Only 브로커 또는 Preferred Host Read Only 브로커를 구성한다. 브로커 구성에 대한 설명은 :ref:`duplexing-brokers` 를 참고한다.
+CUBRID HA 고유의 기능인 장애 시 무중단(nonstop) 서비스 기능에 초점을 맞춘 구성으로, 작은 서비스에서 적은 자원을 투입하여 구성할 수 있다. HA 기본 구성은 하나의 마스터 노드와 하나의 슬레이브 노드로 서비스를 제공하므로, 읽기 부하를 분산하려면 다중 슬레이브 노드 구성 또는 부하 분산 구성이 좋다. 또한, 슬레이브 노드 또는 레플리카 노드 등의 특정 노드에 읽기 전용으로 접속하려면 Read Only 브로커 또는 Preferred Host Read Only 브로커를 구성한다. 브로커 구성에 대한 설명은 :ref:`duplexing-brokers` 를 참고한다.
 
 **노드 설정 예시**
 
@@ -1805,7 +1902,7 @@ HA로 구성된 노드 수가 많으므로 CUBRID HA 그룹 내의 여러 노드
 
 부하 분산 구성은 HA 구성(한 개의 마스터 노드와 한 개의 슬레이브 노드)에 여러 개의 레플리카 노드를 두어 CUBRID 서비스의 가용성을 높이고, 많은 읽기 부하를 분산하여 처리할 수 있는 구성이다.
 
-레플리카 노드들은 HA 구성에 포함된 노드들로부터 복제 로그를 받아 데이터를 동일하게 유지하고, HA 구성에 포함된 노드들은 레플리카 노드에서 복제 로그를 받지 않으므로 다중 슬레이브 구성에 비해 네트워크 및 디스크 사용률이 낮다.
+레플리카 노드들은 HA 구성 중 마스터 노드로부터 복제 로그를 받아 데이터를 동일하게 유지하고, 마스터 노드는 레플리카 노드에서 복제 로그를 받지 않으므로 다중 슬레이브 구성에 비해 네트워크 및 디스크 사용률이 낮다.
 
 레플리카 노드는 HA 구성에 포함되지 않으므로 HA 구성 내의 모든 노드에 장애가 발생해도 failover되지 않고 읽기 서비스만 제공한다.
 
@@ -1885,12 +1982,12 @@ HA로 구성된 노드 수가 많으므로 CUBRID HA 그룹 내의 여러 노드
     Connection connection = DriverManager.getConnection(
         "jdbc:CUBRID:nodeA:33000:testdb:::?charSet=utf-8&altHosts=nodeB:33000", "dba", "");
 
-읽기 전용으로 접속하기 위한 응용 프로그램은 *node C*, *node D* 또는 *node E*\ 에 있는 브로커에 연결한다. 다음은 JDBC 응용 프로그램의 예이다. "**loadBalance**\ =true"로 설정하여 메인 호스트와 **altHosts**\ 에 지정한 호스트들에 랜덤한 순서로 연결한다.
+읽기 전용으로 접속하기 위한 응용 프로그램은 *node C*, *node D* 또는 *node E*\ 에 있는 브로커에 연결한다. 다음은 JDBC 응용 프로그램의 예이다. "**loadBalance**\ =sh"로 설정하여 메인 호스트와 **altHosts**\ 에 지정한 호스트들에 랜덤한 순서로 연결한다.
 
 .. code-block:: java
 
     Connection connection = DriverManager.getConnection(
-        "jdbc:CUBRID:nodeC:33000:testdb:::?charSet=utf-8&loadBalance=true&altHosts=nodeD:33000,nodeE:33000", "dba", "");
+        "jdbc:CUBRID:nodeC:33000:testdb:::?charSet=utf-8&loadBalance=sh&altHosts=nodeD:33000,nodeE:33000", "dba", "");
 
 기타 자세한 사항은 환경 설정의 :ref:`ha-jdbc-conf`, :ref:`ha-cci-conf`, :ref:`ha-php-conf`\ 을 참고한다.
 
@@ -1996,9 +2093,18 @@ CUBRID HA 그룹 내의 노드 간 특정 테이블의 데이터가 동기화되
 
 분할 테이블에서 **PROMOTE** 문에 의해 일부 분할이 승격된 테이블은 모든 데이터를 슬레이브에 복제하지만, 기본 키를 가지지 않게 되므로 이후 마스터에서 해당 테이블의 데이터를 수정해도 슬레이브에 반영되지 않음에 주의한다.
 
-**Java 저장 프로시저(java stored procedure)**
+.. note::
 
-CUBRID HA에서 Java 저장 프로시저 환경 구축은 복제되지 않으므로, Java 저장 프로시저를 사용하려면 모든 노드에 각각 Java 저장 프로시저 환경을 설정해야 한다. :ref:`jsp-environment-configuration`\ 을 참고한다.
+    **USE_SBR** 힌트를 통해 기본키가 설정되지 않은 테이블에 대한 데이터 복제도 지원한다. 자세한 내용은 :ref:`sql-hint` 을 참고한다.
+
+**저장 프로시저**
+
+CUBRID HA에서 **PL/CSQL 저장 프로시저**\는 복제되지만 **Java 저장 프로시저**\는 선언문만 복제되고, 실행 프로그램은 복제되지 않으므로 수동으로 HA의 모든 노드에 실행 프로그램을 복사해야 한다. 
+
+저장 프로시저 실행을 위해 CUBRID 프로시저 언어 서버의 구동이 필요하며 데이터베이스 서버 구동 시 자동으로 구동된다.
+
+그러나 CUBRID 언어 서버 구동을 위해 **cubrid.conf** 환경 설정은 복제되지 않으므로 
+마스터 노드와 슬레이브 노드가 동일하게 **stored_procedure** 가 **yes** (기본값) 로 설정되어 있는지 확인해야 한다.
 
 **메서드**
 
@@ -2047,7 +2153,7 @@ CUBRID HA에서 **LOB** 칼럼 메타 데이터(Locator)는 복제되고, **LOB*
     10.0 부터는 UPDATE STATISTICS 문이 복제된다. 
  
     10.0 미만 버전에서는 UPDATE STATISTICS 문이 복제되지 않으므로 슬레이브/레플리카 노드에 별도로 수행해야 한다. 
-    10.0 미만 버전의 슬레이브/레플리카 노드에서 "UPDATE STATISTICS" 구문을 적용하려면 CSQL에서 --sysadm 옵션과 --write_on_slave 옵션을 추가한 후 이 구문을 수행해야 한다. 
+    10.0 미만 버전의 슬레이브/레플리카 노드에서 "UPDATE STATISTICS" 구문을 적용하려면 CSQL에서 **\-\-sysadm** 옵션과 **\-\-write_on_slave** 옵션을 추가한 후 이 구문을 수행해야 한다. 
 
 운영 시나리오
 =============
@@ -2183,7 +2289,7 @@ CUBRID HA에서 **LOB** 칼럼 메타 데이터(Locator)는 복제되고, **LOB*
 restoreslave
 ------------
 
-**cubrid restoreslave** 는 백업본으로부터 데이터베이스를 복구하는 **cubrid restoredb** 와 동일하지만 슬레이브(slave)나 레플리카(replica)를 재구성할 때 편리한 기능이 포함되어 있다. **cubrid restoreslave** 를 사용하면 사용자가 **db_ha_apply_info** 에 저장되는 복제 카탈로그 생성을 위해 백업 출력에서 복제 관련 정보를 수동으로 수집하지 않아도 된다. 이 명령은 백업 이미지와 활성 로그로부터 필요한 정보를 모두 자동으로 읽어서 관련 복제 카탈로그를 **db_ha_apply_info** 에 추가한다. 사용자는 백업 이미지가 생성된 노드의 상태와 현재 마스터 노드의 호스트명, 이 두 가지 필수 옵션만 제공하면 된다. 자세한 내용은 :ref:`restoredb` 를 참고한다. ::
+**cubrid restoreslave** 는 백업본으로부터 데이터베이스를 복구하는 **cubrid restoredb** 와 동일하지만 슬레이브(slave)나 레플리카(replica)를 재구성할 때 편리한 기능이 포함되어 있다. **cubrid restoreslave** 를 사용하면 사용자가 **_db_ha_apply_info** 에 저장되는 복제 카탈로그 생성을 위해 백업 출력에서 복제 관련 정보를 수동으로 수집하지 않아도 된다. 이 명령은 백업 이미지와 활성 로그로부터 필요한 정보를 모두 자동으로 읽어서 관련 복제 카탈로그를 **_db_ha_apply_info** 에 추가한다. 사용자는 백업 이미지가 생성된 노드의 상태와 현재 마스터 노드의 호스트명, 이 두 가지 필수 옵션만 제공하면 된다. 자세한 내용은 :ref:`restoredb` 를 참고한다. ::
 
     cubrid restoreslave [OPTION] database-name
 
@@ -2203,15 +2309,19 @@ restoreslave
     
 .. option:: -B, --backup-file-path=PATH
 
-    이 옵션을 이용해서 백업 파일들이 위치할 디렉토리를 지정할 수 있다. 더 많은 정보는 :ref:`restoredb` 의 -B 옵션을 참고한다.
+    이 옵션을 이용해서 백업 파일들이 위치할 디렉터리를 지정할 수 있다. 더 많은 정보는 :ref:`restoredb` 의 -B 옵션을 참고한다.
     
 .. option:: -o, --output-file=FILE
 
-    출력된 메세지들을 저장할 파일명을 지정할 수 있다. 더 많은 정보는 :ref:`restoredb` 의 -o 옵션을 참고한다.
+    출력된 메시지들을 저장할 파일명을 지정할 수 있다. 더 많은 정보는 :ref:`restoredb` 의 -o 옵션을 참고한다.
  
 .. option:: -u, --use-database-location-path
 
     이 옵션은 databases.txt에 지정된 데이터베이스 경로로 복구를 수행할 경우 지정한다. 더 많은 정보는 :ref:`restoredb` 의 -u 옵션을 참고한다.
+
+.. option:: -k, --keys-file-path=PATH
+
+    이 옵션은 복구 시 필요한 키 파일의 경로를 지정한다. 더 많은 정보는 :ref:`restoredb` 를 참고한다.
 
 복제 구축 시나리오 예제
 -----------------------
@@ -2246,7 +2356,7 @@ restoreslave
 
 *   :ref:`rebuild-slave`
 
-    마스터, 슬레이브, 레플리카가 구축된 환경에서 마스터를 이용해 슬레이브를 재구축한다. 사용자에 의해 db_ha_apply_info 카탈로그 테이블의 정보를 변경해야 한다.
+    마스터, 슬레이브, 레플리카가 구축된 환경에서 마스터를 이용해 슬레이브를 재구축한다. 사용자에 의해 _db_ha_apply_info 카탈로그 테이블의 정보를 변경해야 한다.
 
 이상에 대해 좀더 자세히 알아보자.
 
@@ -2255,15 +2365,15 @@ HA 환경에서 비정상 노드만 재구축하고자 하는 경우 :ref:`rebui
 .. note::
 
     *   복제 구축 시 염두에 둬야 할 사항은 새로 구축하거나, 재구축하거나, 특정 노드를 제거하는 모든 경우, 해당 노드에 대한 복제 정보와 복제 로그를 변경 또는 삭제해야 한다는 점이다. 
-        복제 정보는 db_ha_apply_info에 저장되며, 상대방 노드의 복제 진행 상태 정보를 가지고 있다. 
+        복제 정보는 _db_ha_apply_info에 저장되며, 상대방 노드의 복제 진행 상태 정보를 가지고 있다. 
     
         단, 레플리카의 경우 역할 변경(role change)이 발생하지 않으므로 상대방 노드가 레플리카 노드의 복제 정보와 복제 로그를 가지고 있을 필요가 없다. 반면, 레플리카는 마스터와 슬레이브 노드의 정보를 모두 가지고 있다. 
 
-    *   :ref:`rebuild-slave`\의 경우 사용자가 직접 db_ha_apply_info 정보를 변경해야 한다. 
+    *   :ref:`rebuild-slave`\의 경우 사용자가 직접 _db_ha_apply_info 정보를 변경해야 한다. 
     
     *   :ref:`build-slave`\의 경우 슬레이브를 새로 구축하므로 자동 생성되는 정보를 그대로 사용하면 된다.
     
-    *   :ref:`build-another-slave`\, :ref:`add-replica`\의 경우 기존의 슬레이브로부터 백업한 데이터베이스를 사용하는데, 기존의 슬레이브에는 마스터의 db_ha_apply_info 정보가 포함되어 있으므로 그대로 사용할 수 있다.
+    *   :ref:`build-another-slave`\, :ref:`add-replica`\의 경우 기존의 슬레이브로부터 백업한 데이터베이스를 사용하는데, 기존의 슬레이브에는 마스터의 _db_ha_apply_info 정보가 포함되어 있으므로 그대로 사용할 수 있다.
        
     *   :ref:`remove-slave`\의 경우 제거된 슬레이브에 대한 복제 정보를 사용자가 직접 삭제해야 한다. 하지만 이 정보가 남아 있다 하더라도 문제가 되진 않는다. 
 
@@ -2585,7 +2695,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
         
         .. note::
         
-            --sleep-msecs는 1MB의 백업 파일이 쓰여질 때마다 쉬는 시간을 설정하는 옵션으로, 단위는 밀리초이다. 백업할 장비의 디스크 I/O 부하가 심한 경우 이 값을 설정하는 것을 고려하되, 이 값이 클수록 백업 시간이 길어지므로 가급적이면 부하가 적은 시간대에 백업하고 이 값은 작게 설정할 것을 권장한다.
+            **\-\-sleep-msecs**\는 1MB의 백업 파일이 쓰여질 때마다 쉬는 시간을 설정하는 옵션으로, 단위는 밀리초이다. 백업할 장비의 디스크 I/O 부하가 심한 경우 이 값을 설정하는 것을 고려하되, 이 값이 클수록 백업 시간이 길어지므로 가급적이면 부하가 적은 시간대에 백업하고 이 값은 작게 설정할 것을 권장한다.
             
             *nodeB*\의 부하가 전혀 없는 상태라면 이 옵션을 생략해도 무방하다.
             
@@ -2595,7 +2705,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
     
         ::
     
-            [nodeB]$ 
+            [nodeB]$ cd $CUBRID_DATABASES/testdb/log
             [nodeB]$ scp -l 131072 testdb_bk* cubrid_usr@nodeC:$CUBRID_DATABASES/testdb/log
         
         .. note::
@@ -2687,7 +2797,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             
             필요로 하는 복제 로그가 이미 삭제되었는지 여부는 testdb_lginf 파일을 사용하여 확인할 수 있다.
 
-            1.  슬레이브에서 백업한 데이터베이스를 복원한 경우라면, 복원된 데이터베이스의 db_ha_apply_info 카탈로그 테이블에서 required_lsa_pageid를 통해 마스터 데이터베이스의 어느 페이지부터 필요한지 확인할 수 있다.
+            1.  슬레이브에서 백업한 데이터베이스를 복원한 경우라면, 복원된 데이터베이스의 _db_ha_apply_info 카탈로그 테이블에서 required_lsa_pageid를 통해 마스터 데이터베이스의 어느 페이지부터 필요한지 확인할 수 있다.
 
             2.  마스터에서 $CUBRID_DATABASES/testdb/log 디렉터리에 있는 testdb_lginf 파일의 내용을 가장 아래에서부터 확인해 나간다.
             
@@ -2703,7 +2813,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
 
             testdb_lginf 파일의 내용이 위와 같이 기록되어 있을 때, "Time: 03/16/15 17:54:40.892 - ARCHIVE: 0 /home/cubrid/DB/databases/testdb/log/testdb_lgar000 0 1277"의 뒤 두 개의 숫자는 해당 파일이 저장하고 있는 페이지의 시작 ID와 끝 ID이다.
             
-            예를 들어, db_ha_apply_info를 통해 확인한 백업 당시 페이지 ID가 2300번이라면 "testdb_lgar001 1278 2555"을 통해 1278번과 2555번 사이의 페이지 ID임을 확인할 수 있으므로, 복원 시 마스터의 보관 로그 (또는 슬레이브의 복제된 보관 로그)는 1번부터 필요하다는 것을 알 수 있다.
+            예를 들어, _db_ha_apply_info를 통해 확인한 백업 당시 페이지 ID가 2300번이라면 "testdb_lgar001 1278 2555"을 통해 1278번과 2555번 사이의 페이지 ID임을 확인할 수 있으므로, 복원 시 마스터의 보관 로그 (또는 슬레이브의 복제된 보관 로그)는 1번부터 필요하다는 것을 알 수 있다.
 
 5.  *nodeC*\에서 HA 서비스를 구동
 
@@ -2832,12 +2942,12 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             
     *   *nodeA*, *nodeB*\에서 *nodeC*\에 대한 복제 정보 제거
     
-        csql 실행 시 --sysadm 옵션과 --write-on-standby 옵션을 주어야 슬레이브에서 DELETE 연산을 수행할 수 있다.
+        csql 실행 시 **\-\-sysadm** 옵션과 **\-\-write-on-standby** 옵션을 주어야 슬레이브에서 DELETE 연산을 수행할 수 있다.
         ::
         
             $ csql -u dba --sysadm --write-on-standby testdb@localhost
             
-            sysadm> DELETE FROM db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeC';
+            sysadm> DELETE FROM _db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeC';
         
         copied_log_path는 복제 로그 파일이 저장된 경로를 나타낸다.
         
@@ -2990,7 +3100,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
     
         ::
     
-            [nodeB]$ 
+            [nodeB]$ cd $CUBRID_DATABASES/testdb/log
             [nodeB]$ scp -l 131072 testdb_bk* cubrid_usr@nodeC:$CUBRID_DATABASES/testdb/log
             
             .. note::
@@ -3162,13 +3272,14 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             [nodeB]$ rm testdb/log/*
             
             [nodeB]$ rm -rf testdb_nodeA
+            [nodeB]$ rm $CUBRID/var/APPLYLOGDB/testdb
             
     *   *nodeA*\, *nodeC*\에서 *nodeB*\의 로그 복제 정지
     
         ::
         
-            [nodeA]$ cubrid heartbeat repl stop testdb nodeB
-            [nodeC]$ cubrid heartbeat repl stop testdb nodeB
+            [nodeA]$ cubrid heartbeat repl stop nodeB
+            [nodeC]$ cubrid heartbeat repl stop nodeB
     
     *   *nodeA*\, *nodeC*\에서 *nodeB*\에 대한 복제 로그 삭제
     
@@ -3177,26 +3288,17 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             [nodeA]$ rm -rf $CUBRID_DATABASES/testdb_nodeB
             [nodeC]$ rm -rf $CUBRID_DATABASES/testdb_nodeB
 
-2.  HA 카탈로그 테이블 삭제, *nodeA*\의 백업 및 *nodeB*\의 복구, HA 카탈로그 테이블에 정보 추가
+2.  *nodeA*\의 백업 및 *nodeB*\의 복구, HA 카탈로그 테이블에 정보 추가
 
-    *   HA 카탈로그 테이블인 db_ha_apply_info의 레코드 삭제
-    
-        *nodeB*\의 db_ha_apply_info 정보를 모두 삭제하여 초기화한다.
-        
-        ::
-        
-            [nodeB]$ csql --sysadm -u dba -S testdb 
-            csql> DELETE FROM db_ha_apply_info;
-            
-        *nodeA*, *nodeC*\에서 *nodeB*\에 대한 db_ha_apply_info 정보를 삭제한다.
+        *nodeA*, *nodeC*\에서 *nodeB*\에 대한 _db_ha_apply_info 정보를 삭제한다.
         
         ::
         
             [nodeA]$ csql --sysadm -u dba testdb@localhost 
-            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path-='/home/cubrid/DB/databases/testdb_nodeB'
+            csql> DELETE FROM _db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeB';
 
             [nodeC]$ csql --sysadm --write-on-standby -u dba testdb@localhost 
-            csql> DELETE FROM db_ha_apply_info WHERE copied_log_path-='/home/cubrid/DB/databases/testdb_nodeB'
+            csql> DELETE FROM _db_ha_apply_info WHERE copied_log_path='/home/cubrid/DB/databases/testdb_nodeB';
 
     *   *nodeA* 백업
 
@@ -3229,9 +3331,9 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             [nodeB]$ cubrid restoredb -B $CUBRID_DATABASES/testdb/log testdb
 
 
-    *   *nodeB*\의 db_ha_apply_info에 *nodeA*\에 대한 복제 정보를 추가
+    *   *nodeB*\의 _db_ha_apply_info에 *nodeA*\에 대한 복제 정보를 추가
         
-        *nodeA*\에 있는 백업 결과를 저장한 output.txt 파일에서 **db_ha_apply_info**\를 업데이트할 정보를 얻는다. output.txt는 "cubrid backupdb" 명령을 수행한 디렉터리에 저장된다.
+        *nodeA*\에 있는 백업 결과를 저장한 output.txt 파일에서 **_db_ha_apply_info**\를 업데이트할 정보를 얻는다. output.txt는 "cubrid backupdb" 명령을 수행한 디렉터리에 저장된다.
         
         ::
             
@@ -3273,10 +3375,10 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             
             repl_log_path=$repl_log_home_abs/${db_name}_${master_host}
 
-            local_db_creation=`awk 'BEGIN { print strftime("%m/%d/%Y %H:%M:%S", $db_creation) }'`
+            local_db_creation=`awk 'BEGIN { print strftime("%m/%d/%Y %H:%M:%S", '$db_creation') }'`
                 csql_cmd="\
                 INSERT INTO \
-                        db_ha_apply_info \
+                        _db_ha_apply_info \
                 VALUES \
                 ( \
                         '$db_name', \
@@ -3315,7 +3417,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
             [nodeB]$ csql -u dba -S testdb
             
             csql> ;line on
-            csql> SELECT * FROM db_ha_apply_info;
+            csql> SELECT * FROM _db_ha_apply_info;
             
 3.  *nodeA*\의 활성 로그(active log)를 *nodeB*\에 복사
 
@@ -3404,11 +3506,11 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
 복제 불일치 감지 방법
 ---------------------
 
-마스터 노드와 슬레이브 노드의 데이터가 일치하지 않는 복제 노드 간 데이터 불일치 현상은 다음과 같은 과정을 통해 어느 정도 감지할 수 있다. 또한 :ref:`cubrid-checksumdb` 유틸리티를 사용해 복제 불일치를 감지할 수도 있다.  그러나 마스터 노드와 슬레이브 노드의 데이터를 서로 직접 비교해보는 방법보다 더 정확한 확인 방법은 없다. 복제 불일치 상태라는 판단이 될 경우, 마스터 노드의 데이터베이스를 슬레이브 노드에 새로 구축해야 한다.( :ref:`rebuilding-replication` 참고).
+마스터 노드와 슬레이브 노드(또는 레플리카 노드)의 데이터가 일치하지 않는 복제 노드 간 데이터 불일치 현상은 다음과 같은 과정을 통해 어느 정도 감지할 수 있다. 또한 :ref:`cubrid-checksumdb` 유틸리티를 사용해 복제 불일치를 감지할 수도 있다.  그러나 마스터 노드와 슬레이브 노드(또는 레플리카 노드)의 데이터를 서로 직접 비교해보는 방법보다 더 정확한 확인 방법은 없다. 복제 불일치 상태라는 판단이 될 경우, 마스터 노드의 데이터베이스를 슬레이브 노드(또는 레플리카 노드)에 새로 구축해야 한다.( :ref:`rebuilding-replication` 참고).
 
 *   **cubrid statdump** 명령을 수행하여 **Time_ha_replication_delay** 시간을 확인한다. 이 값이 클 수록 복제 지연 정도가 클 수 있다는 것을 의미하며, 지연된 시간만큼 복제 불일치가 존재할 가능성이 커진다.
 
-*   슬레이브 노드에서 **cubrid applyinfo** 를 실행하여 "Fail count" 값을 확인한다. "Fail count"가 0이면, 복제에 실패한 트랜잭션이 없다고 볼 수 있다(:ref:`cubrid-applyinfo` 참고). ::
+*   슬레이브 노드(또는 레플리카 노드)에서 **cubrid applyinfo** 를 실행하여 "Fail count" 값을 확인한다. "Fail count"가 0이면, 복제에 실패한 트랜잭션이 없다고 볼 수 있다(:ref:`cubrid-applyinfo` 참고). ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
          
@@ -3422,7 +3524,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
         Fail count                     : 0
         ...
 
-*   슬레이브 노드에서 복제 로그의 복사 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Copied Active Info."의 "Append LSA" 값과 "Active Info."의 "Append LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브 노드에 복사되는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
+*   슬레이브 노드(또는 레플리카 노드)에서 복제 로그의 복사 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Copied Active Info."의 "Append LSA" 값과 "Active Info."의 "Append LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브 노드(또는 레플리카 노드)에 복사되는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
      
@@ -3431,6 +3533,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
          *** Copied Active Info. ***
         DB name                        : testdb
         DB creation time               : 11:28:00.000 AM 12/17/2010  (1292552880)
+        Vol creation time              : 11:28:10.000 AM 12/17/2010  (1292552890)
         EOF LSA                        : 1913 | 2976
         Append LSA                     : 1913 | 2976
         HA server state                : active
@@ -3438,13 +3541,14 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
          ***  Active Info. ***
         DB name                        : testdb
         DB creation time               : 11:28:00.000 AM 12/17/2010  (1292552880)
+        Vol creation time              : 11:28:10.000 AM 12/17/2010  (1292552890)
         EOF LSA                        : 1913 | 2976
         Append LSA                     : 1913 | 2976
         HA server state                : active
 
 *   복제 로그 복사 지연이 의심되는 경우 네트워크 회선 속도가 느려졌는지, 디스크 여유 공간이 충분한지, 디스크 I/O에는 이상이 없는지 등을 확인한다.
 
-*   슬레이브 노드에서 복제 로그의 반영 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Applied Info." 의 "Committed page" 값과 "Copied Active Info."의 "EOF LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브 데이터베이스를 반영하는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
+*   슬레이브 노드(또는 레플리카 노드)에서 복제 로그의 반영 지연 여부를 확인하기 위해, **cubrid applyinfo** 를 실행하여 "Applied Info." 의 "Committed page" 값과 "Copied Active Info."의 "EOF LSA" 값을 비교한다. 이 값이 큰 차이를 보인다면, 복제 로그가 슬레이브(또는 레플리카) 데이터베이스에 반영되는데 지연이 있다는 의미이다(:ref:`cubrid-applyinfo` 참고). ::
 
         [nodeB]$ cubrid applyinfo -L /home/cubrid/DB/testdb_nodeA -r nodeA -a testdb
      
@@ -3460,16 +3564,17 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
          *** Copied Active Info. ***
         DB name                        : testdb
         DB creation time               : 11:28:00.000 AM 12/17/2010  (1292552880)
+        Vol creation time              : 11:28:10.000 AM 12/17/2010  (1292552890)
         EOF LSA                        : 1913 | 2976
         Append LSA                     : 1913 | 2976
         HA server state                : active
         ...
 
-*   복제 로그 반영 지연이 심한 경우 수행 시간이 긴 트랜잭션을 의심해 볼 수 있는데, 해당 트랜잭션의 수행이 정상이라면 복제 지연 역시 정상적으로 발생할 수 있다. 정상 여부를 판단하기 위해 **cubrid applyinfo** 를 지속적으로 수행하면서 applylogdb가 복제 로그를 슬레이브 노드에 계속 반영하고 있는지 확인해야 한다.
+*   복제 로그 반영 지연이 심한 경우 수행 시간이 긴 트랜잭션을 의심해 볼 수 있는데, 해당 트랜잭션의 수행이 정상이라면 복제 지연 역시 정상적으로 발생할 수 있다. 정상 여부를 판단하기 위해 **cubrid applyinfo** 를 지속적으로 수행하면서 applylogdb가 복제 로그를 슬레이브 노드(또는 레플리카 노드)에 계속 반영하고 있는지 확인해야 한다.
 
 *   copylogdb, applylogdb 프로세스가 생성한 오류 로그의 메시지를 확인한다(오류 메시지 참고).
 
-*   마스터 데이터베이스 테이블의 레코드 개수, 슬레이브 데이터베이스 테이블의 레코드 개수를 비교한다.
+*   마스터 데이터베이스 테이블의 레코드 개수, 슬레이브(또는 레플리카) 데이터베이스 테이블의 레코드 개수를 비교한다.
 
 
 
@@ -3478,7 +3583,7 @@ HA 서비스 운영 중 슬레이브를 새로 추가하려면 기존의 마스�
 checksumdb
 ----------
 
-**checksumdb** 를 통해 간단하게 복제 무결성을 확인할 수 있다. 기본적으로 이 유틸리티는 마스터 노드의 각 테이블을 청크(chunk)로 분할한 후 CRC32 값을 계산한다. 계산 값이 아닌 계산 방법이 CUBRID HA를 통해 복제된다. 결과적으로 마스터 노드와 슬레이브 노드에서 계산된 CRC32 값을 비교함으로써 **checksumdb** 는 복제 무결성 여부를 확인할 수 있다. **checksumdb** 는 성능 저하를 최소화하도록 설계되었으나 마스터의 성능에 영향을 줄 수 있어 사용시 유의해야 한다. ::
+**checksumdb** 를 통해 간단하게 복제 무결성을 확인할 수 있다. 기본적으로 이 유틸리티는 마스터 노드의 각 테이블을 청크(chunk)로 분할한 후 CRC32 값을 계산한다. 계산 값이 아닌 계산 방법이 CUBRID HA를 통해 복제된다. 결과적으로 마스터 노드와 슬레이브 노드(또는 레플리카 노드)에서 계산된 CRC32 값을 비교함으로써 **checksumdb** 는 복제 무결성 여부를 확인할 수 있다. **checksumdb** 는 성능 저하를 최소화하도록 설계되었으나 마스터의 성능에 영향을 줄 수 있어 사용시 유의해야 한다. ::
 
         cubrid checksumdb [options] <database-name>@<hostname>
 
@@ -3508,7 +3613,7 @@ checksumdb
 
 .. option:: -n, --table-name=STRING
 
-     체크섬 결과를 저장할 테이블명을 지정한다. (기본값: db_ha_checksum)
+     체크섬 결과를 저장할 테이블명을 지정한다. 테이블명 입력 시 "소유자명.테이블명" 형식을 사용해야 하며, 현재는 소유자명으로 dba만 지정할 수 있다. (기본값: dba.db_ha_checksum)
 
 .. option:: -r, --report-only
 
@@ -3524,7 +3629,7 @@ checksumdb
 
 .. option:: --cont-on-error
 
-     이 옵션이 없으면 에러 발생시 checksumdb가 중지된다.
+     이 옵션이 없으면 오류 발생시 checksumdb가 중지된다.
 
 다음은 checksumdb를 실행하는 예제이다. :: 
 
@@ -3881,7 +3986,7 @@ CAS 프로세스의 오류 메시지는  **$CUBRID/log/broker/error_log**/\ *<br
 |       | replication log. class: ?, key: ?, internal          |              |                                                     | HA 복제 재구성을 실행한다.                                           |
 |       | error: ?.                                            |              |                                                     |                                                                      |
 +-------+------------------------------------------------------+--------------+-----------------------------------------------------+----------------------------------------------------------------------+
-| -1040 | HA generic: ?.                                       | notification | 아카이브 로그의 마지막 레코드를 반영하거나 복제     | 이 에러 메시지는 일반적인 정보를 위해                                |
+| -1040 | HA generic: ?.                                       | notification | 아카이브 로그의 마지막 레코드를 반영하거나 복제     | 이 오류 메시지는 일반적인 정보를 위해                                |
 |       |                                                      |              | 반영 상태 변경                                      | 기록되는 로그로 조치 사항은 없다.                                    |
 +-------+------------------------------------------------------+--------------+-----------------------------------------------------+----------------------------------------------------------------------+
 
@@ -3903,6 +4008,103 @@ CAS 프로세스의 오류 메시지는  **$CUBRID/log/broker/error_log**/\ *<br
 |       |                                                      |              | 복제 로그 반영 프로세스 종료                        |                                                                      |
 +-------+------------------------------------------------------+--------------+-----------------------------------------------------+----------------------------------------------------------------------+
 
+
+.. _failover-messages:
+
+Fail-over 원인 분석
+===================
+
+**Fail-over, Fail-back 메시지**
+
+HA 환경에서 fail-over와 fail-back과 관련된 메시지는 각각 [Failover], [Failback] 접두어를 포함한다. 이 메시지는 fail-over, fail-back이 결정될 때 남겨지는 진단 로그 메시지와, fail-over 및 fail-back이 취소되거나, 성공적으로 완료될 때 기록되는 결과 로그 메시지로 나눌 수 있다.
+
+진단 로그 메시지는 fail-over 또는 fail-back이 시작된 원인을 기록하며, [Diagnosis] 접두어를 포함하고, 결과 로그 메시지는 fail-over, fail-back이 취소된 경우 [Cancelled] 접두어와 함께 원인을 기록하며, fail-over, fail-back이 성공적으로 완료된 경우 [Success] 접두어와 함께 결과를 기록한다.
+
+Fail-over, Fail-back 메시지를 통해 Fail-over의 원인을 분석할 수 있다. 아래는 fail-over가 발생하는 상황과 그에 따라 기록될 수 있는 fail-over, fail-back 메시지의 목록이다. Fail-over 메시지는 슬레이브 노드에 기록되고, Fail-back 메시지는 마스터 노드에 기록된다.
+
+마스터 노드의 고립
+-------------------------
+
+**마스터 노드의 고립**
+
+마스터 노드가 모든 슬레이브 노드로 부터 heartbeat 메시지를 수신하지 못하여 네트워크 고립이 되었다고 판단될 때, 마스터 노드의 fail-back과 슬레이브 노드의 fail-over가 결정된다. **ha_ping_hosts** 에 등록된 호스트를 통해 실제로 마스터 노드의 네트워크가 파티션 되었는지를 확인하고, 실제 마스터 노드의 네트워크 파티션이 확인된 경우에만 fail-back이 성공적으로 완료된다.
+
+슬레이브 노드 또한 **ha_ping_hosts** 를 통해 ping 체크를 한 결과, 현재 네트워크 파티션이 없는 경우에만 fail-over가 성공적으로 완료된다. 아래는 마스터 노드가 고립된 상황에서 로깅될 수 있는 fail-over, fail-back 메시지의 목록이다.
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------+
+| 진단 메시지                                                                                                                                                     | 설명                                                                                               |
++=================================================================================================================================================================+====================================================================================================+
+| [Failback] [Diagnosis] The master node has failed to receive heartbeat messages from all other slave nodes, resulting in a network partition.                   | 마스터 노드가 모든 슬레이브 노드로 부터 heartbeat 메시지를 수신하지 못하여 fail-back이 결정됨      |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------+
+| [Failover] [Diagnosis] The current node has failed to receive heartbeat messages from the master node (master_node_name).                                       | 마스터 노드로 부터 heartbeat 메시지를 수신하지 못하여 슬레이브 노드의 fail-over가 결정됨           |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| 결과 메시지                                                                                                                                                     | 설명                                                                                                                                       |
++=================================================================================================================================================================+============================================================================================================================================+
+| [Failback] [Cancelled] Ping check succeeded for the hosts registered in ha_ping_hosts, determining that it is not a network partition.                          | 마스터 노드가 ping 체크에 성공하여 네트워크 파티션이 없다고 판단하고, fail-back이 취소됨                                                   |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failback] [Cancelled] No hosts are registered in ha_ping_hosts, or all registered hosts are invalid, making it impossible to determine the network partition.  | ha_ping_hosts에 등록된 호스트가 없거나 유효하지 않아서, 마스터 노드의 네트워크 파티션 여부를 판단하는 것이 불가능하기에 fail-back이 취소됨 |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failback] [Success] Current node has been successfully demoted to slave.                                                                                       | Fail-back이 성공적으로 완료되어, 마스터 노드가 슬레이브 노드로 변경됨                                                                      |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Cancelled] Ping check has been failed to all hosts registered in ha_ping_hosts, indicating a network partition.                                     | 슬레이브 노드가 ping check 실패로 네트워크 파티션이 있다고 판단하고, 마스터 역할을 수행할 수 없기 때문에 fail-over가 취소됨                |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Success] Current node has been successfully promoted to master.                                                                                     | Fail-over가 성공적으로 완료되어, 슬레이브 노드가 마스터 노드로 변경됨                                                                      |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+마스터 노드의 기능 상실
+-------------------------
+
+**마스터 노드의 기능 상실**
+
+마스터 노드가 **cub_server** 재구동의 실패나, 디스크 이상 등의 이유로 인해 마스터 노드로서의 기능을 상실할 때, 마스터 노드의 fail-back과 슬레이브 노드의 fail-over가 결정된다. 디스크 이상이라고 판단된 경우, 서버 오류 로그에 "Disk failure has been occurred: prev_eof_lsa(4096, 128), eof_lsa(4096, 128)"와 같은 오류 메시지를 남긴다.
+
+슬레이브 노드는 **ha_ping_hosts** 를 통해 ping 체크를 한 결과, 현재 네트워크 파티션이 없는 경우에만 fail-over가 성공적으로 완료된다. 아래는 마스터 노드의 기능 상실 상황에서 로깅될 수 있는 fail-over, fail-back 메시지의 목록이다.
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+
+| 진단 메시지                                                                                                                                                     | 설명                                                                                                                                    |
++=================================================================================================================================================================+=========================================================================================================================================+
+| [Failback] [Diagnosis] The master node failed to restart the server process.                                                                                    | 마스터 노드가 비정상 종료된 cub_server 프로세스를 재구동하는데 실패하여 fail-back이 결졍됨                                              |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+
+| [Failback] [Diagnosis] The master node has lost its role due to server process problem, such as disk failure.                                                   | 마스터 노드가 disk 이상 등의 사유로 마스터 노드로서의 기능을 상실하여 fail-back이 결정됨                                                |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+
+| [Failover] [Diagnosis] The master node (master_node_name) has lost its role due to server process problem, such as disk failure.                                | 슬레이브 노드는 마스터 노드가 disk 이상 등의 사유로 마스터 노드로서의 기능을 상실하였다고 판단하고, 슬레이브 노드의 fail-over를 결정함  |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+| 결과 메시지                                                                                                                                                     | 설명                                                                                                         |
++=================================================================================================================================================================+==============================================================================================================+
+| [Failback] [Success] Current node has been successfully demoted to slave.                                                                                       | Fail-back이 성공적으로 완료되어, 마스터 노드가 슬레이브 노드로 변경됨                                        |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+| [Failover] [Cancelled] Ping check has been failed to all hosts registered in ha_ping_hosts, indicating a network partition.                                     | 슬레이브 노드가 ping check에 실패하여 네트워크 파티션이 있다고 판단하고, fail-over가 취소됨                  |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+| [Failover] [Success] Current node has been successfully promoted to master.                                                                                     | Fail-over가 성공적으로 완료되어, 슬레이브 노드가 마스터 노드로 변경됨                                        |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+
+복수의 마스터 노드 탐지 (split-brain)
+---------------------------------------
+
+**복수의 마스터 노드 탐지 (split-brain)**
+
+HA 환경에서 복제 구성된 두 개 이상의 서버 모두 마스터 역할을 맡게 되는 비정상적인 상황이 발생하는 것을 split-brain 라고 한다. 이러한 상황에서 마스터 노드 역할을 수행하기 위한 하나의 노드를 제외한 다른 마스터 노드는 split-brain 상황을 해소하기 위해 슬레이브 노드로 fail-back 된다. Split-brain 상황에 남을 수 있는 메시지는 아래와 같다.
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+| 진단 메시지                                                                                                                                                     | 설명                                                                                                         |
++=================================================================================================================================================================+==============================================================================================================+
+| [Failback] [Diagnosis] Multiple master nodes (master_node_name1, master_node_name2) are detected.                                                               | 복수의 마스터 노드가 감지되어서 split-brain을 해소하기 위해 마스터 노드의 fail-back이 결정됨                 |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+| 결과 메시지                                                                                                                                                     | 설명                                                                                                         |
++=================================================================================================================================================================+==============================================================================================================+
+| [Failback] [Success]  Current node has been successfully demoted to slave.                                                                                      | Fail-back이 성공적으로 완료되어, 마스터 노드가 슬레이브 노드로 변경됨                                        |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------+
+
+
+
 .. _rebuilding-replication:
 
 복제 재구축 스크립트
@@ -3914,13 +4116,13 @@ CUBRID HA 환경에서의 복제 재구축은 다중 슬레이브 노드의 다�
 
 1.  마스터 데이터베이스 백업 
 2.  슬레이브에서 데이터베이스 복구
-3.  백업 시점을 슬레이브의 HA 메타 테이블(db_ha_apply_info)에 저장
+3.  백업 시점을 슬레이브의 HA 메타 테이블(_db_ha_apply_info)에 저장
 4.  슬레이브에서 HA 서비스 구동 (cubrid hb start)
 
 복제 재구축을 위해서는 마스터 노드, 슬레이브 노드, 레플리카 노드에서 아래 환경이 동일해야 한다.
 
 *   CUBRID 버전
-*   환경 변수(**$CUBRID**, **$CUBRID_DATABASES**, **$LD_LIBRARY_PATH**, **$PATH**)
+*   환경 변수(**$CUBRID**, **$CUBRID_DATABASES**, **$LD_LIBRARY_PATH**, **$PATH**, **$CUBRID_TMP**, **$TMPDIR**)
 *   데이터베이스 볼륨, 로그 및 복제 로그 경로
 *   리눅스 서버의 사용자 아이디 및 비밀번호
 *   **ha_mode**, **ha_copy_sync_mode**, **ha_ping_hosts** 를 제외한 모든 HA 관련 파라미터
@@ -3961,6 +4163,8 @@ ha_make_slavedb.sh 스크립트
 
 *   **scp_option** : 복제 원본 노드의 백업 볼륨을 복제 대상 노드로 복사해 오기 위한 **scp** 옵션을 설정할 수 있는 항목으로 기본값은 복제 원본 노드의 네트워크 부하를 주지 않기 위해 **-l 131072** 옵션을 사용한다(전송 속도를 16M로 제한).
 
+*   **ssh_port** : 스크립트에서 사용되는 ssh와 scp를 위한 **port** 번호를 설정할 수 있는 항목으로 기본값은 **22** 로 설정된다. 이 옵션은 스크립트에서 이용되는 **expect** 에도 동일하게 적용된다.
+
 스크립트의 설정이 끝나면 **ha_make_slavedb.sh** 스크립트를 복제 대상 노드에서 수행한다. 스크립트 수행 시 여러 단계에 의해 복제 재구축이 이루어지며 각 단계의 진행을 위해서 사용자가 적절한 값을 입력해야 한다. 다음은 입력할 수 있는 값에 대한 설명이다.
 
 *   **yes** : 계속 진행한다.
@@ -3987,4 +4191,4 @@ ha_make_slavedb.sh 스크립트
 
     *   **복제 재구축 스크립트 수행 중 오류 발생**
     
-        복제 재구축 스크립트는 수행 도중 오류가 발생해도 이전 상황으로 자동 롤백되지 않는다. 이는 복제 재구축 스크립트를 수행하기 전에도 복제 대상 노드가 이미 정상적으로 서비스하기 힘든 상황이기 때문이다. 복제 재구축 스크립트를 수행하기 전 상황으로 돌아가려면, 복제 재구축 스크립트를 수행하기 전에 복제 원본 노드와 복제 대상 노드의 내부 카탈로그인 **db_ha_apply_info** 정보와 기존의 복제 로그를 백업해야 한다.
+        복제 재구축 스크립트는 수행 도중 오류가 발생해도 이전 상황으로 자동 롤백되지 않는다. 이는 복제 재구축 스크립트를 수행하기 전에도 복제 대상 노드가 이미 정상적으로 서비스하기 힘든 상황이기 때문이다. 복제 재구축 스크립트를 수행하기 전 상황으로 돌아가려면, 복제 재구축 스크립트를 수행하기 전에 복제 원본 노드와 복제 대상 노드의 내부 카탈로그인 **_db_ha_apply_info** 정보와 기존의 복제 로그를 백업해야 한다.

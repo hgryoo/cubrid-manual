@@ -298,7 +298,7 @@ In the following :ref:`Date/Time Format 2 <datetime-format2>` table, the month/d
 +------------------+-------------------------------------------------------------------------------------------------------------------+
 | %f               | Microseconds, three-digit number (000, ... , 999)                                                                 |
 +------------------+-------------------------------------------------------------------------------------------------------------------+
-| %H               | Hour, 24-hour based, number with at least two--digit (00, ... , 23, ... , 100, ... )                              |
+| %H               | Hour, 24-hour based, number with at least two-digit (00, ... , 23, ... , 100, ... )                               |
 +------------------+-------------------------------------------------------------------------------------------------------------------+
 | %h               | Hour, 12-hour based two-digit number (01, ... , 12)                                                               |
 +------------------+-------------------------------------------------------------------------------------------------------------------+
@@ -644,6 +644,7 @@ TO_CHAR(date_time)
 ==================
 
 .. function:: TO_CHAR ( date_time [, format[, date_lang_string_literal ]] )
+   :noindex:
 
     The **TO_CHAR** (date_time) function converts the value of date/time types (**TIME**, **DATE**, **TIMESTAMP**, **DATETIME**) to a string depending on the table :ref:`Date/Time Format 1 <datetime-format1>` and then returns the value. The type of the return value is **VARCHAR**.
 

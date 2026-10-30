@@ -1,5 +1,5 @@
 
-:meta-keywords: cubrid administrator, cubrid dba, cubrid tools, cubrid utilities, cubrid services, cubrid processes, cubrid config, cubrid troubleshoot
+:meta-keywords: cubrid administrator, cubrid dba, cubrid tools, cubrid utilities, cubrid services, cubrid processes, cubrid config, cubrid troubleshoot, ddl audit
 :meta-description: This manual chapter covers everything needed by database administrators how to use cubrid utilities, how to monitor cubrid systems, how to troubleshoot and how to fix problems.
 
 *****************
@@ -8,9 +8,9 @@ CUBRID Management
 
 This chapter describes how the database administrators (**DBA**) operates the CUBRID system.
 
-*   It includes instructions on how to use the **cubrid** utility, which starts and stops various processes of the CUBRID server, the broker and manager server. See :doc:`/admin/control`.
+*   It includes instructions on how to use the **cubrid** utility, which starts and stops various processes of the CUBRID server, the broker, procedure language server, and manager server. See :doc:`/admin/control`.
 
-*   It includes instructions on the following: database management tasks (creating and deleting databases, adding volume, etc.), migration tasks (moving database to a different location or making changes so that it fits the system's version), and making back-ups and rollbacks of the database in case of failures. See :doc:`/admin/admin_utils`.
+*   It includes instructions on the following: database management tasks (creating and deleting databases, adding volume, etc.), migration tasks (moving database to a different location or making changes so that it fits the system's version), and making backups and rollbacks of the database in case of failures. See :doc:`/admin/admin_utils`.
 
 *   It includes instructions on the system configuration. See :doc:`/admin/config`.
 
@@ -34,6 +34,9 @@ The service management utilities are as follows:
 
     *   :ref:`cubrid broker <broker>`
 
+*   Gateway utility : Operates and manages the gateway process and application server (CAS) process.
+    *   :ref:`cubrid gateway <gateway>`
+	
 *   Manager utility : Operates and manages the manager server process.
 
     *   :ref:`cubrid manager <cubrid-manager-server>`
@@ -41,6 +44,10 @@ The service management utilities are as follows:
 *   HA utility : Operates and manages the HA-related processes.
 
     *   :ref:`cubrid heartbeat <cubrid-heartbeat>`
+
+*   PL utility : Operates and manages the procedure language (PL) server.
+
+    *   :ref:`cubrid pl <cubrid-pl-server>`
 
 See :ref:`control-cubrid-processes` for details.
 
@@ -123,4 +130,7 @@ See :ref:`cubrid-utilities` for details.
     admin_utils.rst
     config.rst
     systemtap.rst
+    scripts.rst
     troubleshoot.rst
+    ddl_audit.rst
+    error_log.rst

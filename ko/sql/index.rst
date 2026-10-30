@@ -2,6 +2,8 @@
 :meta-keywords: cubrid sql, database sql, cubrid statements
 :meta-description: This chapter describes SQL syntax such as data types, functions and operators, data retrieval or table manipulation. You can also find SQL statements used for index, trigger, partition, serial and changing user information.
 
+.. _cubrid_sql:
+
 **********
 CUBRID SQL
 **********
@@ -27,19 +29,22 @@ CUBRID SQL
 
 *   질의 최적화: 인덱스와 힌트, 인덱스 힌트 구문을 이용한 질의 최적화에 대해 설명한다.
 
+*   병렬 질의 처리: 대량 데이터 처리를 위한 병렬 실행 기능에 대해 설명한다.
+
 *   분할: 하나의 테이블을 여러 독립적인 논리적 단위로 분할하는 방법을 설명한다.
 
 *   트리거(trigger): 특정 질의 수행 시 특정 기능이 같이 수행되도록 하는 트리거의 생성, 변경, 삭제 방법을 설명한다.
 
-*   Java 저장 함수/프로시저: Java 메서드를 별도로 생성하여 질의문 내에서 호출할 수 있는 방법을 설명한다.
-
-*   메서드(method): CUBRID 데이터베이스 시스템의 내장 함수인 메서드에 대해 설명한다.
 
 *   클래스 상속: 부모와 자식 테이블(클래스) 사이에 속성을 상속하는 방법을 설명한다.
 
 *   데이터베이스 관리: 사용자 관리, SET, SHOW 문에 대해 설명한다.
 
+*   사용자 스키마: 사용자와 함께 생성되는 데이터베이스의 논리적인 객체 모음을 설명한다.
+
 *   시스템 카탈로그: CUBRID 데이터베이스의 내부 정보인 시스템 카탈로그에 대해 설명한다.
+
+*   Information Schema: 데이터베이스 메타데이터를 이식성 있게 노출하는 SQL 표준 INFORMATION_SCHEMA 뷰에 대해 설명한다.
 
 .. toctree::
     :maxdepth: 3
@@ -50,13 +55,15 @@ CUBRID SQL
     function/index.rst
     query/index.rst
     tuning_index.rst
+    parallel_index.rst
     partition_index.rst
     i18n_index.rst
     transaction_index.rst
     trigger.rst
-    jsp.rst
-    method.rst
+    dblink.rst
     oodb.rst
     db_admin.rst
+    user_schema.rst
     catalog.rst
-    
+    information_schema.rst
+

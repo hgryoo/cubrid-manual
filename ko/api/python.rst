@@ -6,7 +6,7 @@
 Python 드라이버
 ***************
 
-**CUBRIDdb** 는 Python Database API 2.0을 준수하며 CUBRID 데이터베이를 지원하는 Python 확장 패키지이다. CUBRID Python API는 Python Database API가 제공하는 기본 기능 외에도, CUBRID 데이터베이스 엔진에서 제공하는 기능을 **_cubrid** 모듈에서 제공한다.
+**CUBRIDdb** 는 Python Database API 2.0을 준수하며 CUBRID 데이터베이스를 지원하는 Python 확장 패키지이다. CUBRID Python API는 Python Database API가 제공하는 기본 기능 외에도, CUBRID 데이터베이스 엔진에서 제공하는 기능을 **_cubrid** 모듈에서 제공한다.
 
 CUBRID Python 드라이버는 CCI API를 기반으로 작성되었으므로, CCI API 및 CCI에 적용되는 **CCI_DEFAULT_AUTOCOMMIT** 과 같은 설정 파라미터에 영향을 받는다.
 
@@ -18,28 +18,30 @@ Python 설치 및 설정
 Linux/Unix
 ----------
 
-Linux, Unix 및 유사 운영체제에서는 다음과 같은 세 가지 방법으로 CUBRID Python 드라이버를 설치할 수 있다.
+Linux, Unix 및 유사 운영 체제에서는 다음과 같은 세 가지 방법으로 CUBRID Python 드라이버를 설치할 수 있다.
 
 **기본 환경**
 
-*   운영체제: Linux: 32 비트/64비트 또는 유사 Unix 운영체제
+*   운영 체제: Linux: 32 비트/64비트 또는 유사 Unix 운영 체제
 *   Python: 2.4 이상(https://www.python.org/downloads/)
 
-**소스코드로 설치(Linux)**
+**소스 코드로 설치(Linux)**
 
-소스코드를 컴파일하여 CUBRID Python 드라이버를 설치하려면 Python Development Package가 필요하다. 
+소스 코드를 컴파일하여 CUBRID Python 드라이버를 설치하려면 Python Development Package가 필요하다. 
 
 .. FIXME: Python Development Package가 설치되어 있지 않다면 http://www.cubrid.org/wiki_apis/entry/install-python-development-package\ 를 참고하여 설치한다.
+
+#.  CCI 드라이버 빌드하기 위해 GNU Developer Toolset 8 또는 그 이상이 필요하다.
 
 #.  소스 코드를 https://www.cubrid.org/downloads#python\에서 다운로드한다.
 
 #.  다음 명령어를 실행하여 원하는 위치에 다운로드한 파일의 압축을 해제한다. ::
 
-        tar xvfz cubrid-python-src-8.4.0.0001.tar.gz
+        tar xvfz cubrid-python-11.2-latest.tar.gz
 
 #.  압축을 해제한 디렉터리로 이동한다. ::
 
-        cd cubrid-python-src
+        cd RB-11.0.0
 
 #.  드라이버를 빌드한다. 이 단계와 다음 단계는 루트 사용자 계정으로 실행해야 한다. ::
 
@@ -51,7 +53,7 @@ Linux, Unix 및 유사 운영체제에서는 다음과 같은 세 가지 방법�
 
 **Easy Install을 이용한 설치(Linux)**
 
-Easy Install은 자동으로 Python 패키지를 다운로드/빌드/설치/관리할 수 있는 Python 모듈로, setuptools에 포함되어 있다. Easy Install을 사용하면 패키지 인덱스뿐만 아니라 다른 웹 사이트에도 HTTP로 연결하여 패키지를 설치할 수 있다. Perl의 CPAN이나 PHP의 PEAR와 유사하다. Easy Install에 대한 더 자세한 설명은 https://setuptools.readthedocs.io/en/latest/easy_install.html\ 을 참고한다.
+Easy Install은 자동으로 Python 패키지를 다운로드/빌드/설치/관리할 수 있는 Python 모듈로, setuptools에 포함되어 있다. Easy Install을 사용하면 패키지 인덱스뿐만 아니라 다른 웹 사이트에도 HTTP로 연결하여 패키지를 설치할 수 있다. Perl의 CPAN이나 PHP의 PEAR와 유사하다. Easy Install에 대한 더 자세한 설명은 https://setuptools.pypa.io/en/latest/deprecated/easy_install.html\ 을 참고한다.
 
 Easy Install을 이용하여 CUBRID Python 드라이버를 설치하려면 다음 명령어를 입력한다. ::
 
@@ -62,7 +64,7 @@ Windows
 
 Windows에 CUBRID Python 드라이버를 설치하려면 다음과 같이 CUBRID Python 드라이버를 다운로드하여 설치한다.
 
-*   다음 주소에서 운영체제와 Python의 버전에 맞는 드라이버를 다운로드한다.
+*   다음 주소에서 운영 체제와 Python의 버전에 맞는 드라이버를 다운로드한다.
 
     https://www.cubrid.org/downloads#python
 
@@ -103,7 +105,7 @@ Python 예제 프로그램
     
     .. code-block:: python
     
-        conn = CUBRIDdb.connect('CUBRID:localhost:30000:demodb:dba::')
+        conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'dba', '')
 
 *demodb* 데이터베이스는 비밀번호가 필요하지 않으므로 비밀번호를 입력하지 않았다. 그러나 실제 데이터베이스에 연결할 때에는 비밀번호가 필요하다면 비밀번호를 입력해야 한다.
 `connect <https://pythonhosted.org/CUBRID-Python/_cubrid-module.html#connect>`_ () 함수의 구문은 다음과 같다. ::
@@ -156,7 +158,7 @@ CUBRID Python 드라이버에서는 기본적으로 자동 커밋 모드가 비�
 .. code-block:: python
 
     import CUBRIDdb
-    conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'public', '')
+    conn = CUBRIDdb.connect('CUBRID:localhost:33000:demodb:::', 'dba', '')
     cur = conn.cursor()
      
     # Plain insert statement
@@ -241,6 +243,6 @@ CUBRID Python 드라이버에서는 기본적으로 자동 커밋 모드가 비�
 Python API
 ==========
 
-Python Database API는 connect() 모듈 클래스와 Connection 객체, Cursor 객체, 그리고 그 밖의 보조적인 함수들로 이루어진다. 이에 대한 자세한 내용은 https://www.python.org/dev/peps/pep-0249/ 를 참고한다.
+Python Database API는 connect() 모듈 클래스와 Connection 객체, Cursor 객체, 그리고 그 밖의 보조적인 함수들로 이루어진다. 이에 대한 자세한 내용은 https://peps.python.org/pep-0249/ 를 참고한다.
 
 CUBRID Python API에 대한 자세한 내용은 http://ftp.cubrid.org/CUBRID_Docs/Drivers/Python/\을 참고한다.

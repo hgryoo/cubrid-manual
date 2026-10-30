@@ -40,6 +40,10 @@ cubrid 유틸리티의 사용법(구문)은 다음과 같다. ::
         dumplocale [option] <database-name>   --- 컴파일된 바이너리 로캘 정보를 사람이 읽을 수 있는 텍스트로 출력하는 도구
         gen_tz [option] [<database-name>]  --- 공유 라이브러리로 컴파일할 수 있는 타임존 데이터가 포함된 C 소스 파일 생성
         dump_tz [option]  --- 타임존 관련 정보 출력
+        tde <operation> [option] <database_name> --- TDE 암호화 관리 도구
+        vacuumdb [option] <database-name>  --- 데이터베이스의 삭제된 레코드 또는 불필요한 mvcc 관련 정보를 정리 및 관련 정보 확인하는 도구
+        flashback [option] <database-name> <owner_name.class_name> --- 커밋된 특정 트랜잭션을 되돌릴 수 있도록 SQL 구문을 제공하는 도구
+        memmon [option] <database-name> --- 현재 서버의 힙 메모리 사용량에 대한 정보를 확인하는 도구
 
 cubrid 유틸리티 로깅
 --------------------
@@ -85,6 +89,25 @@ createdb
 
 .. program:: createdb
 
+::
+
+      --db-volume-size=SIZE           처음 생성되는 볼륨(generic)의 크기
+      --db-page-size=SIZE             바이트 단위의 데이터베이스 페이지 크기
+      --log-volume-size=SIZE          로그 볼륨의 크기
+      --log-page-size=SIZE            바이트 단위의 로그 페이지 크기
+      --comment=COMMENT               데이터베이스에 관한 설명
+  -F, --file-path=PATH                데이터베이스가 생성되는 디렉터리 경로
+  -L, --log-path=PATH                 로그 볼륨이 저장되는 디렉터리 경로
+  -B, --lob-base-path=PATH            LOB 파일이 저장되는 디렉터리 경로
+      --server-name=HOST              서버 호스트 이름
+  -r, --replace                       같은 이름의 데이터베이스가 존재하면 덮어쓰기
+      --more-volume-file=FILE         추가로 확장될 볼륨에 대한 제어 파일
+      --user-definition-file=FILE     데이터베이스 사용자를 정의하는 파일
+      --csql-initialization-file=FILE 데이터베이스 생성 후 CSQL에서 FILE에 저장된 질의문을 실행
+  -o, --output-file=FILE              출력 메시지를 파일에 저장
+  -v, --verbose                       상세한 상태 정보를 화면 출력
+
+
 .. option:: --db-volume-size=SIZE
 
     생성될 데이터베이스 볼륨의 크기를 지정한다. 기본값은 시스템 파라미터 **db_volume_size** 에 지정된 값이다. 단위는 K, M, G 및 T로 설정할 수 있으며, 각각 킬로바이트(KB), 메가바이트(MB), 기가바이트(GB) 및 테라바이트(TB)를 나타낸다. 단위를 생략하면 바이트 단위가 적용된다. 데이터베이스의 크기는 항상 64개 디스크 섹터의 배수로 올림된다. 이 값은 페이지의 크기에 따라 달라질 수 있으며, 페이지 크기가 각각 4k, 8k 및 16k인 경우 16M, 32M 또는 64M이 될 수 있다.
@@ -116,7 +139,7 @@ createdb
 
     다음은 *testdb* 를 생성하고, *testdb* 의 로그 볼륨 페이지 크기를 8kbyte로 지정하는 구문이다. ::
 
-        cubrid createdb -log-page-size=8K testdb en_US
+        cubrid createdb --log-page-size=8K testdb en_US
 
 .. option:: --comment=COMMENT
 
@@ -149,7 +172,7 @@ createdb
 
     다음은 *testdb* 를 현재 작업 디렉터리에 생성하고, **LOB** 데이터 파일이 저장될 디렉터리를 로컬 파일 시스템의 "/home/data1"으로 지정하는 구문이다. ::
 
-        cubrid createdb --lob-base-path "file:/home1/data1" testdb en_US
+        cubrid createdb --lob-base-path "file:/home/data1" testdb en_US
 
 .. option:: --server-name=HOST
 
@@ -203,7 +226,7 @@ createdb
 .. option:: --user-definition-file=FILE
 
     생성하고자 하는 데이터베이스에 대해 권한이 있는 사용자를 추가하는 옵션으로, 파라미터로 지정된 사용자 정보 파일에 저장된 명세에 따라 사용자를 추가한다.
-    **--user-definition-file** 옵션을 이용하지 않더라도 :ref:`create-user` 구문을 이용하여 사용자를 추가할 수 있다.
+    **\-\-user-definition-file** 옵션을 이용하지 않더라도 :ref:`create-user` 구문을 이용하여 사용자를 추가할 수 있다.
 
     다음은 *testdb* 를 생성함과 동시에 user_info.txt에 정의된 사용자 정보를 기반으로 *testdb* 에 대한 사용자를 추가하는 구문이다. ::
 
@@ -225,7 +248,7 @@ createdb
 
     *   **MEMBERS** 절: 옵션이며, <member_name> 은 지정된 <user_name>에 포함되는 하위 멤버의 이름이다. 이 때, <member_name>은 하나 이상이 지정될 수 있으며, **USER** 로 미리 정의되어야 한다.
 
-    사용자 정보 파일에서는 주석을 사용할 수 있으며, 주석 라인은 연속된 하이픈(--)으로 시작된다. 공백 라인은 무시된다.
+    사용자 정보 파일에서는 주석을 사용할 수 있으며, 주석 라인은 연속된 하이픈(\-\-)으로 시작된다. 공백 라인은 무시된다.
 
     다음 예제는 그룹 *sedan* 에 *grandeur* 와 *sonata* 가, 그룹 *suv* 에 *tuscan* 이, 그룹 *hatchback* 에 *i30* 가 포함되는 것을 정의하는 사용자 정보 파일이다. 사용자 정보 파일명은 user_info.txt로 예시한다. ::
 
@@ -253,7 +276,7 @@ createdb
         USER suv MEMBERS tuscan
         USER hatchback MEMBERS i30
         
-.. option::    --csql-initialization-file=FILE
+.. option:: --csql-initialization-file=FILE
 
     생성하고자 하는 데이터베이스에 대해 CSQL 인터프리터에서 구문을 실행하는 옵션으로, 파라미터로 지정된 파일에 저장된 SQL 구문에 따라 스키마를 생성할 수 있다.
 
@@ -270,7 +293,7 @@ createdb
 
         cubrid createdb -o db_output testdb en_US
 
-.. option::  -v, --verbose
+.. option:: -v, --verbose
 
     데이터베이스 생성 연산에 관한 모든 정보를 화면에 출력하는 옵션으로서, **-o** 옵션과 마찬가지로 특정 데이터베이스 생성 과정에 관한 정보를 확인하는데 유용하다. 따라서, **-v** 옵션과 **-o** 옵션을 함께 지정하면, **-o** 옵션의 파라미터로 지정된 출력 파일에 **cubrid createdb** 유틸리티의 연산 정보와 생성 과정에 관한 출력 메시지를 저장할 수 있다.
 
@@ -289,6 +312,10 @@ createdb
     cubrid createdb --db-volume-size=512M --log-volume-size=256M cubriddb en_US
     cubrid addvoldb -S -n cubriddb_DATA01 --db-volume-size=512M cubriddb
     cubrid addvoldb -S -p temp -n cubriddb_TEMP01 --db-volume-size=512M cubriddb
+
+.. note:: **기존 키 파일을 사용하는 데이터베이스 생성**
+
+    데이터베이스가 생성될 때 기본적으로 키 파일이 함께 생성된다. 만약 데이터베이스 생성 시 기존 키 파일을 사용하고 싶다면, 먼저 키 파일을 <database-name>_keys 이름으로 복사해 둔다. 이후 복사한 키 파일의 디렉터리를 **tde_keys_file_path** 시스템 파라미터에 지정하고 **createdb** 유틸리티를 통해 데이터베이스를 생성한다. TDE 키 파일에 관한 자세한 내용은 :ref:`tde-file-based-key` 를 참고한다.
     
 .. _adding-database-volume:    
 
@@ -321,9 +348,21 @@ CUBRID 볼륨을 세부적으로 관리하려면 addvoldb 를 사용하면 된�
 
 .. program:: addvoldb
 
+::
+
+      --db-volume-size=SIZE        추가될 볼륨의 크기
+  -n, --volume-name=NAME           볼륨 이름
+  -F, --file-path=PATH             데이터베이스 파일에 대한 볼륨경로
+      --comment=COMMENT            볼륨 주석
+  -p, --purpose=PURPOSE            볼륨 사용 용도
+  -S, --SA-mode                    독립 모드 실행
+  -C, --CS-mode                    클라이언트 서버 모드 실행
+      --max-writesize-in-sec=SIZE  초당 추가될 볼륨의 크기
+
+
 .. option:: --db-volume-size=SIZE
 
-    **--db-volume-size** 지정한 데이터베이스에 추가될 볼륨 크기를 지정하는 옵션이다. **--db-volume-size** 옵션을 생략하면 시스템 파라미터 **db_volume_size** 의 값이 기본값으로 사용된다. 단위는 K, M, G 및 T로 설정할 수 있으며, 각각 킬로바이트(KB), 메가바이트(MB), 기가바이트(GB) 및 테라바이트(TB)를 나타낸다. 단위를 생략하면 바이트 단위가 적용된다. 데이터베이스의 크기는 항상 64개 디스크 섹터의 배수로 올림된다. 이 값은 페이지의 크기에 따라 달라질 수 있으며, 페이지 크기가 각각 4k, 8k 및 16k인 경우 16M, 32M 또는 64M이 될 수 있다
+    **\-\-db-volume-size** 지정한 데이터베이스에 추가될 볼륨 크기를 지정하는 옵션이다. **\-\-db-volume-size** 옵션을 생략하면 시스템 파라미터 **db_volume_size** 의 값이 기본값으로 사용된다. 단위는 K, M, G 및 T로 설정할 수 있으며, 각각 킬로바이트(KB), 메가바이트(MB), 기가바이트(GB) 및 테라바이트(TB)를 나타낸다. 단위를 생략하면 바이트 단위가 적용된다. 데이터베이스의 크기는 항상 64개 디스크 섹터의 배수로 올림된다. 이 값은 페이지의 크기에 따라 달라질 수 있으며, 페이지 크기가 각각 4k, 8k 및 16k인 경우 16M, 32M 또는 64M이 될 수 있다
 
     다음은 *testdb* 에 데이터 볼륨을 추가하며 볼륨 크기를 256MB로 지정하는 구문이다. ::
 
@@ -331,14 +370,14 @@ CUBRID 볼륨을 세부적으로 관리하려면 addvoldb 를 사용하면 된�
 
 .. option:: -n, --volume-name=NAME
 
-    지정된 데이터베이스에 대하여 추가될 볼륨의 이름을 지정하는 옵션이다. 볼륨명은 운영체제의 파일 이름 규약을 따라야 하고, 디렉터리 경로나 공백을 포함하지 않는 단순한 이름이어야 한다.
+    지정된 데이터베이스에 대하여 추가될 볼륨의 이름을 지정하는 옵션이다. 볼륨명은 운영 체제의 파일 이름 규약을 따라야 하고, 디렉터리 경로나 공백을 포함하지 않는 단순한 이름이어야 한다.
     **-n** 옵션을 생략하면 추가되는 볼륨의 이름은 시스템에 의해 "데이터베이스 이름_볼륨 식별자"로 자동 부여된다. 예를 들어, 데이터베이스 이름이 *testdb* 이면 자동 부여된 볼륨명은 *testdb_x001* 이 된다.
 
     다음은 testdb라는 데이터베이스에 볼륨을 추가하는 예이며, 추가되는 볼륨명은 *testdb_v1* 이 된다. ::
 
         cubrid addvoldb -n testdb_v1  testdb
 
-.. option::  -F, --file-path=PATH
+.. option:: -F, --file-path=PATH
 
     지정된 데이터베이스에 대하여 추가될 볼륨이 저장되는 디렉터리 경로를 지정하는 옵션이다. **-F** 옵션을 생략하면, 시스템 파라미터인 **volume_extension_path** 의 값이 기본값으로 사용된다.
 
@@ -398,7 +437,7 @@ CUBRID 볼륨을 세부적으로 관리하려면 addvoldb 를 사용하면 된�
 deletedb
 --------
 
-**cubrid deletedb** 는 데이터베이스를 삭제하는 유틸리티이다. 데이터베이스가 몇 개의 상호 의존적 파일들로 만들어지기 때문에, 데이터베이스를 제거하기 위해 운영체제 파일 삭제 명령이 아닌 **cubrid deletedb** 유틸리티를 사용해야 한다.
+**cubrid deletedb** 는 데이터베이스를 삭제하는 유틸리티이다. 데이터베이스가 몇 개의 상호 의존적 파일들로 만들어지기 때문에, 데이터베이스를 제거하기 위해 운영 체제 파일 삭제 명령이 아닌 **cubrid deletedb** 유틸리티를 사용해야 한다.
 
 **cubrid deletedb** 유틸리티는 데이터베이스 위치 파일( **databases.txt** )에 지정된 데이터베이스에 대한 정보도 같이 삭제한다. **cubrid deletedb** 유틸리티는 오프라인 상에서 즉, 아무도 데이터베이스를 사용하지 않는 상태에서 독립 모드로 사용해야 한다. ::
 
@@ -413,6 +452,12 @@ deletedb
 다음은 **cubrid deletedb** 에 대한 [options]이다.
 
 .. program:: deletedb
+
+::
+
+  -o, --output-file=FILE       출력 메시지가 저장될 파일
+  -d, --delete-backup          백업 볼륨을 지움
+
 
 .. option:: -o, --output-file=FILE
 
@@ -454,6 +499,13 @@ renamedb
 
 .. program:: renamedb
 
+::
+
+  -E, --extended-volume-path=PATH 확장 볼륨이 저장되는 디렉터리 경로
+  -i, --control-file=FILE         여러 개의 볼륨들이 각각 저장되는 디렉터리 경로를 지정하는 제어 파일
+  -d, --delete-backup             백업 볼륨을 지움
+
+
 .. option:: -E, --extented-volume-path=PATH
 
     확장 볼륨의 이름을 변경한 후 새 디렉터리 경로로 이동하는 명령으로서, **-E** 옵션을 이용하여 변경된 이름을 가지는 확장 볼륨을 이동시킬 새로운 디렉터리 경로(예: /dbtemp/newaddvols/)를 지정한다.
@@ -462,7 +514,7 @@ renamedb
 
         cubrid renamedb -E /dbtemp/newaddvols/ testdb testdb_1
 
-.. option::    -i, --control-file FILE
+.. option:: -i, --control-file FILE
 
     각 볼륨 또는 파일에 대하여 일괄적으로 데이터베이스 이름을 변경하면서 디렉터리 경로를 상이하게 지정하기 위해 디렉터리 정보가 저장된 입력 파일을 지정하는 명령으로서, **-i** 옵션을 이용한다. 
     이때, **-i** 옵션은 **-E** 옵션과 병행될 수 없다. ::
@@ -488,9 +540,9 @@ renamedb
            0  /home1/user/testdb   /home1/CUBRID/databases/testdb_1
            1  /home1/user/backup/testdb_x001   /home1/CUBRID/databases/backup/testdb_1_x001
 
-.. option::    -d, --delete-backup
+.. option:: -d, --delete-backup
 
-    데이터베이스의 이름을 변경하면서 데이터베이스와 와 동일 위치에 있는 모든 백업 볼륨 및 백업 정보 파일을 함께 강제 삭제하는 명령이다. 일단, 데이터베이스 이름이 변경되면 이보다 앞선 이름의 백업 파일은 이용할 수 없으므로 주의해야 한다. 만약, **-d** 옵션을 지정하지 않으면 백업 볼륨 및 백업 정보 파일은 삭제되지 않는다. ::
+    데이터베이스의 이름을 변경하면서 데이터베이스와 동일 위치에 있는 모든 백업 볼륨 및 백업 정보 파일을 함께 강제 삭제하는 명령이다. 일단, 데이터베이스 이름이 변경되면 이보다 앞선 이름의 백업 파일은 이용할 수 없으므로 주의해야 한다. 만약, **-d** 옵션을 지정하지 않으면 백업 볼륨 및 백업 정보 파일은 삭제되지 않는다. ::
 
         cubrid renamedb -d testdb testdb_1
 
@@ -540,6 +592,19 @@ copydb
 
 .. program:: copydb
 
+::
+
+      --server-name=HOST          서버 호스트 이름
+  -F, --file-path=PATH            데이터베이스가 저장되는 디렉터리 경로
+  -L, --log-path=PATH             로그 볼륨이 저장되는 디렉터리 경로
+  -E, --extended-volume-path=PATH 확장 볼륨이 저장되는 디렉터리 경로
+  -i, --control-file=FILE         여러 개의 볼륨들이 각각 저장되는 디렉터리 경로를 지정하는 제어 파일
+  -r, --replace                   같은 이름의 데이터베이스가 존재하면 덮어쓰기
+  -d, --delete-source             복사 후 원본 데이터베이스 삭제
+      --copy-lob-path             원본 데이터베이스의 LOB 디렉터리 경로를 복사. -B 옵션과 함께 사용 불가. 기본값: 복사하지 않음
+  -B, --lob-base-path=PATH        LOB 파일이 저장되는 디렉터리 경로
+
+
 .. option:: --server-name=HOST
 
     새로운 데이터베이스의 서버 호스트 이름을 명시하며, 이는 **databases.txt** 의 **db-host** 항목에 등록된다. 이 옵션을 생략하면, 로컬 호스트가 등록된다. ::
@@ -548,13 +613,13 @@ copydb
 
 .. option:: -F, --file-path=PATH
 
-    새로운 데이터베이스 볼륨이 저장되는 특정 디렉터리 경로를 지정할 수 있다. 절대 경로로 지정해야 하며, 존재하지 않는 디렉터리를 지정하면 에러를 출력한다. 이 옵션을 생략하면 현재 작업 디렉터리에 새로운 데이터베이스의 볼륨이 생성된다. 이 경로는 **databases.txt** 의 **vol-path** 항목에 등록된다. ::
+    새로운 데이터베이스 볼륨이 저장되는 특정 디렉터리 경로를 지정할 수 있다. 절대 경로로 지정해야 하며, 존재하지 않는 디렉터리를 지정하면 오류를 출력한다. 이 옵션을 생략하면 현재 작업 디렉터리에 새로운 데이터베이스의 볼륨이 생성된다. 이 경로는 **databases.txt** 의 **vol-path** 항목에 등록된다. ::
     
         cubrid copydb -F /home/usr/CUBRID/databases demodb new_demodb
 
 .. option:: -L, --log-path=PATH
 
-    새로운 데이터베이스 로그 볼륨이 저장되는 특정 디렉터리 경로를 지정할 수 있다. 절대 경로로 지정해야 하며, 존재하지 않는 디렉터리를 지정하면 에러를 출력한다. 이 옵션을 생략하면 새로운 데이터베이스 볼륨이 저장되는 경로에 로그 볼륨도 함께 생성된다. 이 경로는 **databases.txt** 의 **log-path** 항목에 등록된다. ::
+    새로운 데이터베이스 로그 볼륨이 저장되는 특정 디렉터리 경로를 지정할 수 있다. 절대 경로로 지정해야 하며, 존재하지 않는 디렉터리를 지정하면 오류를 출력한다. 이 옵션을 생략하면 새로운 데이터베이스 볼륨이 저장되는 경로에 로그 볼륨도 함께 생성된다. 이 경로는 **databases.txt** 의 **log-path** 항목에 등록된다. ::
     
         cubrid copydb -L /home/usr/CUBRID/databases/logs demodb new_demodb
 
@@ -562,7 +627,7 @@ copydb
 
     새로운 데이터베이스의 확장 정보 볼륨이 저장되는 특정 디렉터리 경로를 지정할 수 있다. 이 옵션을 생략하면 새로운 데이터베이스 볼륨이 저장되는 경로 또는 제어 파일에 등록된 경로에 확장 정보 볼륨이 저장된다. **-i** 옵션과 병행될 수 없다. ::
 
-        cubrid copydb -E home/usr/CUBRID/databases/extvols demodb new_demodb
+        cubrid copydb -E /home/usr/CUBRID/databases/extvols demodb new_demodb
 
 .. option:: -i, --control-file=FILE
 
@@ -586,25 +651,25 @@ copydb
 
 .. option:: -r, --replace
 
-    새로운 데이터베이스 이름이 기존 데이터베이스 이름과 중복되더라도 에러를 출력하지 않고 덮어쓴다. ::
+    새로운 데이터베이스 이름이 기존 데이터베이스 이름과 중복되더라도 오류를 출력하지 않고 덮어쓴다. ::
 
         cubrid copydb -r -F /home/usr/CUBRID/databases demodb new_demodb
 
 .. option:: -d, --delete-source
 
-    새로운 데이터베이스로 복사한 후, 원본 데이터베이스를 제거한다. 이 옵션이 주어지면 데이터베이스 복사 후 **cubrid deletedb** 를 수행하는 것과 동일하다. 단, 원본 데이터베이스에 **LOB** 데이터를 포함하는 경우, 원본 데이터베이스 대한 **LOB** 파일 디렉터리 경로가 새로운 데이터베이스로 복사되어 **databases.txt** 의 **lob-base-path** 항목에 등록된다. ::
+    새로운 데이터베이스로 복사한 후, 원본 데이터베이스를 제거한다. 이 옵션이 주어지면 데이터베이스 복사 후 **cubrid deletedb** 를 수행하는 것과 동일하다. 단, 원본 데이터베이스에 **LOB** 데이터를 포함하는 경우, 원본 데이터베이스의 **LOB** 파일 디렉터리 경로가 새로운 데이터베이스로 복사되어 **databases.txt** 의 **--lob-base-path** 항목에 등록된다. ::
 
         cubrid copydb -d -F /home/usr/CUBRID/databases demodb new_demodb
 
-.. option:: --copy-lob-path=PATH
+.. option:: --copy-lob-path
 
-    원본 데이터베이스에 대한 **LOB** 파일 디렉터리 경로를 새로운 데이터베이스의 **LOB** 파일 경로로 복사하고, 원본 데이터베이스를 복사한다. 이 옵션을 생략하면, **LOB** 파일 디렉터리 경로를 복사하지 않으므로, **databases.txt** 파일의 **lob-base-path** 항목을 별도로 수정해야 한다. 이 옵션은 **-B** 옵션과 병행할 수 없다. ::
+    이 옵션은 대상 데이터베이스의 LOB 디렉터리의 위치를 원본 데이터베이스의 LOB 디렉터리의 위치와 동일하게 설정한다. 이 옵션을 생략하면 기본 위치는 <대상 데이터베이스 디렉터리>/lob 이다. 이 옵션은 LOB 파일들을 복사하는 기능은 아니며, -B 옵션과 병행할 수 없다. ::
 
-        cubrid copydb --copy-lob-path=/home/usr/CUBRID/databases/new_demodb/lob demodb new_demodb
+        cubrid copydb --copy-lob-path demodb new_demodb
 
 .. option:: -B, --lob-base-path=PATH
 
-    **-B** 옵션을 사용하여 특정 디렉터리를 새로운 데이터베이스에 대한 **LOB** 파일 디렉터리 경로를 지정한다. 원본 데이터베이스에 있던 **LOB** 파일들은 사용자가 직접 이 디렉터리에 복사해야 한다. 이 옵션은 **--copy-lob-path** 옵션과 병행할 수 없다. ::
+    **-B** 옵션을 사용하여 특정 디렉터리를 새로운 데이터베이스에 대한 **LOB** 파일 디렉터리 경로를 지정한다. 원본 데이터베이스에 있던 **LOB** 파일들은 사용자가 직접 이 디렉터리에 복사해야 한다. 이 옵션은 **\-\-copy-lob-path** 옵션과 병행할 수 없다. ::
 
         cubrid copydb -B /home/usr/CUBRID/databases/new_lob demodb new_demodb
 
@@ -631,11 +696,24 @@ installdb
 
 .. program:: installdb
 
+::
+
+      --server-name=HOST       서버 호스트 이름
+  -F, --file-path=PATH         데이터베이스 볼륨을 위한 디렉터리 경로
+  -L, --log-path=PATH          로그 볼륨을 위한 디렉터리 경로
+
+
 .. option:: --server-name=HOST
 
     대상 데이터베이스의 서버 호스트 정보를 지정된 호스트 명으로 **databases.txt** 에 등록한다. 이 옵션을 생략하면, 현재의 호스트 정보가 등록된다.  ::
 
         cubrid installdb --server-name=cub_server1 testdb
+
+.. option:: --file-path=PATH
+
+    대상 데이터베이스의 데이터베이스 볼륨을 위한 디렉터리 경로를 **databases.txt** 에 등록한다. 이 옵션을 생략하면 현재 작업 디렉터리 경로가 등록된다. ::
+
+        cubrid installdb -F /home/cubrid/CUBRID/databases/testdb testdb
 
 .. option:: -L, --log-path=PATH
 
@@ -669,6 +747,16 @@ spacedb
 
 .. program:: spacedb
 
+::
+
+  -o, --output-file=FILE       파일로 출력을 재지정
+  -S, --SA-mode                독립 모드 실행
+  -C, --CS-mode                클라이언트 서버 모드 실행
+      --size-unit={PAGE|M|G|T|H} 출력 단위(page, mega, giga, tera, human readable) 설정
+  -s, --summarize              볼륨 용도별 합계 결과 출력
+  -p, --purpose                각 볼륨의 목적별 (데이터/인덱스/임시) 사용량을 출력
+
+
 .. option:: -o FILE
 
     데이터베이스의 공간 정보에 대한 결과를 지정한 파일에 저장한다. ::
@@ -691,7 +779,7 @@ spacedb
 .. option:: --size-unit={PAGE|M|G|T|H}
 
     데이터베이스 볼륨의 공간을 지정한 크기 단위로 출력하기 위한 옵션이며, 기본값은 **H** 이다.
-    값을 H로 설정할 경우 단위는 다음과 같이 자동으로 지정된다. DB size < 1024 MB 보다 작을 경우 M는 MB 으로 , DB size < 1024 GB 보다 작을 경우 G는 GB 로 지정된다. ::
+    값을 H로 설정할 경우 단위는 다음과 같이 자동으로 지정된다. DB size < 1024MB 보다 작을 경우 M는 MB 으로 , DB size < 1024GB 보다 작을 경우 G는 GB 로 지정된다. ::
 
         $ cubrid spacedb --size-unit=H testdb
 
@@ -772,25 +860,36 @@ compactdb
     
         ERROR: The class 'reuse_tbl' is marked as REUSE_OID and is non-referable. Non-referable classes can't be the domain of an attribute and their instances' OIDs cannot be returned.
  
-    REUSE_OID에 대한 자세한 설명은 :ref:`reuse-oid` 를 참고한다.
+    REUSE_OID에 대한 자세한 설명은 :ref:`REUSE_OID <reuse-oid>`\를 참고한다.
 
-**cubrid compactdb** 유틸리티를 수행하면 삭제된 객체에 대한 참조를 **NULL** 로 표시하는데, 이렇게 **NULL** 로 표시된 공간은 OID가 재사용할 수 있는 공간임을 의미한다. ::
+**cubrid compactdb** 유틸리티를 수행하면 삭제된 객체에 대한 참조를 **NULL**\로 표시하는데, 이렇게 **NULL**\로 표시된 공간은 OID가 재사용할 수 있는 공간임을 의미한다. ::
 
-    cubrid compactdb [<options>] database_name [ class_name1, class_name2, ...]
+    cubrid compactdb [options] database_name [schema_name.class_name [{, schema_name.class_name}]]
 
 *   **cubrid**: 큐브리드 서비스 및 데이터베이스 관리를 위한 통합 유틸리티이다.
 
-*   **compactdb**: 대상 데이터베이스에 대하여 삭제된 데이터에 할당되었던 OID가 재사용될 수 있도록 공간을 정리하는 명령으로서, 데이터베이스가 구동 정지 상태인 경우에만 정상적으로 수행된다.
+*   **compactdb**: 대상 데이터베이스에 대하여 삭제된 데이터에 할당되었던 OID가 재사용될 수 있도록 공간을 정리하는 명령입니다. 
 
 *   *database_name*: 공간을 정리할 데이터베이스의 이름이며, 데이터베이스가 생성될 디렉터리 경로명을 포함하지 않는다.
 
-*   *class_name_list*: 공간을 정리할 테이블 이름 리스트를 데이터베이스 이름 뒤에 직접 명시할 수 있으며, **-i** 옵션과 함께 사용할 수 없다. 클라이언트/서버 모드에서만 명시할 수 있다.
+*   *class_name_list*: 공간을 정리할 테이블 이름 리스트를 데이터베이스 이름 뒤에 직접 명시할 수 있으며, **-i** 옵션과 함께 사용할 수 없다. 테이블 이름에는 스키마 이름이 접두사로 붙어야 한다. 클라이언트/서버 모드에서 사용한 경우 catalog, delete files 그리고 tracker와 같은 객체에 대한 정리 작업을 수행하지 않는다.
 
-클라이언트/서버 모드에서만 **-I**, **-i**, **-c**, **-d**, **-p** 옵션을 사용할 수 있다.
+클라이언트/서버 모드에서만 **-I**, **-c**, **-d**, **-p** 옵션을 사용할 수 있다.
 
-다음은 **cubrid compactdb** 에 대한 [options]이다.
+다음은 **cubrid compactdb**\에 대한 [options]이다.
 
 .. program:: compactdb
+
+::
+
+  -v, --verbose                     많은 상태 정보 출력
+  -S, --SA-mode                     독립 모드 실행
+  -C, --CS-mode                     클라이언트 서버 모드 실행
+  -i, --input-class-file=FILE       테이블 이름을 포함하는 FILE 이름
+  -p, --pages-committed-once=NUMBER  한 번에 커밋할 수 있는 최대 페이지 개수
+  -d, --delete-old-repr             카탈로그에서 과거 테이블 표현을 삭제
+  -I, --Instance-lock-timeout       인스턴스 잠금에 대한 타임아웃
+  -c, --class-lock-timeout          클래스 잠금에 대한 타임아웃
 
 .. option:: -v, --verbose
 
@@ -807,19 +906,19 @@ compactdb
 
 .. option:: -C, --CS-mode
 
-    **-C** 옵션은 데이터베이스 서버가 구동 중인 상태에서 클라이언트/서버 모드로 공간 정리 작업을 수행하기 위해 지정되며, 인수는 없다. **-C** 옵션이 생략되더라도 시스템은 기본적으로 클라이언트/서버 모드로 인식한다. 클라이언트/서버 모드에서만 -I, -i, -c, -d, -p 옵션을 사용할 수 있다.
-
-다음은 클라이언트/서버 모드에서만 사용할 수 있는 옵션이다.
+    **-C** 옵션은 데이터베이스 서버가 구동 중인 상태에서 클라이언트/서버 모드로 공간 정리 작업을 수행하기 위해 지정되며, 인수는 없다. **-C** 옵션이 생략되더라도 시스템은 기본적으로 클라이언트/서버 모드로 인식한다. 
 
 .. option:: -i, --input-class-file=FILE
 
-    대상 테이블 이름을 포함하는 입력 파일 이름을 지정할 수 있다. 라인 당 하나의 테이블 이름을 명시하며, 유효하지 않은 테이블 이름은 무시된다. 이 옵션을 지정하는 경우, 데이터베이스 이름 뒤에 대상 테이블 이름 리스트를 직접 명시할 수 없으므로 주의한다.
+    대상 테이블 이름을 포함하는 입력 파일 이름을 지정할 수 있다. 라인 당 하나의 테이블 이름을 명시하며, 유효하지 않은 테이블 이름은 무시된다. 테이블 이름에는 스키마 이름이 접두사로 붙어야 한다. 이 옵션을 지정하는 경우, 데이터베이스 이름 뒤에 대상 테이블 이름 리스트를 직접 명시할 수 없으므로 주의한다. 클라이언트/서버 모드에서 사용한 경우 catalog, delete files 그리고 tracker와 같은 객체에 대한 정리 작업을 수행하지 않는다.
 
-.. option:: -p, --pages-commited-once=NUMBER
+다음은 클라이언트/서버 모드에서만 사용할 수 있는 옵션이다.
+
+.. option:: -p, --pages-committed-once=NUMBER
 
     한 번에 커밋할 수 있는 최대 페이지 수를 지정한다. 기본값은 **10** 이며, 최소 값은 1, 최대 값은 10이다. 옵션 값이 작으면 클래스/인스턴스에 대한 잠금 비용이 작으므로 동시성은 향상될 수 있으나 작업 속도는 저하될 수 있고, 옵션 값이 크면 동시성은 저하되나 작업 속도는 향상될 수 있다.  ::
 
-        cubrid compactdb --CS-mode -p 10 testdb tbl1, tbl2, tbl5
+        cubrid compactdb --CS-mode -p 10 testdb public.tbl1, public.tbl2, public.tbl5
 
 .. option:: -d, --delete-old-repr
 
@@ -840,7 +939,7 @@ optimizedb
 
 CUBRID의 질의 최적화기가 사용하는 테이블에 있는 객체들의 수, 접근하는 페이지들의 수, 속성 값들의 분산 같은 통계 정보를 갱신한다. ::
 
-    cubrid optimizedb [option] database_name
+    cubrid optimizedb [<option>] database_name
 
 *   **cubrid**: CUBRID 서비스 및 데이터베이스 관리를 위한 통합 유틸리티이다.
 
@@ -848,15 +947,17 @@ CUBRID의 질의 최적화기가 사용하는 테이블에 있는 객체들의 �
 
 *   *database_name*: 비용기반 질의 최적화용 통계 자료를 업데이트하려는 데이터베이스 이름이다.
 
-다음은 *cubrid optimizedb* 에 대한 [option]이다.
+다음은 *cubrid optimizedb*\에 대한 <option>이다.
 
 .. program:: optimizedb
 
 .. option:: -n, --class-name
 
-    **-n** 옵션을 이용하여 해당 클래스의 질의 통계 정보를 업데이트하는 명령이다. ::
+    **-n** 옵션을 이용하여 해당 클래스의 질의 통계 정보를 업데이트하는 명령이다. 테이블 이름에는 스키마 이름이 접두사로 붙어야 한다.
+    
+    ::
 
-        cubrid optimizedb -n event_table testdb
+        cubrid optimizedb -n public.event_table testdb
 
 다음은 대상 데이터베이스의 전체 클래스의 질의 통계 정보를 업데이트하는 명령이다. ::
 
@@ -877,13 +978,17 @@ plandump
 
 *   *database_name*: 데이터베이스 서버 캐시로부터 질의 수행 계획을 확인 또는 제거하고자 하는 데이터베이스 이름이다
 
-옵션 없이 사용하면 캐시에 저장된 질의 수행 계획을 확인한다. ::
-
-    cubrid plandump testdb
 
 다음은 **cubrid plandump** 에 대한 [options]이다.
 
 .. program:: plandump
+
+::
+
+  -d, --drop                   서버 캐시에 있는 모든 플랜 삭제
+  -o, --output-file=FILE       출력 메시지를 재지정할 파일
+  -s, --sha1=SHA1              서버 캐시에 있는 SHA1 코드의 특정 플랜 삭제
+
 
 .. option:: -d, --drop
 
@@ -897,12 +1002,117 @@ plandump
 
         cubrid plandump -o output.txt testdb
 
+.. option:: -s, --sha1=SHA1
+
+    캐시에 저장된 SHA1 코드의 특정 질의 수행 계획을 제거한다. ::
+
+        $ cubrid plandump testdb
+
+        Entries:
+
+          XASL_ID = {
+                      sha1 = { da9cab5d 597f2fe4 48aa8ae8 66b87d81 49fdd7ca },
+                          time_stored = 1718614753 sec, 257499 usec
+                    }
+          sql info:
+            SQL_ID = 4dfa6d901e048
+            sql user text = select * from game where host_year > '2004'
+            sql plan text = Sequential scan(public.game dba.game)
+
+        cubrid plandump -s 'da9cab5d 597f2fe4 48aa8ae8 66b87d81 49fdd7ca' demodb
+
+
+옵션 없이 사용하면 플랜 캐시(plan cache)에 저장된 질의 실행 계획(XASL)들을 확인할 수 있다. ::
+
+    cubrid plandump testdb
+
+::
+
+    XASL cache
+    Stats:
+    Max size:                   1000        -- plan cache에 저장할 수 있는 최대 항목 수
+    Current entry count:        4           -- 현재 저장되어 있는 항목 수
+    Lookups:                    25          -- LOOKUP한 횟수
+    Hits:                       15          -- HIT한 횟수
+    Miss:                       10          -- 실패한 횟수. 이는 대체로 NUM과 비슷함.
+    Inserts:                    5
+    Found at insert:            0
+    Recompiles:                 0
+    Failed recompiles:          0
+    Deletes:                    1
+    Fix:                        15
+    Unfix:                      20
+    Cache cleanups:             0
+    Deletes at cleanup:     0
+
+    Entries:
+
+    XASL_ID = {
+              sha1 = { 939db0ab 7ead8a87 2a1ed142 67e2f059 36a3e601 },
+              time_stored = 1750657813 sec, 784232 usec
+            }
+    fix_count = 0
+    cache flags = 00000000
+    reference count = 4
+    time second last used = 1750657814
+    clone count = 1
+    sql info:
+        SQL_ID = 67d47c14f637a
+        sql user text = select * from game where host_year > '2004'
+        sql hash text = select [dba.game].[host_year], [dba.game].[event_code], [dba.game].[athlete_code], [dba.game].[stadium_code], [dba.game].[nation_code], [dba.game].[medal], [dba.game].[game_date] from [dba.game] [dba.game] w     here ([dba.game].[host_year]> ?:0 )?193="en_US";194="en_US";249="Asia/Seoul";user=0|897|1;bind_var_cnt=1
+        sql plan text =
+    Sequential scan(public.game dba.game)
+    OID_LIST (count = 1):
+        OID = 0|208|10, LOCK =     IS_LOCK, TCARD =       31
+
+
+CUBRID는 플랜 캐시 기능을 통해 SQL 질의의 실행 계획을 재사용할 수 있도록 지원한다.
+플랜 캐시는 서버에서 관리되며, CAS(Common Application Server)와 서버 간의 협력을 통해 동작한다. 주요 처리 과정은 다음과 같다.
+
+    1.   질의분석(파싱 및 재작성) : 클라이언트에서 전달된 SQL 질의는 CAS에서 먼저 파싱(parsing)과 재작성(rewrite) 과정을 거친다. 
+    2.   XASL_ID 생성 : 재작성된 질의를 기반으로 XASL_ID가 생성된다. 이 XASL_ID는 질의의 고유한 식별자로 사용되며, 서버의 플랜 캐시에 해당 질의가 이미 저장되어 있는지 확인하는 데 사용된다.
+    3.   플랜 캐시 확인 : 생성된 XASL_ID를 사용하여  플랜 캐시에 이미 저장된 실행 계획이 있는지 확인한다.
+	    *	저장되어 있는 경우: 서버는 플랜 캐시에 저장된 실행 계획을 이용해 질의를 실행
+	    * 	저장되어 있지 않은 경우: CAS에서 새로운 실행 계획을 생성하여 서버로 전달
+
+.. note::
+
+    플랜 캐시는 실행 계획의 재 사용을 통해 성능을 향상시킨다.
+
+
+plandump 결과의 **상세항목** 은 다음과 같다.
+
+* XASL_ID : sql hash text를 SHA1으로 변환한 문자열로 플랜 캐시의 키(key)로 사용
+    * time_stored : 플랜 캐시에 저장된 시간(unix timestamp)
+    * 예제) $> date -d @1750657813.784232 (Mon Jun 23 14:50:13 KST 2025)
+* fix_count : 동시 사용하는 스레드 수
+* cache flags : 캐시된 실행 계획의 상태정보
+    * 8000000 : mark_deleted
+    * 4000000 : to be recompiled
+    * 2000000 : was recompiled
+    * 0800000 : clean up
+    * 0400000 : recomiled requested
+* reference count : 참조된 횟수
+* time second last used : 최종 사용된 시간(unix timestamp)
+    * 예제) $> date -d @1750657814 (Mon Jun 23 14:50:14 KST 2025)
+* clone count : 사용된 클론(clone) 개수 (서버에는 실행계획이 메모리 스트림 형태로 저장되어 있으며, 실제 실행 시에는 이를 XASL 구조체로 변환한다. 이 변환 비용을 줄이기 위해 클론 캐시(clone cache)를 사용하게된다. 클론 캐시는 변환된 XASL 구조체를 보관하여 재 사용하며, 동시에 여러 스레드가 요청할 경우 사용할 클론이 없으면 새로 생성하여 사용 후 클론 캐시에 등록한다. 이때 해당값이 증가 한다.)
+* SQL_ID : 원문 질의를 MD5 변환하여 32자리(16진수) 문자열 중 마지막 13자리의 16진수 값(hexa-digit) 을 SQL ID로 사용한다.
+    * MD5결과값이 'e1faffb3e614e6c2fba74296962386b7' 인 경우, SQL_ID는 **74296962386b7** 이다.
+* sql user text : 원문 질의문
+* sql hash text : 재작성된 질의문
+* sql plan text : 실행계획
+* OID_LIST : 참조하고 있는 객체(table, serial 등)의 OID 정보
+
+.. note::
+    *   unix timestamp는 date명령어를 사용하여 사람이 이해할 수 있는 형식의 시간으로 변환하여 확인할 수 있다. ::
+
+
 .. _statdump:
 
 statdump
 --------
 
-**cubrid statdump** 유틸리티를 이용해 CUBRID 데이터베이스 서버가 실행한 통계 정보를 확인할 수 있으며, 통계 정보 항목은 크게 File I/O 관련, 페이지 버퍼 관련, 로그 관련, 트랜잭션 관련, 동시성 관련, 인덱스 관련, 쿼리 수행 관련, 네트워크 요청 관련으로 구분된다. 
+**cubrid statdump** 유틸리티를 이용해 CUBRID 데이터베이스 서버가 실행한 통계 정보를 확인할 수 있으며, 통계 정보 항목은 크게 File I/O 관련, 페이지 버퍼 관련, 로그 관련, 트랜잭션 관련, 동시성 관련, 인덱스 관련, 질의 수행 관련, 네트워크 요청 관련으로 구분된다. 
 
 CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 세션 명령어를 이용할 수 있으며 :ref:`CSQL 실행 통계 정보 출력 <csql-execution-statistics>` 를 참고한다.
 
@@ -919,6 +1129,14 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
 다음은 **cubrid statdump** 에 대한 [options]이다.
 
 .. program:: statdump
+
+::
+
+  -i, --interval=S             매 S 초마다 통계를 출력
+  -o, --output-file=FILE       출력 메시지를 재지정할 파일
+  -c, --cumulative             누적값을 출력
+  -s, --substr=STRING          지정한 문자열이 포함된 항목만 출력
+
 
 .. option:: -i, --interval=SECOND
 
@@ -1672,7 +1890,7 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     |                                          |                | | 이 값과 비슷한 횟수로 커밋이 발생했다고 가정 할 수 있다.            |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Log_page_buffer_hit_ratio                | Computed       | | 로그 페이지 버퍼의 히트률                                           |
-    |                                          |                | | (Num_log_page_fetches - Num_log_page_fetch_ioreads)*100             |
+    |                                          |                | | (Num_log_page_fetches - Num_log_page_ioreads)*100                   |
     |                                          |                | | / Num_log_page_fetches                                              |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
 
@@ -1841,18 +2059,18 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +----------------------------------------------------+----------------+-----------------------------------------------------------------------+
 
 
-    **쿼리**
+    **질의**
 
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | **항목**                                 | **통계 타입**  |  **설명**                                                             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_query_selects                        | Accumulator    | SELECT 쿼리의 수행 횟수                                               |
+    | Num_query_selects                        | Accumulator    | SELECT 질의의 수행 횟수                                               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_query_inserts                        | Accumulator    | INSERT 쿼리의 수행 횟수                                               |
+    | Num_query_inserts                        | Accumulator    | INSERT 질의의 수행 횟수                                               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_query_deletes                        | Accumulator    | DELETE 쿼리의 수행 횟수                                               |
+    | Num_query_deletes                        | Accumulator    | DELETE 질의의 수행 횟수                                               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_query_updates                        | Accumulator    | UPDATE 쿼리의 수행 횟수                                               |
+    | Num_query_updates                        | Accumulator    | UPDATE 질의의 수행 횟수                                               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_query_sscans                         | Accumulator    | 순차 스캔(full scan) 횟수                                             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
@@ -2001,9 +2219,9 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | **항목**                                 | **통계 타입**  |  **설명**                                                             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_plan_cache_add                       | Accumulator    | 쿼리 캐시 엔트리가 새로 추가된 횟수                                   |
+    | Num_plan_cache_add                       | Accumulator    | 질의 캐시 엔트리가 새로 추가된 횟수                                   |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_plan_cache_lookup                    | Accumulator    | 특정 키를 사용하여 쿼리 캐시 룩업(Lookup)을 시도한 횟수               |
+    | Num_plan_cache_lookup                    | Accumulator    | 특정 키를 사용하여 질의 캐시 룩업(Lookup)을 시도한 횟수               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_plan_cache_hit                       | Accumulator    | 질의 문자열 해시 테이블에서 엔트리를 찾은(hit) 횟수                   |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
@@ -2015,9 +2233,9 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_plan_cache_invalid_xasl_id           | Accumulator    | | xasl_id 해시 테이블에서 엔트리를 찾지 못한(miss) 횟수.              |
     |                                          |                | | 서버에서 특정 엔트리가 제거(victimized)되었는데, 해당 엔트리를      |
-    |                                          |                | | 클라이언트에서 요청했을 때 발생하는 에러 횟수                       |
+    |                                          |                | | 클라이언트에서 요청했을 때 발생하는 오류 횟수                       |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_plan_cache_entries                   | Snapshot       | 쿼리 캐시 엔트리의 현재 개수                                          |
+    | Num_plan_cache_entries                   | Snapshot       | 질의 캐시 엔트리의 현재 개수                                          |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
 
     **HA**
@@ -2047,7 +2265,7 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | ..vacuum_job                             | Counter/timer  | vacuum 작업 횟수와 시간                                               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..vacuum_worker_process_log              | Counter/timer  | vacumm 워커의 로그 작업 수행 횟수와 시간                              |
+    | ..vacuum_worker_process_log              | Counter/timer  | vacuum 워커의 로그 작업 수행 횟수와 시간                              |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | ..vacuum_worker_execute                  | Counter/timer  | vacuum 워커의 회수 작업 수행 횟수와 시간                              |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
@@ -2117,7 +2335,7 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     |                                          |                | | - 페이지 래치 모드                                                  |
     |                                          |                | | - 페이지 래치 조건                                                  |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Time_data_page_lock_acquire_time         | Complex        | | 데이터 페이지를 로드 할 때까지 다른 쓰레드를 기다리는 시간          |
+    | Time_data_page_lock_acquire_time         | Complex        | | 데이터 페이지를 로드 할 때까지 다른 스레드를 기다리는 시간          |
     |                                          |                | | - 모듈 (system, worker, vacuum)                                     |
     |                                          |                | | - 페이지 타입                                                       |
     |                                          |                | | - 페이지 페치/탐색 모드                                             |
@@ -2189,24 +2407,24 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     | Num_unfix_lru2_shared_keep               | Accumulator    | 데이터 페이지를 고정하지 않고 공유 LRU 영역2에 보관한 수              |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_unfix_void_to_private_mid_vacuum     | Accumulator    | | 새로 로드된 데이터 페이지를 고정하지 않고 전용 LRU 목록 중간에      |
-    |                                          |                | | 추가한 수 (vacuum 쓰레드)                                           |
+    |                                          |                | | 추가한 수 (vacuum 스레드)                                           |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_unfix_lru1_any_keep_vacuum           | Accumulator    | | 새로 로드된 데이터 페이지를 고정하지 않고  전용/공유 LRU 영역 1에   |
-    |                                          |                | | 보관한 수 (vacuum 쓰레드)                                           |
+    |                                          |                | | 보관한 수 (vacuum 스레드)                                           |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_unfix_lru2_any_keep_vacuum           | Accumulator    | | 새로 로드된 데이터 페이지를 고정하지 않고 전용/공유 LRU 영역 2에    |
-    |                                          |                | | 보관한 수 (vacuum 쓰레드)                                           |
+    |                                          |                | | 보관한 수 (vacuum 스레드)                                           |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_unfix_lru3_any_keep_vacuum           | Accumulator    | | 새로 로드된 데이터 페이지를 고정하지 않고 전용/공유 LRU 영역 3에    |
-    |                                          |                | | 보관한 수 (vacuum 쓰레드)                                           |
+    |                                          |                | | 보관한 수 (vacuum 스레드)                                           |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_unfix_void_aout_found                | Accumulator    | 새로 로드 된 데이터 페이지가 AOUT 에서 발견된 수                      |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_unfix_void_aout_not_found            | Accumulator    | 새로 로드 된 데이터 페이지가 AOUT 에서 발견되지 않은 수               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_unfix_void_aout_found_vacuum         | Accumulator    | 새로 로드 된 데이터 페이지가 AOUT 에서 발견된 수(vacuum 쓰레드)       |
+    | Num_unfix_void_aout_found_vacuum         | Accumulator    | 새로 로드 된 데이터 페이지가 AOUT 에서 발견된 수(vacuum 스레드)       |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_unfix_void_aout_not_found_vacuum     | Accumulator    | 새로 로드 된 데이터 페이지가 AOUT 에서 발견되지 않은 수(vacuum 쓰레드)|
+    | Num_unfix_void_aout_not_found_vacuum     | Accumulator    | 새로 로드 된 데이터 페이지가 AOUT 에서 발견되지 않은 수(vacuum 스레드)|
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_data_page_unfix_ext                  | Complex        | | 다음으로 분류 된 데이터 페이지 비 고정 수                           |
     |                                          |                | | - 모듈(system, worker, vacuum)                                      |
@@ -2235,32 +2453,32 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | ..assign_direct_bcb                      | Counter/timer  | 대기자 (waiter)들에게 직접적으로 bcb를 할당한 횟수와 시간             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..wake_flush_waiter                      | Counter/timer  | BCB를 기다리는 쓰레드를 깨우기 위한 횟수와 시간                       |
+    | ..wake_flush_waiter                      | Counter/timer  | BCB를 기다리는 스레드를 깨우기 위한 횟수와 시간                       |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..flush_collect                          | Counter/timer  | BCB 세트를 수집하는 플러시 쓰레드의 수와 시간                         |
+    | ..flush_collect                          | Counter/timer  | BCB 세트를 수집하는 플러시 스레드의 수와 시간                         |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..flush_flush                            | Counter/timer  | BCB 세트를 플러싱하는 플러시 쓰레드의 수와 시간                       |
+    | ..flush_flush                            | Counter/timer  | BCB 세트를 플러싱하는 플러시 스레드의 수와 시간                       |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..flush_sleep                            | Counter/timer  | 플러시 쓰레드 일시 정지 수와 시간                                     |
+    | ..flush_sleep                            | Counter/timer  | 플러시 스레드 일시 정지 수와 시간                                     |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..flush_collect_per_page                 | Counter/timer  | 한 개의 BCB 를 수집하는 플러시 쓰레드의 수와 시간                     |
+    | ..flush_collect_per_page                 | Counter/timer  | 한 개의 BCB 를 수집하는 플러시 스레드의 수와 시간                     |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..flush_flush_per_page                   | Counter/timer  | 한 개의 BCB 를 플러싱하는 플러시 쓰레드의 수와 시간                   |
+    | ..flush_flush_per_page                   | Counter/timer  | 한 개의 BCB 를 플러싱하는 플러시 스레드의 수와 시간                   |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_data_page_writes                     | Accumulator    | 디스크로 내려쓰기된 데이터 페이지의 총 수                             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_data_page_dirty_to_post_flush        | Accumulator    | 포스트 플러시 쓰레드로 보내진 플러시 된 페이지 수                     |
+    | Num_data_page_dirty_to_post_flush        | Accumulator    | 포스트 플러시 스레드로 보내진 플러시 된 페이지 수                     |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_data_page_skipped_flush              | Accumulator    | 플러시 쓰레드가 생략한 BCB의 총 수                                    |
+    | Num_data_page_skipped_flush              | Accumulator    | 플러시 스레드가 생략한 BCB의 총 수                                    |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_data_page_skipped_flush_need_wal     | Accumulator    | | 로그 데이터 페이지를 먼저 플러시해야하기 때문에                     |
-    |                                          |                | | 플러시 쓰레드가 생략한 BCB 수                                       |
+    |                                          |                | | 플러시 스레드가 생략한 BCB 수                                       |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | | Num_data_page_skipped\                 | Accumulator    | | 이미 플러시 되어서 쓰레드가 생략한 BCB 수                           |
+    | | Num_data_page_skipped\                 | Accumulator    | | 이미 플러시 되어서 스레드가 생략한 BCB 수                           |
     | | \_flush_already_flushed                |                | |                                                                     |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_data_page_skipped_flush_fixed_or_hot | Accumulator    | | BCB가 고정되었거나 수집 된 후 고정되었기 때문에                     |
-    |                                          |                | | 플러시 쓰레드가 생략한 BCB의 수                                     |
+    |                                          |                | | 플러시 스레드가 생략한 BCB의 수                                     |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
 
     **페이지 버퍼 victimization**
@@ -2286,7 +2504,7 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_alloc_bcb_wait_threads_low_priority  | Snapshot       | 우선 순위가 낮은 대기열에서 직접적인 희생(Victim) 대기자의 현재 수    |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_flushed_bcbs_wait_for_direct_victim  | Snapshot       | | 희생자를 처리하여 즉시 할당하는 post-flush 쓰레드를 기다리는 BCB의  |
+    | Num_flushed_bcbs_wait_for_direct_victim  | Snapshot       | | 희생자를 처리하여 즉시 할당하는 post-flush 스레드를 기다리는 BCB의  |
     |                                          |                | | 현재 수                                                             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_victim_use_invalid_bcb               | Accumulator    | 유효하지 않은 목록에서 할당 된 BCB의 수                               |
@@ -2306,19 +2524,19 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_victim_assign_direct_vacuum_lru      | Accumulator    | vacuum 워커가 LRU 영역 3에서 할당한 직접 희생자 수                    |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_victim_assign_direct_flush           | Accumulator    | 플러시 쓰레드가 지정한 직접적인 희생자 수                             |
+    | Num_victim_assign_direct_flush           | Accumulator    | 플러시 스레드가 지정한 직접적인 희생자 수                             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_victim_assign_direct_panic           | Accumulator    | | 패닉 LRU 검색에 의해 할당 된 직접적인 희생자의 수                   |
     |                                          |                | | 희생자를 찾기 위한 대기자가 많으면 LRU 목록을 검색하는 동안 다른    |
-    |                                          |                | | 희생자를 찾는 쓰레드가 직접 할당하려고 시도한다.                    | 
-    |                                          |                | | 페이지 버퍼 유지 쓰레드 할당도 여기에  포함된다.                    |
+    |                                          |                | | 희생자를 찾는 스레드가 직접 할당하려고 시도한다.                    | 
+    |                                          |                | | 페이지 버퍼 유지 스레드 할당도 여기에  포함된다.                    |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_victim_assign_direct_adjust_lru      | Accumulator    | BCB가 LRU 영역 3으로 이동할 때 할당된 직접적인 희생자 수              |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_victim_assign_direct_adjust_lru\     | Accumulator    | | vacuum 쓰레드가 액세스할 것으로 예상되어 LRU 영역 3으로 이동할 때   |
+    | Num_victim_assign_direct_adjust_lru\     | Accumulator    | | vacuum 스레드가 액세스할 것으로 예상되어 LRU 영역 3으로 이동할 때   |
     | \_to_vacuum                              |                | | 직접적인 희생자로 할당되지 **않은** BCB의 수                        |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_victim_assign_direct_search\         | Accumulator    | | 플러시를 위해 BCB셋(Set)을 수집하는 동안 플러시 쓰레드에 의해 할당된|
+    | Num_victim_assign_direct_search\         | Accumulator    | | 플러시를 위해 BCB셋(Set)을 수집하는 동안 플러시 스레드에 의해 할당된|
     | \_for_flush                              |                | | 직접적인 희생자 수                                                  |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | Num_victim_shared_lru_success            | Accumulator    | 공유 LRU 에서 성공한 희생자 검색 수                                   |
@@ -2370,15 +2588,15 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | **항 목**                                | **통계 타입**  |  **설명**                                                             |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..DWB_flush_block                        | Counter/timer  | 플러시 (flush)되는 블록 (block)의 갯수와 전체 쓰기 시간               |
+    | ..DWB_flush_block                        | Counter/timer  | 플러시 (flush)되는 블록 (block)의 개수와 전체 쓰기 시간               |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..DWB_file_sync_helper                   | Counter/timer  | DWB helper에 의해 동기화된 파일의 갯수와 시간                         |
+    | ..DWB_file_sync_helper                   | Counter/timer  | DWB helper에 의해 동기화된 파일의 개수와 시간                         |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..DWB_flush_block_cond_wait              | Counter/timer  | DWB 쓰레드들이 기다리는 횟수와 시간                                   |
+    | ..DWB_flush_block_cond_wait              | Counter/timer  | DWB 스레드들이 기다리는 횟수와 시간                                   |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..DWB_flush_block_sort                   | Counter/timer  | 플러시 (flush)하기 위하여 정렬된 페이지의 갯수와 시간                 |
+    | ..DWB_flush_block_sort                   | Counter/timer  | 플러시 (flush)하기 위하여 정렬된 페이지의 개수와 시간                 |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | ..DWB_decache_pages_after_write          | Counter/timer  | 플러시 (flush) 이후 DWB 캐시에서 제거되는 페이지들의 갯수와 시간      |
+    | ..DWB_decache_pages_after_write          | Counter/timer  | 플러시 (flush) 이후 DWB 캐시에서 제거되는 페이지들의 개수와 시간      |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | ..DWB_wait_flush_block                   | Counter/timer  | | 페이지를 추가하기 위하여 블록이 플러시 (flush)되기를 기다리는       |
     |                                          |                | | 횟수와 시간                                                         |
@@ -2387,7 +2605,7 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
     | ..DWB_flush_force                        | Counter/timer  | 강제로 DWB를 완전히 플러시 (flush)한 횟수와 시간                      |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
-    | Num_dwb_flushed_block_volumes            | Complex        | | 각각의 블록 플러시 (block flush)에 의해 동기화된 파일들 갯수의      |
+    | Num_dwb_flushed_block_volumes            | Complex        | | 각각의 블록 플러시 (block flush)에 의해 동기화된 파일들 개수의      |
     |                                          |                | | 히스토그램 (마지막 값은 10 혹은 그 이상의 파일들)                   |
     +------------------------------------------+----------------+-----------------------------------------------------------------------+
 
@@ -2570,7 +2788,7 @@ CSQL의 해당 연결에 대해서만 통계 정보를 확인하려면 CSQL의 �
 
 .. note::
 
-    아래는 활성화/비활성화 할 수 있는 성능 통계 세트 목록이다. 각 세트의 값은 2의 제곱으로 표현된다.  이 세트들은 **extended_statistics_activation** 시스템 매개 변수 값에 의해 활성화/비활성화되며, 이 변수 값은 2진수 형식으로 설정한다 
+    아래는 활성화/비활성화 할 수 있는 성능 통계 세트 목록이다. 각 세트의 값은 2의 제곱으로 표현된다.  이 세트들은 **extended_statistics_activation** 시스템 파라미터 값에 의해 활성화/비활성화되며, 이 변수 값은 2진수 형식으로 설정한다 
 
     
       ========= ===================================== =========== ====================================================================
@@ -2664,6 +2882,12 @@ lockdb
 
         cubrid lockdb -o output.txt testdb
 
+.. option:: -c, --contention
+
+    경합중인 잠금 정보만 출력한다. ::
+
+        cubrid lockdb -c testdb
+
 출력 내용
 ^^^^^^^^^
 
@@ -2706,20 +2930,22 @@ lockdb
 
 **객체 잠금 테이블**
 
-**cubrid lockdb** 출력 내용의 세 번째 섹션은 객체 잠금 테이블의 내용을 포함한다. 이것은 어떤 객체에 대해서 어떤 클라이언트가 어떤 모드로 잠금을 가지고 있는지, 어떤 객체에 대해서 어떤 클라이언트가 어떤 모드로 기다리고 있는지를 보여준다. 객체 잠금 테이블 결과물의 첫 부분에는 얼마나 많은 객체가 잠금되었는지가 출력된다. 
+**cubrid lockdb** 출력 내용의 세 번째 섹션은 객체 잠금 테이블의 내용을 포함한다. 이것은 어떤 객체에 대해서 어떤 클라이언트가 어떤 모드로 잠금을 가지고 있는지, 어떤 객체에 대해서 어떤 클라이언트가 어떤 모드로 기다리고 있는지를 보여준다. 객체 잠금 테이블 결과물의 첫 부분에는 얼마나 많은 객체가 잠금되었는지가 출력된다. 그리고 현재 메모리에 할당된 잠금의 개수와 크기가 출력된다. 성능을 위하여 잠금을 바로 해제하지 않고 재사용하지만, 메모리에 할당된 잠금 개수가 **lock_escalation** 시스템 파라미터값을 넘을 경우에는 해당 잠금은 트랜잭션이 끝나는 시점에 메모리에서 해제된다. 관련 시스템 파라미터인 **lock_escalation** 에 대한 설명은 :ref:`lock-parameters` 를 참고한다.
 
 ::
 
-    Object lock Table:
-        Current number of ojbects which are locked = 2001
+    Object Lock Table:
+        Current number of objects which are locked    = 100
+        Current number of objects which are allocated = 1000
+        Current size of objects which are allocated = 242K
 
-**cubrid lockdb** 는 잠금을 획득한 각 객체의 OID, 객체 타입 및 테이블명을 출력한다. 또한 객체에 대한 잠금을 보유한 트랜잭션 수(*Num holders*), 잠금을 보유하지만 잠금을 상위 잠금으로 변환(예: **SCH_S_LOCK** 에서 **SCH_M_LOCK** 으로의 변환)할 수 없어 차단된 트랜잭션 수(*Num blocked-holders*) 및 객체의 잠금을 기다리는 다른 트랜잭션의 수(*Num waiters*)를 출력한다. 잠금을 보유한 클라이언트 트랜잭션, 차단된 클라이언트 트랜잭션 및 대기 중인 클라이언트 트랜잭션의 목록도 출력한다. 객체 타입이 클래스가 아닌 행에서는 MVCC 정보도 표시된다.
+**cubrid lockdb**\는 잠금을 획득한 각 객체의 OID, 객체 타입 및 테이블명을 출력한다. 또한 객체에 대한 잠금을 보유한 트랜잭션 수(*Num holders*), 잠금을 보유하지만 잠금을 상위 잠금으로 변환(예: **SCH_S_LOCK**\에서 **SCH_M_LOCK**\으로의 변환)할 수 없어 차단된 트랜잭션 수(*Num blocked-holders*) 및 객체의 잠금을 기다리는 다른 트랜잭션의 수(*Num waiters*)를 출력한다. 잠금을 보유한 클라이언트 트랜잭션, 차단된 클라이언트 트랜잭션 및 대기 중인 클라이언트 트랜잭션의 목록도 출력한다. 객체 타입이 클래스가 아닌 행에서는 MVCC 정보도 표시된다.
 
-다음 예제는 OID(0|62|5)인 클래스 타입의 객체를 나타내며,트랜잭션 1은 **IX_LOCK** 을 보유하고 트랜잭션 2는 **SCH_S_LOCK** 을 보유한 상태에서 **SCH_M_LOCK**으로 변환할 수 없어 차단된 상태를 보여준다. 또한 트랜잭션 3은**SCH_S_LOCK** 을 기다리지만 트랜잭션 2가 **SCH_M_LOCK** 을 기다리기 때문에 차단된 상태를 보여준다.
+다음 예제는 OID(0|62|5)인 클래스 타입의 객체를 나타내며,트랜잭션 1은 **IX_LOCK**\을 보유하고 트랜잭션 2는 **SCH_S_LOCK**\을 보유한 상태에서 **SCH_M_LOCK**\으로 변환할 수 없어 차단된 상태를 보여준다. 또한 트랜잭션 3은**SCH_S_LOCK**\을 기다리지만 트랜잭션 2가 **SCH_M_LOCK**\을 기다리기 때문에 차단된 상태를 보여준다.
 
 ::
 
-    OID = 0| 62| 5
+    OID = 0|62|5
     Object type: Class = athlete.
     Num holders = 1, Num blocked-holders= 1, Num waiters = 1
     LOCK HOLDERS :
@@ -2734,12 +2960,12 @@ lockdb
                         Start_waiting_at = Wed Feb 3 14:45:14 2016
                         Wait_for_secs = -1
 
-다음 예는 **X_LOCK** 을 보유한 트랜잭션 1에 의해서 삽입된 OID가 ( 2 | 50 | 1)인 클래스의 인스턴스를 보여준다. 트랜잭션1이 삽입한 인스턴스를 수정하기 위해 트랜잭션2가 **X_LOCK** 을 기다리는 것을 보여준다. 
+다음 예는 **X_LOCK** 을 보유한 트랜잭션 1에 의해서 삽입된 OID가 ( 2 | 50 | 1)인 클래스의 인스턴스를 보여준다. 트랜잭션1이 삽입한 인스턴스를 수정하기 위해 트랜잭션2가 **X_LOCK** 을 기다리는 것을 보여준다. **-c** 옵션을 사용하면 경합이 발생한 잠금만 확인할 수 있다.
 
 ::
 
-    OID = 2| 50| 1
-    Object type: instance of class ( 0| 62| 5) = athlete.
+    OID = 2|50|1
+    Object type: instance of class ( 0|62|5) = athlete.
     MVCC info: insert ID = 6, delete ID = missing.
     Num holders = 1, Num blocked-holders= 1, Num waiters = 1
     LOCK HOLDERS :
@@ -2749,7 +2975,7 @@ lockdb
                           Start_waiting_at = Wed Feb 3 14:45:14 2016
                           Wait_for_secs = -1
 
-*Granted_mode* 는 습득한 잠금의 모드를 나타내며, *Blocked_mode* 는 차단된 잠금의 모드를 나타낸다. *Starting_waiting_at* 은 잠금이 요청된 시간을 나타내며, *Wait_for_secs* 는 잠금의 대기 시간을 나타낸다. *Wait_for_secs* 값은 시스템 파라미터인 **lock_timeout** 에 의해 결정된다.
+*Granted_mode* 는 습득한 잠금의 모드를 나타내며, *Blocked_mode* 는 차단된 잠금의 모드를 나타낸다. *Start_waiting_at* 은 잠금이 요청된 시간을 나타내며, *Wait_for_secs* 는 잠금의 대기 시간을 나타낸다. *Wait_for_secs* 값은 시스템 파라미터인 **lock_timeout** 에 의해 결정된다.
 
 객체 타입이 클래스(테이블)인 경우 테이블의 특정 트랜잭션에서 획득한 레코드 잠금과 키 잠금의 합계를 나타내는 *Nsubgranules* 가 표시된다.
 
@@ -2768,13 +2994,13 @@ lockdb
 tranlist
 --------
 
-**cubrid tranlist** 는 대상 데이터베이스의 트랜잭션 정보를 확인하는 유틸리티로서, DBA 또는 DBA그룹 사용자만 수행할 수 있다. ::
+**cubrid tranlist** 는 대상 데이터베이스의 트랜잭션 정보를 확인하는 유틸리티이다. ::
 
     cubrid tranlist [options] database_name
 
 옵션을 생략하면 각 트랜잭션에 대한 전체 정보를 출력한다. 
 
-"cubrid tranlist demodb"는 "cubrid killtran -q demodb"와 비슷한 결과를 출력하나, 후자에 비해 "User name"과 "Host name"을 더 출력한다.
+"cubrid tranlist demodb"는 "cubrid killtran -q demodb"와 비슷한 결과를 출력하지만, "User name"과 "Host name"을 더 출력한다.
 "cubrid tranlist -s demodb"는 "cubrid killtran -d demodb"와 동일한 결과를 출력한다.
 
 다음은 tranlist 출력 결과의 예이다. 
@@ -2810,7 +3036,7 @@ tranlist
     *   Query time: 수행중인 질의의 총 수행 시간(단위: 초)
     *   Tran time: 현재 트랜잭션의 총 수행 시간(단위: 초)
     *   Wait for lock holder: 현재 트랜잭션이 락 대기중이면 해당 락을 소유하고 있는 트랜잭션의 리스트
-    *   SQL_ID: SQL Text에 대한 ID. cubrid killtran 명령의 --kill-sql-id 옵션에서 사용될 수 있다.
+    *   SQL_ID: SQL Text에 대한 ID. cubrid killtran 명령의 **\-\-kill-sql-id** 옵션에서 사용될 수 있다.
     *   SQL Text: 수행중인 질의문(최대 30자)
 
 "Tran index"에 보여지는 transaction 상태 메시지는 다음과 같다.
@@ -2826,14 +3052,13 @@ tranlist
 
 .. program:: tranlist
 
-.. option:: -u, --user=USER
+::
 
-    로그인할 사용자 ID. DBA및 DBA그룹 사용자만 허용한다.(기본값 : DBA)
-    
-.. option:: -p, --password=PASSWORD
+  -s, --summary                질의정보 및 락 정보 생략
+      --sort-key=COLUMN_NUMBER 정렬할 컬럼번호
+      --reverse                내림차순 정렬수행
 
-    사용자 비밀번호
-    
+
 .. option:: -s, --summary
 
     요약 정보만 출력한다(질의 수행 정보 또는 잠금 관련 정보를 생략).
@@ -2901,7 +3126,7 @@ tranlist
 killtran
 --------
 
-**cubrid killtran** 은 대상 데이터베이스의 트랜잭션을 확인하거나 특정 트랜잭션을 강제 종료하는 유틸리티로서, **DBA** 사용자만 수행할 수 있다. ::
+**cubrid killtran** 은 대상 데이터베이스의 트랜잭션을 확인하거나 특정 트랜잭션을 강제 종료하는 유틸리티로서, **DBA** 사용자만 트랜잭션을 제거할 수 있다. ::
 
     cubrid killtran [options] database_name
 
@@ -2929,6 +3154,19 @@ killtran
 다음은 **cubrid killtran** 에 대한 [options]이다.
 
 .. program:: killtran
+
+::
+
+  -i, --kill-transaction-index=INDEX INDEX로 지정된 해당 트랜잭션 종료
+      --kill-user-name=ID            ID로 지정되는 사용자의 모든 트랜잭션 종료
+      --kill-host-name=HOST          HOST로 지정되는 클라이언트의 모든 트랜잭션 종료
+      --kill-program-name=NAME       NAME으로 지정되는 모든 트랜잭션 종료
+      --kill-sql-id=SQL_ID           SQL_ID에 해당하는 질의를 실행중인 모든 트랜잭션 종료
+  -p, --dba-password=PASS            DBA 패스워드
+  -q, --query-exec-info              현재 활성화된 트랜잭션에 대한 질의 수행정보를 보여줌
+  -d, --display-information          현재 활성화된 트랜잭션에 대한 정보 보여줌
+  -f, --force                        사용자 확인 없이 지정된 트랜잭션 종료
+
 
 .. option:: -i, --kill-transaction-index=ID1,ID2,ID3
 
@@ -2972,13 +3210,14 @@ killtran
 
 .. option:: -p, --dba-password=PASSWORD
 
+    **-i** 또는 **\-\-kill** 옵션들이 사용될 경우에만 해당 옵션을 사용할 수 있다.
     이 옵션 뒤에 오는 값은 **DBA** 의 암호이며 생략하면 프롬프트에서 입력해야 한다.
 
 .. option:: -q, --query-exec-info
 
     cubrid tranlist 명령에서 "User name" 칼럼과 "Host name" 칼럼이 출력되지 않는다는 점만 다르다. :ref:`tranlist` 를 참고한다.
 
-.. option:: -d, --display
+.. option:: -d, --display-information
 
     기본 지정되는 옵션으로 트랜잭션의 요약 정보를 출력한다. cubrid tranlist 명령의 -s 옵션을 지정하여 실행한 것과 동일한 결과를 출력한다. :option:`tranlist -s` 를 참고한다.
 
@@ -2993,11 +3232,11 @@ killtran
 checkdb
 -------
 
-**cubrid checkdb** 유틸리티는 데이터베이스를 확인하기 위해 사용된다. **cubrid checkdb** 유틸리티를 사용하면 인덱스와 다른 데이터 구조를 확인하기 위해 데이터와 로그 볼륨의 내부적인 물리적 일치를 확인할 수 있다. 만일 **cubrid checkdb** 유틸리티의 실행 결과가 불일치로 나온다면 --**repair** 옵션으로 자동 수정을 시도해 보아야 한다.
+**cubrid checkdb** 유틸리티는 데이터베이스를 확인하기 위해 사용된다. **cubrid checkdb** 유틸리티를 사용하면 인덱스와 다른 데이터 구조를 확인하기 위해 데이터와 로그 볼륨의 내부적인 물리적 일치를 확인할 수 있다. 만일 **cubrid checkdb** 유틸리티의 실행 결과가 불일치로 나온다면 **\-\-repair** 옵션으로 자동 수정을 시도해 보아야 한다.
 
 ::
 
-    cubrid checkdb [options] database_name [table_name1 table_name2 ...]
+    cubrid checkdb [options] database_name [schema_name.table_name [{, schema_name.table_name}]]
 
 *   **cubrid**: CUBRID 서비스 및 데이터베이스 관리를 위한 통합 유틸리티
 
@@ -3005,11 +3244,30 @@ checkdb
 
 *   *database_name*: 일관성을 확인하거나 복구하려는 데이터베이스 이름
 
-*   *table_name1 table_name2*: 일관성을 확인하거나 복구하려는 테이블 이름을 나열한다.
+*   *schema_name*: 테이블의 스키마 이름
 
-다음은 **cubrid checkdb** 에 대한 [options]이다.
+*   *table_name*: 일관성을 확인하거나 복구하려는 테이블 이름을 나열한다.
+
+다음은 **cubrid checkdb**\에 대한 [options]이다.
 
 .. program:: checkdb
+
+::
+
+  -S, --SA-mode                독립 모드 실행
+  -C, --CS-mode                클라이언트 서버 모드 실행
+  -r, --repair                 불일치 발견 시 복구
+      --check-prev-link        인덱스 링크의 오류를 검사
+      --repair-prev-link       인덱스 링크가 잘못된 경우 복구 수행
+  -i, --input-class-file=FILE  클래스 이름이 나열된 입력 파일 명시
+      --check-file-tracker     파일 트랙커의 모든 파일의 페이지를 검사
+      --check-heap             모든 힙 파일 검사
+      --check-catalog          카탈로그 정보에 일관성 검사
+      --check-btree            모든 인덱스 유효 검사
+      --check-class-name       클래스 정보의 일치 여부 검사
+      --check-btree-entries    모든 인덱스 엔트리의 일관성 검사
+  -I, --index-name=INDEX_NAME  검사할 인덱스 지정
+
 
 .. option:: -S, --SA-mode
 
@@ -3049,9 +3307,9 @@ checkdb
 
     **-i** *FILE* 옵션을 지정하거나, 데이터베이스 이름 뒤에 테이블의 이름을 나열하여 일관성 확인 또는 복구 대상을 한정할 수 있다. 두 가지 방법을 같이 사용할 수도 있으며, 대상을 지정하지 않으면 전체 데이터베이스를 대상으로 일관성을 확인하거나 복구를 수행한다. 특정 대상이 지정되지 않으면 전체 데이터베이스가 일관성 확인  또는 복구의 대상이 된다. ::
 
-        cubrid checkdb demodb tbl1 tbl2
-        cubrid checkdb -r demodb tbl1 tbl2
-        cubrid checkdb -r -i table_list.txt demodb tbl1 tbl2
+        cubrid checkdb demodb public.table_1 public.table_2
+        cubrid checkdb -r demodb public.table_1 public.table_2
+        cubrid checkdb -r -i table_list.txt demodb public.table_1 public.table_2
 
     **-i** 옵션으로 지정하는 테이블 목록 파일은 공백, 탭, 줄바꿈, 쉼표로 테이블 이름을 구분한다. 다음은 테이블 목록 파일의 예로, t1부터 t10까지를 모두 일관성 확인 또는 복구를 위한 테이블로 인식한다. ::
 
@@ -3087,7 +3345,7 @@ checkdb
 .. option:: -I, --index-name=INDEX_NAME
 
     검사 대상 테이블에 대해 해당 옵션으로 명시한 인덱스가 유효한지 검사한다. 이 옵션을 사용하면 힙 파일에 대한 유효 검사는 하지 않는다. 
-    이 옵션을 사용할 때는 하나의 테이블과 하나의 인덱스만을 허용하며, 테이블 이름을 입력하지 않거나 두 개 이상의 테이블 이름을 입력하면 에러를 반환한다. 
+    이 옵션을 사용할 때는 하나의 테이블과 하나의 인덱스만을 허용하며, 테이블 이름을 입력하지 않거나 두 개 이상의 테이블 이름을 입력하면 오류를 반환한다. 
 
 .. _diagdb:
 
@@ -3100,13 +3358,20 @@ diagdb
 
 *   **cubrid**: CUBRID 서비스 및 데이터베이스 관리를 위한 통합 유틸리티이다.
 
-*   **diagdb**: CUBRID에 저장되는 바이너리 형태의 파일 정보를 텍스트 형태로 출력하여 현재의 데이터베이스 저장 상태를 확인하고자 할 때 사용하는 명령어이다. 데이터베이스가 구동 정지 상태인 경우에만 정상적으로 수행된다. 전체를 확인하거나 옵션을 사용하여 파일 테이블, 파일 용량, 힙 용량, 클래스 이름, 디스크 비트맵을 선택해 확인할 수 있다.
+*   **diagdb**: CUBRID에 저장되는 바이너리 형태의 파일 정보를 텍스트 형태로 출력하여 현재 데이터베이스의 저장 상태를 확인할 때 사용하는 명령어이다. 데이터베이스가 구동 정지 상태인 경우에만 정상적으로 수행된다. 전체를 확인하거나 옵션을 사용하여 파일 테이블, 파일 용량, 힙 용량, 클래스 이름, 디스크 비트맵을 선택해 확인할 수 있다.
 
 *   *database_name*: 내부 정보를 확인하려는 데이터베이스 이름이다.
 
 다음은 **cubrid diagdb** 에서 사용하는 [option]이다.
 
 .. program:: diagdb
+
+::
+
+  -d, --dump-type=TYPE         출력 범위 지정
+  -o, --output-file=FILE       출력 메시지를 재지정할 파일
+      --emergency              비상시 재시작
+
 
 .. option:: -d, --dump-type=TYPE
 
@@ -3148,7 +3413,7 @@ diagdb
 
 .. option:: --emergency
 
-    복구를 생략(suppression)하려면 **--emergency** 옵션을 사용한다. **이 옵션은 디버깅에만 사용해야 한다. 복구 이슈가 있는 경우 이 옵션을 사용하기 전에 데이터베이스를 백업할 것을 권장한다.** 
+    복구를 생략(suppression)하려면 **\-\-emergency** 옵션을 사용한다. **이 옵션은 디버깅에만 사용해야 한다. 복구 이슈가 있는 경우 이 옵션을 사용하기 전에 데이터베이스를 백업할 것을 권장한다.** 
 
 .. _paramdump:
 
@@ -3168,6 +3433,14 @@ paramdump
 다음은 **cubrid paramdump** 에서 사용하는 [options]이다.
 
 .. program:: paramdump
+
+::
+
+  -o, --output-file=FILE       출력 메시지를 재지정할 파일
+  -b, --both                   서버/클라이언트 프로세스에 사용하는 파라미터 정보 출력
+  -S, --SA-mode                독립 모드 실행
+  -C, --CS-mode                클라이언트 서버 모드 실행
+
 
 .. option:: -o, --output-file=FILE
 
@@ -3193,10 +3466,385 @@ paramdump
 
         cubrid paramdump -C demodb
 
+.. _tde-utility:
+
+tde
+---
+
+**cubrid tde** 유틸리티는 데이터베이스의 TDE 암호화를 관리하기 위하여 사용되며, **DBA** 사용자만 수행할 수 있다. **cubrid tde** 유틸리티를 사용하면 데이터베이스에 등록된 키를 변경할 수 있고, 키 파일에 새로운 키를 안정적으로 추가하고 제거할 수 있다. 또한, 지금까지 키 파일에 추가된 키들과 데이터베이스에 등록된 키가 무엇인지 조회할 수 있다. 자세한 내용은 :ref:`tde` 을 참고한다.
+
+::
+
+    cubrid tde <operation> [option] database_name
+
+*   **cubrid**: CUBRID 서비스 및 데이터베이스 관리를 위한 통합 유틸리티
+
+*   **tde**: 대상 데이터베이스에 적용된 TDE 암호화에 대한 관리 도구
+
+*   *operation*: 도구를 통한 수행할 작업을 지정한다. 키 조회, 키 추가, 키 제거, 키 변경 네 가지 종류가 있으며 하나의 작업이 주어져야 한다.
+
+*   *database_name*: TDE 관리 작업을 수행하려는 데이터베이스 이름
+
+다음은 **cubrid tde** 에 대한 오퍼레이션 (operation)에 대한 설명이다. 다음 중 하나의 작업이 주어져야 한다.
+
+.. program:: tde
+
+::
+
+    -s, --show-keys               데이터베이스에 등록된 키, 키 파일 (_keys)내의 키들에 대한 정보를 출력
+    -n, --generate-new-key        키 파일 (_keys)에 새로운 키를 추가; 최대 개수: 128
+    -d, --delete-key=KEY_INDEX    키 파일 (_keys)의 한 키를 제거
+    -c, --change-key=KEY_INDEX    데이터베이스에 등록된 키를 키 파일 (_keys)에 존재하는 다른 키로 변경
+
+
+.. option:: -s, --show-keys
+
+    데이터베이스에 등록된 키와 키 파일 (_keys)내의 키들에 대한 정보를 출력한다.  ::
+
+        $ cubrid tde -s testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        The current key set on testdb:
+        Key Index: 2
+        Created on Fri Nov 27 11:14:54 2020
+        Set     on Fri Nov 27 11:15:30 2020
+
+        Keys Information: 
+        Key Index: 0 created on Fri Nov 27 11:11:27 2020
+        Key Index: 1 created on Fri Nov 27 11:14:47 2020
+        Key Index: 2 created on Fri Nov 27 11:14:54 2020
+        Key Index: 3 created on Fri Nov 27 11:14:55 2020
+
+        The number of keys: 4
+
+    **The current key** 정보는 현재 데이터베이스에 등록된 키의 정보이다. 키 파일내에서의 인덱스와 키의 생성시간, 등록된 시간을 출력해준다. 키 인덱스와 생성시간으로 등록된 키를 식별할 수 있고, 등록된 시간을 통해 키 변경 계획을 수립할 수 있다.
+
+    **Keys Information** 은 키 파일 내에서 생성되어 관리되고 있는 키들을 보여준다. 키 인덱스와 생성시간을 확인할 수 있다.	
+
+.. option:: -n, --generate-new-key
+
+    키 파일 (_keys)에 새로운 키를 추가한다 (최대 128개). 성공할 경우 추가된 키의 인덱스를 출력해주며, 이 인덱스는 이후 키를 변경하거나 제거할 때에 키를 식별하기 위하여 사용된다. 추가된 키들의 정보는 **\-\-show-keys** 를 통해 확인할 수 있다. ::
+
+        $ cubrid tde -n testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        SUCCESS: A new key has been generated - key index: 1 created on Tue Dec  1 11:30:47 2020
+
+.. option:: -d, --delete-key=KEY_INDEX
+
+    키 파일 (_keys)에서 인덱스로 지정된 키 하나를 제거한다. 현재 데이터베이스에 등록된 키는 제거할 수 없다. ::
+
+        $ cubrid tde -d 1 testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        SUCCESS: The key (index: 1) has been deleted
+
+.. option:: -c, --change-key=KEY_INDEX
+
+    데이터베이스에 등록된 키를 키 파일 (_keys)에 존재하는 다른 키로 변경한다. 변경 시에 이전에 등록된 키와 새로 등록하려는 키가 모두 존재해야 한다. ::
+
+        $ cubrid tde -c 2 testdb
+        Key File: /home/usr/CUBRID/databases/testdb/testdb_keys
+
+        Trying to change the key from the key (index: 0) to the key (index: 2)..
+        SUCCESS: The key has been changed from the key (index: 0) to the key (index: 2)
+
+    데이터베이스에 등록된 키를 변경하기 위해서는 먼저 **\-\-generate-new-key** 를 통해 등록할 키를 생성해야 한다. 사용자는 키 변경을 위해 새로운 키를 생성할 수 있고, 미리 여러 키를 생성해 두고 보안 계획에 따라 키를 변경할 수 있다.
+
+다음은 **cubrid tde** 에서 사용하는 [options]이다.
+
+.. option:: -p, --dba-password=PASSWORD
+
+    이 옵션 뒤에 오는 값은 **DBA** 의 암호이며 생략하면 프롬프트에서 입력해야 한다.
+
+.. _vacuumdb:
+
+vacuumdb
+--------
+
+ **cubrid vacuumdb** 유틸리티는 삭제된 레코드와 불필요한 mvcc 관련 정보를 정리하기 위해 vacuum을 수행하거나, vacuum 관련 상태 정보를 얻기 위해 사용된다. ::
+
+    cubrid vacuumdb [options] database_name
+
+*   **cubrid**: CUBRID 서비스 및 데이터베이스 관리를 위한 통합 유틸리티이다.
+
+*   **vacuumdb**: 데이터베이스의 레코드에서 삭제된 레코드와 불필요한 mvcc 관련 정보 정리 및 관련 정보를 확인하는 유틸리티이다.
+
+*   *database_name*: vacuum을 수행할 데이터베이스 이름이다.
+
+다음은 **cubrid vacuumdb**\에서 사용할 수 있는 옵션들이다.
+
+.. program:: vacuumdb
+
+::
+
+  -o, --output-file=FILE       출력 메시지를 재지정할 파일
+      --dump                   현재 vacuum 상태 덤프
+  -S, --SA-mode                독립 모드 실행
+  -C, --CS-mode                클라이언트 서버 모드 실행
+
+
+.. option:: -o, --output-file=FILE
+
+    이 옵션은 vacuum에 대한 상태 정보를 저장할 파일명을 지정한다. 파일은 현재 디렉터리에 생성된다.  **-o** 옵션을 지정하지 않으면 콘솔 화면에 메시지가 표시된다. ::
+
+        cubrid vacuumdb -o db_output demodb
+
+.. option:: --dump
+
+    이 옵션은 vacuum에 대한 상태 정보를 표시하는 데 사용된다. 현재는 vacuum에서 참조하는 첫 번째 로그 페이지 ID와 로그 볼륨 이름을 표시한다. 사용자는 첫 번째 로그 페이지 ID의 변경을 통해 vacuum 작업의 진행 상황을 확인할 수 있으며, vacuum 작업을 위해 유지해야 하는 최소 로그 볼륨을 확인할 수 있다. 독립형 모드와 클라이언트/서버 모드 모두에서 사용할 수 있다.
+    **\-C** 옵션과 함께 지정되면 인덱스 vacuum시 인덱스 단말 노드 (leaf node) 의 임계값 이상의 :ref:`오버플로우 페이지 <deduplicate_overflow_page>` 읽기가 발생한 인덱스에 대한 정보를 함께 표시 한다. 이와 관련된 시스템 파라미터는 **vacuum_ovfp_check_duration**\과  **vacuum_ovfp_check_threshold**\가 있다.   
+    ::
+
+        cubrid vacuumdb --dump demodb
+
+    ::
+
+        $ cubrid vacuumdb -C --dump demodb
+
+        *** Vacuum Dump ***
+        First log page ID referenced = 85653 (in demodb_lgar013)
+        
+        *** Exceeding read threshold (1000 pages) for OID overflow pages (OVFP), Since 09/04/23 08:53:50 ***
+          Class name            Index name            Count         Num of OVFP recent read    Max num of OVFP read
+        ================================================================================================================
+          dba.tm                v_idx                       272451    1089 (09/04/23 10:49:52)    1478 (09/04/23 10:28:46)
+          dba.tbl               idx                         322728    1023 (09/04/23 09:53:47)    1475 (09/04/23 09:29:29)
+        
+        $ 
+
+    - Exceeding read threshold (**1000** pages) : vacuum_ovfp_check_threshold 설정값을 보여준다.
+    - Since **09/04/23 08:53:50** : OVFP 모니터링이 시작된 시각 정보를 보여준다. 
+    - Class name: 클래스 이름(테이블 이름), 소유자 이름을 포함합니다.
+    - Index name: 인덱스 이름
+    - Count: 인덱스 베큠(vacuum) 처리시 임계값(vacuum_ovfp_check_threshold)을 초과해서 인덱스 오버플로우 페이지를 읽은 횟수
+    - Num of OVFP recent read: 인덱스 베큠 처리시 임계값(vacuum_ovfp_check_threshold) 이상의 인덱스 오버플로우 페이지를 읽은 가장 최근의 기록
+    - Max num of OVFP read: 인덱스 베큠 작업시 임계값(vacuum_ovfp_check_threshold) 이상의 인덱스 오버플로우 페이지를 최대로 읽은 시점의 기록
+
+.. option:: -S, --SA-mode
+
+    이 옵션은 독립 실행형 모드인 데이터베이스에서 vacuumdb 동작을 수행하도록 한다. ::
+
+        cubrid vacuumdb -S demodb
+
+.. option:: -C, --CS-mode
+
+    이 옵션은 클라이언트/서버 모드에서 vacuumdb 동작을 수행하도록 한다. 이 모드에서는 vacuum은 수행할 수 없고 --dump 옵션과 함께 사용 해야한다. ::
+
+        cubrid vacuumdb -C demodb
+
+.. _flashback:
+
+flashback
+---------
+
+**cubrid flashback** 유틸리티는 커밋된 트랜잭션을 되돌릴 수 있는 SQL 구문을 제공하며, **DBA** 사용자만 수행할 수 있다. **cubrid flashback** 을 수행하기 위해서는 시스템 파라미터 **supplemental_log** 를 반드시 0보다 큰 값으로 설정해야 하며, **supplemental_log** 가 설정된 후에 실행되는 DML에 대해서만 지원한다. 이 유틸리티는 클라이언트/서버 모드에서만 동작하고 동시에 두 개 이상 수행할 수 없다:.::
+
+    cubrid flashback [options] database_name owner_name.class_name1 [owner_name.class_name2, ...]
+
+*   **cubrid**: CUBRID 서비스 및 데이터베이스 관리를 위한 통합 유틸리티
+
+*   **flashback**: 커밋된 특정 트랜잭션을 되돌릴 수 있도록 SQL 구문을 제공하는 도구
+
+*   *database_name*: 되돌리고자 하는 트랜잭션이 수행된 데이터베이스 이름
+
+*   *owner_name.class_name*: 되돌리고자 하는 테이블명 리스트. 테이블명을 명시할 때는 해당 테이블의 소유자명도 함께 명시해야 한다.
+
+다음 예제에서는 사용자가 "cubrid flashback demodb dba.tbl"를 수행했을 때 출력되는 결과를 보여준다.
+
+::
+
+    $ csql -u dba demodb
+
+    csql> CREATE TABLE tbl (a INT);
+    csql> INSERT INTO tbl VALUES (10);
+
+    $ cubrid flashback demodb dba.tbl
+
+    Flashback Summary
+    Number of Transaction: 1
+    Start date - End date: 03-05-2022:10:52:56 - 03-05-2022:11:02:56
+    Transaction id  User name                         Start time            End time              Num_insert  Num_update  Num_delete  Table
+               135  DBA                               03-05-2022:11:02:40   03-05-2022:11:02:41            1           0           0  dba.tbl
+    Enter transaction id (press -1 to quit): 135
+
+    delete from [dba.tbl] where [a] = 10 limit 1;
+
+위의 예에서 **cubrid flashback** 을 실행하면 지정된 기간 내에 수행된 트랜잭션에 대한 정보를 표시한다. 사용자가 기간을 지정하지 않으면 현재 시각으로부터 10분 전에 수행된 트랜잭션들부터 표시된다.
+사용자가 트랜잭션 식별자를 선택하면, 선택된 트랜잭션이 실행한 DML을 되돌릴 수 있도록 SQL 구문을 제공한다. 사용자는 300초 이내에 트랜잭션 식별자를 선택해야 하며, 해당 제한 시간은 시스템 파라미터 :ref:`flashback_timeout<flashback_timeout>` 을 통해 조절할 수 있다.
+
+**Flashback Summary** 에 표시된 각 칼럼의 의미는 다음과 같다.
+
+    *   Transaction id : 트랜잭션 식별자
+    *   User name : 트랜잭션을 수행한 사용자
+    *   Start time : 트랜잭션을 시작한 시간 (추정시간)
+    *   End time :  트랜잭션이 완료된 시간
+    *   Num_insert : 트랜잭션 내에서 수행된 삽입(insert) 연산 횟수
+    *   Num_update : 트랜잭션 내에서 수행된 수정(update) 연산 횟수
+    *   Num_delete : 트랜잭션 내에서 수행된 삭제(delete) 연산 횟수
+    *   Table : 트랜잭션 내에서 DML이 수행된 테이블명 리스트
+
+.. note::
+		**cubrid flashback** 을 통해 되돌리려는 테이블이 :ref:`trigger-event-target` 일 경우, 사용자가 의도하지 않은 결과를 얻을 수 있다. **cubrid flashback** 을 통해 테이블에 대한 변경 사항을 되돌리기 전에 트리거를 비활성화하는 것이 좋다. 자세한 내용은 :ref:`alter-trigger` 을 참조한다.
+
+.. note::
+		**cubrid flashback** 은 복합 데이터 타입인 SET, MULTISET, LIST, JSON을 지원하지 않는다. **cubrid flashback** 수행 시 대상 클래스가 미지원 데이터 타입을 칼럼으로 갖는 경우 해당 칼럼값은 null로 출력된다. 또한, LOB 타입의 칼럼은 데이터가 아닌 해당 파일의 위치 정보(LOB locator)만 출력된다.
+
+다음은 **cubrid flashback** 에서 사용하는 [options]이다.
+
+.. program:: flashback
+
+::
+
+    -o, --output-file=FILE      출력 메시지를 FILE로 리디렉션합니다. 
+    -u, --user=ID               플래시백할 SQL 문을 실행한 사용자를 지정합니다
+    -p, --dba-password          DBA 사용자의 비밀번호
+    -s, --start-date=DATE       플래시백의 시작 날짜를 지정합니다. 
+    -e, --end-date=DATE         플래시백의 종료 날짜를 지정합니다. 
+    --detail                    각 SQL 문에 대한 자세한 정보를 출력합니다.
+    --oldest                    시작 시간부터 종료 시간까지 수행된 SQL문에 대하여 시간 순으로 플래시백을 수행합니다.
+
+
+.. option:: -o, --output-file=FILE
+
+    특정 트랜잭션을 되돌리기 위한 SQL 구문들을 지정된 파일에 저장하는 옵션이다. **-o** 옵션을 지정하지 않으면 콘솔 화면에 메시지가 표시된다. ::
+
+        cubrid flashback -o db_output demodb dba.tbl
+
+.. option:: -u, --user=ID
+
+    트랜잭션을 수행한 사용자를 지정하며, 해당 사용자가 수행한 트랜잭션에 대해서만 **Flashback Summary** 에 표시된다. **-u** 옵션을 지정하지 않으면 모든 사용자에 의해 수행된 트랜잭션들이 표시된다. ::
+
+        $ csql -u public demodb
+
+        csql> CREATE TABLE tbl (a int);
+        csql> INSERT INTO tbl VALUES (10);
+
+        csql> CALL login ('dba', '') ON CLASS db_user;
+
+        csql> INSERT INTO public.tbl VALUES (20);
+
+        $ cubrid flashback -u public demodb dba.tbl
+
+        Flashback Summary
+        Number of Transaction: 1
+        Start date - End date: 03-05-2022:10:52:56 - 03-05-2022:11:02:56
+        Transaction id  User name                         Start time            End time              Num_insert  Num_update  Num_delete  Table
+                   135  PUBLIC                            03-05-2022:11:02:40   03-05-2022:11:02:41            1           0           0  public.tbl
+        Enter transaction id (press -1 to quit): 135
+
+        delete from [public.tbl] where [a] = 10 limit 1;
+
+.. option:: -p, --dba-password=PASSWORD
+
+    이 옵션 뒤에 오는 값은 **DBA** 의 암호이며 생략하면 프롬프트에서 입력해야 한다.
+
+.. option:: -s, --start-date=DATE
+
+    dd-mm-yyyy:hh:mi:ss (e.g. 28-04-2022:14:10:00) 형식으로 시작 날짜를 지정한다. 커밋된 트랜잭션 중에서 지정된 날짜 이후에 시작했거나 진행중인 트랜잭션들을 찾기 위해 사용된다. ::
+
+        cubrid flashback -s 28-04-2022:14:10:00 demodb dba.tbl
+
+.. option:: -e, --end-date=DATE
+
+    dd-mm-yyyy:hh:mi:ss (e.g. 28-04-2022:14:10:00) 형식으로 종료 날짜를 지정한다. 지정된 날짜 이전에 커밋된 트랜잭션들을 찾기 위해 사용된다.
+
+    시작 날짜를 지정하지 않으면 시작 날짜는 종료 날짜로부터 10분 전 시간으로 설정된다. 또한 종료 날짜가 지정되지 않으면 종료 날짜는 시작 날짜 10분 후 시간으로 설정된다.
+    만약 시작 날짜 및 종료 날짜가 지정되지 않으면, 10분 전부터 현재 시각까지 수행된 트랜잭션들이 표시된다. ::
+
+        cubrid flashback -e 28-04-2022:14:10:00 demodb dba.tbl
+
+.. option:: --detail
+
+    트랜잭션을 되돌리기 위한 각 SQL 구문들에 대해 자세한 정보를 보여준다. 트랜잭션 식별자, 트랜잭션을 수행한 사용자, 원본 SQL을 함께 제공한다. 원본 SQL은 사용자가 실행한 정확한 구문이 아니고, 단순히 행 단위로 실행되는 삽입/수정/삭제 문으로 사용자가 수행했던 구문을 나타낸 것이다. 예를 들어, INSERT ... SELECT 문은 여러 개의 삽입 문으로 표현된다.
+    **\-\-detail** 옵션을 지정하지 않으면, 트랜잭션을 되돌리기 위해 사용할 SQL 구문만 표시된다. ::
+
+        cubrid flashback --detail demodb dba.tbl
+
+        Flashback Summary
+        Number of Transaction: 1
+        Start date - End date: 03-05-2022:10:52:56 - 03-05-2022:11:02:56
+        Transaction id  User name                         Start time            End time              Num_insert  Num_update  Num_delete  Table
+                   135  DBA                               03-05-2022:11:02:40   03-05-2022:11:02:41            1           0           0  dba.tbl
+        Enter transaction id (press -1 to quit): 135
+
+        [TRANSACTION ID] 135
+        [USER]           DBA
+        [ORIGINAL]       insert into [dba.tbl] values (10);
+        [FLASHBACK]      delete from [dba.tbl] where [a] = 10 limit 1;
+
+.. option:: --oldest
+
+    지정된 트랜잭션 내에서 수행된 SQL 구문들을 시간 순서로 표시한다. **\-\-oldest** 옵션을 지정하지 않으면, 트랜잭션 내에서 수행된 SQL 구문들을 시간 역순으로 표시한다. ::
+
+        cubrid flashback --oldest demodb dba.tbl
+
+.. _memmon:
+
+memmon
+---------
+
+ **cubrid memmon** 유틸리티는 현재 서버 프로세스에 할당된 힙 메모리 사용량을 출력한다. 시스템 파라미터 **enable_memory_monitoring** 가 yes로 설정된 경우, 서버 메모리 모니터링 모듈은 힙 메모리 총 사용량과 메모리 할당이 발생한 큐브리드 소스 코드 및 라인 정보를 기준으로 세부적인 메모리 할당 정보를 추적 관리한다. 이를 통해 유틸리티를 실행하는 시점의 서버 힙 메모리 사용 현황을 확인할 수 있다. ::
+
+    cubrid memmon [option] database_name
+
+*   **cubrid**: CUBRID 서비스 및 데이터베이스 관리를 위한 통합 유틸리티
+
+*   **memmon**: 서버의 힙 메모리 사용 현황을 출력하는 유틸리티
+
+*   *database_name*: 힙 메모리 사용 현황을 확인할 데이터베이스 이름
+
+다음 예제에서는 사용자가 "cubrid memmon demodb"를 수행했을 때 출력되는 결과를 보여준다.
+
+::
+
+    ====================cubrid memmon====================
+    Server Name: demodb
+    Total Memory Usage: 935240660 Bytes (for meta info: 470300 Bytes)
+    -----------------------------------------------------
+            File Name                                                                                           |     Memory Usage(Ratio)
+            storage/page_buffer.c:4977                                                                          |        525315320 Bytes( 56%)
+            transaction/log_page_buffer.c:584                                                                   |        262147560 Bytes( 28%)
+            ...
+
+**cubrid memmon** 유틸리티를 실행하면 데이터베이스 이름, 힙 메모리 총 사용량, 할당된 힙 메모리를 추적 관리하기 위해 서버 내부적으로 유지되는 메타 정보의 메모리 사용량이 출력된다. 세부 항목으로는 힙 메모리 할당이 발생한 모든 파일과 라인 별[파일:라인] 메모리 사용량과 점유율이 사용량 기준으로 정렬되어 출력된다. 시스템 파라미터 **enable_memory_monitoring** 가 no로 설정된 경우 또는 --disable-force 옵션을 이용하여 메모리 모니터링 기능을 강제로 중지시킨 경우, 오류 메시지가 출력된다.
+
+유틸리티가 출력하는 정보는 다음과 같은 의미를 갖는다.
+
+    *   Server Name : 데이터베이스 이름
+
+    *   Total Memory Usage : 힙 메모리 총 사용량
+
+        *   for meta info : 힙 메모리 총 사용량 중 메모리 사용량을 추적 관리하기 위해 사용되는 메타 정보의 메모리 사용량
+
+    *   File Name : 힙 메모리 할당이 발생한 큐브리드 소스 코드 파일명과 라인 정보
+
+    *   Memory Usage(Ratio) : 힙 메모리 사용량 (총 사용량 대비 점유율)
+
+.. note::
+		힙 메모리 할당이 발생했던 이력을 남기기 위해 힙 메모리 할당 해제가 완료되어 현재 메모리 사용량이 0이 되는 지점 또한 **cubrid memmon** 의 출력 대상이 된다.
+
+다음은 **cubrid memmon** 에서 사용하는 [option]이다.
+
+.. program:: memmon
+
+.. option:: -o, --output-file=FILE
+
+    유틸리티 수행 결과를 지정한 파일에 저장하기 위한 옵션이다. **-o** 옵션을 지정하지 않으면 콘솔 화면에 메시지가 출력된다. ::
+
+        cubrid memmon -o memory_usage_output demodb
+
+.. option:: --disable-force
+
+    메모리 모니터링 기능을 강제로 중지하는 옵션이다. 이 옵션을 이용해 메모리 모니터링 기능을 강제로 중지시키면 **cubrid memmon** 유틸리티를 실행해도 서버의 힙 메모리 사용량은 출력되지 않는다. 메모리 사용량을 다시 추적하기 위해서는 서버를 반드시 재구동해야 한다. ::
+
+        cubrid memmon --disable-force demodb
+
+
 HA 명령어
 ---------
 
-**cubrid changemode** 유틸리티는 서버의 HA 모드 출력 또는 변경하는 유틸리티이다. 
+**cubrid changemode** 유틸리티는 서버의 HA 모드 출력하거나 변경하는 유틸리티이다. 
 
 **cubrid applyinfo** 유틸리티는 HA 환경에서 트랜잭션 로그 반영 정보를 확인하는 유틸리티이다.
 
@@ -3219,7 +3867,7 @@ HA 명령어
 타임존 명령어
 -------------
 
-**cubrid gen_tz** 유틸리티는 다음과 같이 두 가지 모드가 있다.:
+**cubrid gen_tz** 유틸리티는 다음과 같이 두 가지 모드가 있다.
 
 -   **new** 모드는 tzdata 폴더에 저장된 IANA 타임존 데이터를 C 소스 코드 파일로 컴파일할 때 사용한다.
     이후 이 파일은 **make_tz.sh** (Linux) / **make_tz.bat** (Windows) 스크립트를 통해 Linux용 .so 공유 라이브러리나 Windows용 .dll 라이브러리로 변환된다.

@@ -11,11 +11,11 @@ CREATE VIEW
 
 A view is a virtual table that does not exist physically. You can create a view by using an existing table or a query. **VIEW** and **VCLASS** are used interchangeably.
 
-Use **CREATE VIEW** statement to create a view. Regarding writing view name, see :doc:`/sql/identifier`. 
+Use **CREATE VIEW** statement to create a view. A view with the same name as an existing table or synonym cannot be created. Regarding writing view name, see :doc:`/sql/identifier`. 
 
 ::
 
-    CREATE [OR REPLACE] {VIEW | VCLASS} view_name
+    CREATE [OR REPLACE] {VIEW | VCLASS} [schema_name.]view_name
     [<subclass_definition>]
     [(view_column_name [COMMENT 'column_comment_string'], ...)]
     [INHERIT <resolution>, ...]
@@ -23,11 +23,12 @@ Use **CREATE VIEW** statement to create a view. Regarding writing view name, see
     [WITH CHECK OPTION] 
     [COMMENT [=] 'view_comment_string'];
                                     
-        <subclass_definition> ::= {UNDER | AS SUBCLASS OF} table_name, ...
-        <resolution> ::= [CLASS | TABLE] {column_name} OF superclass_name [AS alias]
+        <subclass_definition> ::= {UNDER | AS SUBCLASS OF} [schema_name.]superclass_name, ...
+        <resolution> ::= [CLASS | TABLE] {column_name} OF [schema_name.]superclass_name [AS alias]
 
 *   **OR REPLACE**: If the keyword **OR REPLACE** is specified after **CREATE**, the existing view is replaced by a new one without displaying any error message, even when the *view_name* overlaps with the existing view name.
 
+*   *schema_name*: Specifies the schema name. If omitted, the schema name of the current session is used.
 *   *view_name*: specifies the name of a view to be created. It must be unique in a database.
 *   *view_column_name*: defines the column of a view.
 *   **AS** <*select_statement*>: A valid **SELECT** statement must be specified. A view is created based on this.
@@ -157,12 +158,13 @@ ADD QUERY Clause
 
 You can add a new query to a query specification by using the **ADD QUERY** clause of the **ALTER VIEW** statement. 1 is assigned to the query defined when a virtual table was created, and 2 is assigned to the query added by the **ADD QUERY** clause. ::
 
-    ALTER [VIEW | VCLASS] view_name
+    ALTER [VIEW | VCLASS] [schema_name.]view_name
     ADD QUERY <select_statement>
     [INHERIT <resolution> , ...] ;
      
-        <resolution> ::= {column_name} OF superclass_name [AS alias]
+        <resolution> ::= {column_name} OF [schema_name.]superclass_name [AS alias]
 
+*   *schema_name*: Specifies the schema name. If omitted, the schema name of the current session is used.
 *   *view_name*: specifies the name of a view where the query to be added.
 *   <*select_statement*>: specifies the query to be added.
 
@@ -202,8 +204,9 @@ AS SELECT Clause
 
 You can change the **SELECT** query defined in the virtual table by using the **AS SELECT** clause in the **ALTER VIEW** statement. This function is working like the **CREATE OR REPLACE** statement. You can also change the query by specifying the query number 1 in the **CHANGE QUERY** clause of the **ALTER VIEW** statement. ::
 
-    ALTER [VIEW | VCLASS] view_name AS <select_statement> ;
+    ALTER [VIEW | VCLASS] [schema_name.]view_name AS <select_statement> ;
 
+*   *schema_name*: Specifies the schema name. If omitted, the schema name of the current session is used.
 *   *view_name*: specifies the name of a view to be modified.
 *   <*select_statement*>: specifies the new query statement to replace the **SELECT** statement defined when a view is created.
 
@@ -225,9 +228,10 @@ CHANGE QUERY Clause
 
 You can change the query defined in the query specification by using the **CHANGE QUERY** clause reserved word of the **ALTER VIEW** statement. ::
 
-    ALTER [VIEW | VCLASS] view_name
+    ALTER [VIEW | VCLASS] [schema_name.]view_name
     CHANGE QUERY [integer] <select_statement> ;
 
+*   *schema_name*: Specifies the schema name. If omitted, the schema name of the current session is used.
 *   *view_name*: specifies the name of a view to be modified.
 *   *integer*: specifies the number value of the query to be modified. The default value is 1.
 *   <*select_statement*>: specifies the new query statement to replace the query whose query number is *integer*.
@@ -294,23 +298,65 @@ You can drop a query defined in the query specification by using the **DROP QUER
 COMMENT Clause
 --------------
 
-You can change a view's comment with **COMMENT** clause of **ALTER VIEW** syntax.
+You can change a view's comment, columns' comment, or attributes' comment with **COMMENT** clause of **ALTER VIEW** syntax.
 
 ::
 
-    ALTER [VIEW | VCLASS] view_name COMMENT [=] 'view_comment';
+    ALTER [VIEW | VCLASS] [schema_name.]view_name
+    COMMENT [=] 'view_comment_string' |
+    COMMENT ON {COLUMN | CLASS ATTRIBUTE} <column_comment_definition> [, <column_comment_definition>] ;
+
+        <column_comment_definition> ::= column_name [=] 'column_comment_string'
+
+*   *schema_name*: Specifies the schema name. If omitted, the schema name of the current session is used.
+*   *view_name*: Specifies the name of a view to be modified.
+*   *column_name*: Specifies the name of a column to be modified.
+*   *view_comment_string*: Specifies a view's comment.
+*   *column_comment_string*: Specifies a column's comment.
+
+The following example shows how to change a view's comments.
 
 .. code-block:: sql
 
-    ALTER VIEW b_view COMMENT = 'changed view comment';
+    ALTER VIEW v1 COMMENT = 'changed view v1 comment';
+
+You can change the column comment by specifying one or more columns after the ON COLUMN keyword.
+The following example shows how to change a column's comments.
+
+.. code-block:: sql
+
+    ALTER VIEW v1 COMMENT ON COLUMN c1 = 'changed view column c1 comment';
+    ALTER VIEW v1 COMMENT ON COLUMN c2 = 'changed view column c2 comment', c3 = 'changed view column c3 comment';
+
+Below is a syntax to show a column's comment.
+But the SHOW CREATE VIEW statement shows only view comments.
+
+.. code-block:: sql
+
+    SHOW CREATE VIEW v1 /* view_name */ ;
+
+    SELECT attr_name, class_name, comment 
+    FROM db_attribute
+    WHERE class_name = 'v1' /* lowercase_view_name */ ;
+
+    SHOW FULL COLUMNS FROM v1 /* view_name */ ;
+
+You can see this comment with the ";sc view_name" command in the CSQL interpreter.
+
+::
+
+    $ csql -u dba demodb
+    
+    csql> ;sc v1
 
 DROP VIEW
 =========
 
 You can drop a view by using the **DROP VIEW** clause. The way to drop a view is the same as to drop a regular table.  If you also specify IF EXISTS clause, no error will be happened even if a target view does not exist. ::
 
-    DROP [VIEW | VCLASS] [IF EXISTS] view_name [{ ,view_name , ... }] ;
+    DROP [VIEW | VCLASS] [IF EXISTS] [schema_name.]view_name [{, [schema_name.]view_name}] ;
 
+*   *schema_name*: Specifies the schema name. If omitted, the schema name of the current session is used.
 *   *view_name*: specifies the name of a view to be dropped.
 
 .. code-block:: sql
@@ -322,8 +368,9 @@ RENAME VIEW
 
 You can change the view name by using the **RENAME VIEW** statement. ::
 
-    RENAME [VIEW | VCLASS] old_view_name {AS | TO} new_view_name[, old_view_name {AS | TO} new_view_name, ...] ;
+    RENAME [VIEW | VCLASS] [schema_name.]old_view_name {AS | TO} [schema_name.]new_view_name [{, [schema_name.]old_view_name {AS | TO} [schema_name.]new_view_name}] ;
 
+*   *schema_name*: Specifies the schema name. If omitted, the schema name of the current session is used. The schema of the view to be changed and the schema of the new view must be the same.
 *   *old_view_name*: specifies the name of a view to be modified.
 *   *new_view_name*: specifies the new name of a view.
 

@@ -3,7 +3,7 @@
 backupdb
 --------
 
-A database backup is the procedure of storing CUBRID database volumes, control files and log files, and it is executed by using the **cubrid backupdb** utility or the CUBRID Manager. **DBA** must regularly back up the database so that the database can be properly restored in the case of storage media or file errors. The restore environment must have the same operating system and the same version of CUBRID as the backup environment. For such a reason, you must perform a backup in a new environment immediately after migrating a database to a new version.
+A database backup is the procedure of storing CUBRID database volumes, control files and log files, and it is executed by using the **cubrid backupdb** utility or the CUBRID Manager. **DBA** must regularly back up the database so that the database can be properly restored in the case of storage media or file errors. The restore environment must have the same operating system and the same version of CUBRID as the backup environment. For this reason, you must perform a backup in the new environment immediately after migrating a database to a new version. However, because LOB (Large Object) data in CUBRID is stored as external files separate from database volumes, it is not included in backups performed by the backupdb utility. Therefore, database administrators must manually back up the directory containing LOB files during database backup operations. When restoring the database, the LOB files must also be restored to their original directory to ensure data consistency.
 
 To recover all database pages, control files and the database to the state at the time of backup, the **cubrid backupdb** utility copies all necessary log records. ::
 
@@ -14,6 +14,21 @@ To recover all database pages, control files and the database to the state at th
 The following shows options available with the **cubrid backupdb** utility (options are case sensitive).
 
 .. program:: backupdb
+
+::
+
+  -D, --destination-path=PATH  store backup volumes to directory PATH
+  -r, --remove-archive         delete unnecessary log-archives
+  -l, --level=LEVEL            backup level
+  -o, --output-file=FILE       print detailed backup messages to FILE
+  -S, --SA-mode                stand-alone mode execution
+  -C, --CS-mode                client-server mode execution
+      --no-check               don't check a consistency of the database
+  -t, --thread-count=COUNT     number of threads
+      --no-compress            don't compress backup volumes
+      --sleep-msecs=N          sleep N millisecond per 1M read
+  -k, --separate-keys          keys file (_keys) for TDE is not included in the backup volume, but is separated into a file instead
+
 
 .. option:: -D, --destination-path=PATH
 
@@ -56,6 +71,7 @@ The following shows options available with the **cubrid backupdb** utility (opti
         -----------------------------------------------------------------------------
          volume name                  | # of pages | backup progress status    | done
         -----------------------------------------------------------------------------
+         demodb_keys                  |          1 | ######################### | done
          demodb_vinf                  |          1 | ######################### | done
          demodb                       |      25000 | ######################### | done
          demodb_lginf                 |          1 | ######################### | done
@@ -78,7 +94,7 @@ The following shows options available with the **cubrid backupdb** utility (opti
 
 .. option:: --no-check
 
-    The following shows how to execute backup without checking the consistency of the database by using the **--no-check** option. ::
+    The following shows how to execute backup without checking the consistency of the database by using the **\-\-no-check** option. ::
 
         cubrid backupdb --no-check demodb
 
@@ -88,17 +104,29 @@ The following shows options available with the **cubrid backupdb** utility (opti
 
         cubrid backupdb -t 4 demodb
 
-.. option:: -z, --compress
+.. option:: --no-compress
 
-    The following shows how to compress the database and stores it in the backup file by using the **-z** option. The size of the backup file and the time required for backup can be reduced by using the **-z** option. ::
+    By default, CUBRID compresses the target database in order to reduce the size of the backup volume and then saves it. If a user wants to eliminate the CPU usage by the compression, they can set the **\-\-no-compress** option not to compress the backup volume. ::
 
-        cubrid backupdb -z demodb
+        cubrid backupdb --no-compress demodb
 
 .. option:: --sleep-msecs=NUMBER
 
     This option allows you to specify the interval of idle time during the database backup. The default value is 0 in milliseconds. The system becomes idle for the specified amount of time whenever it reads 1 MB of data from a file. This option is used to reduce the performance degradation of an active server during a live backup. The idle time will prevent excessive disk I/O operations. ::
 
         cubrid backupdb --sleep-msecs=5 demodb
+
+.. option:: -k, --separate-keys
+
+    This option is used to exclude the key file from the backup volume. The excluded key file is separated into a file named **<database_name>_bk<backup_level>_keys**. If this option is not given, the key file is included in the backup volume by default. For a detailed description of key file separation, see :ref:`tde-enc-backup`.  
+
+        cubrid backupdb -k demodb
+
+    .. note::
+
+        The key file manages an auxiliary key used to encrypt and decrypt the master key of TDE stored within the database. When using the TDE feature, the key file should not be backed up together with the backup volume or stored on the same storage media. Instead, it is recommended to manage it separately using a secure method. If the key file is lost or exposed, data protected by the TDE feature may become inaccessible or may lead to a security incident. Therefore, it is recommended to establish clear policies for the secure storage and management of the key file.
+
+
 
 Backup Strategy and Method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -168,13 +196,13 @@ Backup files created for backup levels 0, 1 and 2 may all be required for databa
 
 A compress backup is a method of backing up the database by compressing it. This type of backup reduces disk I/O costs and stores disk space because it requires less backup volume.
 
-To perform a compress backup, use the **cubrid backupdb -z** | **--compress** command.
+From version 11.2 of CUBRID, compress backup is used by default.
 
 **Parallel Backup Mode**
 
 A parallel or multi-thread backup is a method of performing as many backups as the number of threads specified. In this way, it reduces backup time significantly. Basically, threads are given as many as the number of CPUs in the system.
 
-To perform a parallel backup, use the **cubrid backupdb -t** | **--thread-count** command.
+To perform a parallel backup, use the **cubrid backupdb -t** | **\-\-thread-count** command.
 
 Managing Backup Files
 ^^^^^^^^^^^^^^^^^^^^^
@@ -183,7 +211,7 @@ One or more backup files can be created in sequence based on the size of the dat
 
 **Managing Disk Capacity during the Backup**
 
-During the backup process, if there is not enough space on the disk to store the backup files, a message saying that the backup cannot continue appears on the screen. This message contains the name and path of the database to be backed up, the backup file name, the unit number of backup files and the backup level. To continue the backup process, the administrator can choose one of the following options:
+During the backup process, if there is not enough space on the disk to store the backup files, a message saying that the backup cannot continue appears on the screen. This message contains the name and path of the database to be backed up, the backup filename, the unit number of backup files and the backup level. To continue the backup process, the administrator can choose one of the following options:
 
 *   Option 0: An administrator enters 0 to discontinue the backup.
 *   Option 1: An administrator inserts a new disk into the current device and enters 1 to continue the backup.
@@ -247,6 +275,18 @@ The following table shows options available with the **cubrid restoredb** utilit
 
 .. program:: restoredb
 
+::
+
+  -d, --up-to-date=DATE             restore the database up to its condition at given DATE
+      --list                        display a list of backup volumes without restoring
+  -B, --backup-file-path=PATH       PATH is a directory of backup volumes to be restored
+  -l, --level=LEVEL                 LEVEL of backup to be restored; see backup usage
+  -p, --partial-recovery            perform partial recovery if any log archive is absent
+  -o, --output-file=FILE            redirect output messages to FILE
+  -u, --use-database-location-path  restore the database and log volumes to the path specified in the database location file
+  -k, --keys-file-path              Path of key file (_keys) for TDE to be used during restoring
+
+
 .. option:: -d, --up-to-date=DATE
 
     A database can be restored to the given point by the date-time specified by the **-d** option. The user can specify the restoration point manually in the dd-mm-yyyy:hh:mi:ss (e.g. 14-10-2008:14:10:00) format. If no active log/archive log files are required to restore to the point specified, the database is restored only to the point of the last backup. ::
@@ -265,34 +305,37 @@ The following table shows options available with the **cubrid restoredb** utilit
 
         cubrid restoredb --list demodb
 
-    The following example shows how to display backup information by using the **--list** option. You can specify the path to which backup files of the database are originally stored as well as backup levels. ::
+    The following example shows how to display backup information by using the **\-\-list** option. You can specify the path to which backup files of the database are originally stored as well as backup levels. ::
 
         *** BACKUP HEADER INFORMATION ***
         Database Name: /local1/testing/demodb
-         DB Creation Time: Mon Oct 1 17:27:40 2008
-                 Pagesize: 4096
+           DB Creation Time: Mon Oct 1 17:27:40 2008
+           Pagesize: 4096
         Backup Level: 1 (INCREMENTAL LEVEL 1)
-                Start_lsa: 513|3688
-                 Last_lsa: 513|3688
+           Start_lsa: 513|3688
+           Last_lsa: 513|3688
         Backup Time: Mon Oct 1 17:32:50 2008
-         Backup Unit Num: 0
+           Backup Unit Num: 0
         Release: 8.1.0
-             Disk Version: 8
+           Disk Version: 8
         Backup Pagesize: 4096
         Zip Method: 0 (NONE)
-                Zip Level: 0 (NONE)
-        Previous Backup level: 0 Time: Mon Oct 1 17:31:40 2008
-        (start_lsa was -1|-1)
-        Database Volume name: /local1/testing/demodb_vinf
-             Volume Identifier: -5, Size: 308 bytes (1 pages)
-        Database Volume name: /local1/testing/demodb
-             Volume Identifier: 0, Size: 2048000 bytes (500 pages)
-        Database Volume name: /local1/testing/demodb_lginf
-             Volume Identifier: -4, Size: 165 bytes (1 pages)
-        Database Volume name: /local1/testing/demodb_bkvinf
-             Volume Identifier: -3, Size: 132 bytes (1 pages)
+           Zip Level: 0 (NONE)
+        Previous Backup Level: 0
+           Time: Mon Oct 1 17:31:40 2008
+           (start_lsa was -1|-1)
+        Database Volume Name: /local1/testing/demodb_keys
+           Volume Identifier: -6, Size: 65 bytes (1 pages)
+        Database Volume Name: /local1/testing/demodb_vinf
+           Volume Identifier: -5, Size: 308 bytes (1 pages)
+        Database Volume Name: /local1/testing/demodb
+           Volume Identifier: 0, Size: 2048000 bytes (500 pages)
+        Database Volume Name: /local1/testing/demodb_lginf
+           Volume Identifier: -4, Size: 165 bytes (1 pages)
+        Database Volume Name: /local1/testing/demodb_bkvinf
+           Volume Identifier: -3, Size: 132 bytes (1 pages)
 
-    With the backup information displayed by using the **--list** option, you can check that backup files have been created at the backup level 1 as well as the point where the full backup of backup level 0 has been performed. Therefore, to restore the database in the example, you must prepare backup files for backup levels 0 and 1.
+    With the backup information displayed by using the **\-\-list** option, you can check that backup files have been created at the backup level 1 as well as the point where the full backup of backup level 0 has been performed. Therefore, to restore the database in the example, you must prepare backup files for backup levels 0 and 1.
 
 .. option:: -B, --backup-file-path=PATH
 
@@ -344,6 +387,12 @@ The following table shows options available with the **cubrid restoredb** utilit
     This option restores a database to the path specified in the database location file(**databases.txt**).  The **-u** option is useful when you perform a backup on server A and store the backup file on server B. ::
 
         cubrid restoredb -u demodb
+
+.. option:: -k, --keys-file-path=PATH
+
+    This option specifies the path of a key file required to restore the database. If the valid key file is not given, it could fail to restore. If this option is not given, the appropriate key file is searched automatically according to a priority. For more information on this, refer to :ref:`tde-enc-backup`. ::
+
+        cubrid restoredb -k /home/cubrid/backup_keys/demodb_bk1_keys demodb
 
 NOTIFICATION messages, log recovery starting time and ending time are written into the server error log file or the restoredb error log file when database server is started or backup volume is restored; so you can check the elapsed time of these operations. In this message, the number of log records to be applied(redo) and the number of log pages are written together.
 
@@ -438,7 +487,7 @@ Suppose that *demodb* is backed up in the /home/cubrid/db/demodb directory on se
 
     Unlike a general scenario where a backup and restore are performed on the same server, in a scenario where backup files are restored using a different server, you need to add the location information on database restore in the database location file (**databases.txt**) on server *B*. In the diagram above, it is supposed that *demodb* is restored in the /home/cubrid/data/demodb directory on server *B* (hostname: pmlinux); edit the location information file accordingly and create the directory on server *B*.
 
-    Put the database location information in one single line. Separate each item with a space. The line should be written in [database name]. [data volume path] [host name] [log volume path] format; that is, write the location information of *demodb* as follows: ::
+    Put the database location information in one single line. Separate each item with a space. The line should be written in [database name]. [data volume path] [hostname] [log volume path] format; that is, write the location information of *demodb* as follows: ::
 
         demodb /home/cubrid/data/demodb pmlinux /home/cubrid/data/demodb
 

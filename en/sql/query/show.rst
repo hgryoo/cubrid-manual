@@ -16,8 +16,8 @@ It shows the column information of a table, and it's like a **SHOW COLUMNS** sta
 
 ::
 
-    DESC tbl_name;
-    DESCRIBE tbl_name;
+    DESC [schema_name.]table_name;
+    DESCRIBE [schema_name.]table_name;
     
 EXPLAIN
 =======
@@ -26,14 +26,16 @@ It shows the column information of a table, and it's like a **SHOW COLUMNS** sta
 
 ::
 
-    EXPLAIN tbl_name;
+    EXPLAIN [schema_name.]table_name;
 
 .. _show-tables-statement:
 
 SHOW TABLES
 ===========
 
-It shows the list of all table names within a database. The name of the result column will be *tables_in_<database name>* and it will have one column. If you use the **LIKE** clause, you can search the table names matching this and if you use the **WHERE** clause, you can search table names with more general terms. **SHOW FULL TABLES** displays the second column, *table_type* together. The table must have the value, **BASE TABLE** and the view has the value, **VIEW**. ::
+It shows the list of all table names within a database. The name of the result column will be *tables_in_<database name>* and it will have one column. If you use the **LIKE** clause, you can search the table names matching this and if you use the **WHERE** clause, you can search table names with more general terms. **SHOW FULL TABLES** displays the *owner* column and the *table_type* column together. The *owner* column has the owner name as a value. *table_type* columns have **BASE TABLE** values for tables and **VIEW** for views.
+
+::
 
     SHOW [FULL] TABLES [LIKE 'pattern' | WHERE expr];
 
@@ -61,45 +63,45 @@ The following shows the examples of this syntax.
 .. code-block:: sql
 
     SHOW FULL TABLES;
-    
+
 ::
 
-      Tables_in_demodb     Table_type
-    ============================================
-      'athlete'             'BASE TABLE'
-      'code'                'BASE TABLE'
-      'event'               'BASE TABLE'
-      'game'                'BASE TABLE'
-      'history'             'BASE TABLE'
-      'nation'              'BASE TABLE'
-      'olympic'             'BASE TABLE'
-      'participant'         'BASE TABLE'
-      'record'              'BASE TABLE'
-      'stadium'             'BASE TABLE'
-     
+      Tables_in_demodb      Owner                 Table_type
+    ==================================================================
+      'athlete'             'PUBLIC'              'BASE TABLE'
+      'code'                'PUBLIC'              'BASE TABLE'
+      'event'               'PUBLIC'              'BASE TABLE'
+      'game'                'PUBLIC'              'BASE TABLE'
+      'history'             'PUBLIC'              'BASE TABLE'
+      'nation'              'PUBLIC'              'BASE TABLE'
+      'olympic'             'PUBLIC'              'BASE TABLE'
+      'participant'         'PUBLIC'              'BASE TABLE'
+      'record'              'PUBLIC'              'BASE TABLE'
+      'stadium'             'PUBLIC'              'BASE TABLE'
+
 .. code-block:: sql
 
     SHOW FULL TABLES LIKE '%c%';
-    
+
 ::
 
-      Tables_in_demodb      Table_type
-    ============================================
-      'code'                'BASE TABLE'
-      'olympic'             'BASE TABLE'
-      'participant'         'BASE TABLE'
-      'record'              'BASE TABLE'
-     
+      Tables_in_demodb      Owner                 Table_type
+    ==================================================================
+      'code'                'PUBLIC'              'BASE TABLE'
+      'olympic'             'PUBLIC'              'BASE TABLE'
+      'participant'         'PUBLIC'              'BASE TABLE'
+      'record'              'PUBLIC'              'BASE TABLE'
+
 .. code-block:: sql
 
     SHOW FULL TABLES WHERE table_type = 'BASE TABLE' and TABLES_IN_demodb LIKE '%co%';
     
 ::
 
-      Tables_in_demodb      Table_type
-    ============================================
-      'code'                'BASE TABLE'
-      'record'              'BASE TABLE'
+      Tables_in_demodb      Owner                 Table_type
+    ==================================================================
+      'code'                'PUBLIC'              'BASE TABLE'
+      'record'              'PUBLIC'              'BASE TABLE'
 
 .. _show-columns-statement:
 
@@ -110,11 +112,9 @@ It shows the column information of a table. You can use the **LIKE** clause to s
 
 ::
 
-    SHOW [FULL] COLUMNS {FROM | IN} tbl_name [LIKE 'pattern' | WHERE expr];
+        SHOW [FULL] COLUMNS (FROM | IN) [schema_name.]table_name [LIKE 'pattern' | WHERE expr];
 
 If a **FULL** keyword is used, it shows the additional information, **collation** and **comment**.
-
-**SHOW FIELDS** is the same statement as **SHOW COLUMNS**.
 
 The **DESCRIBE** (abbreviated **DESC**) statement and the **EXPLAIN** statement provide the same information with **SHOW COLUMNS**, but they don't support LIKE clause or WHERE clause.
 
@@ -192,7 +192,7 @@ It shows the index information.
 
 ::
 
-    SHOW {INDEX | INDEXES | KEYS } {FROM | IN} tbl_name;
+    SHOW (INDEX | INDEXES | KEYS) (FROM | IN) [schema_name.]table_name;
 
 This query has the following columns:
 
@@ -207,7 +207,7 @@ Key_name                            VARCHAR         Index name
 Seq_in_index                        INTEGER         Serial number of the column in the index. Starts from 1.
 Column_name                         VARCHAR         Column name
 Collation                           VARCHAR         Method of sorting columns in the index. 'A' means ascending and **NULL** means not sorted.
-Cardinality                         INTEGER         The number of values measuring the unique values in the index. Higher cardinality increases the opportunity of using an index.
+Cardinality                         INTEGER         The number of values measuring the unique values in the index. The higher the cardinality, the more efficient the index search.
                                                     This value is updated every time **SHOW INDEX** is executed. Note that this is an approximate value.
 Sub_part                            INTEGER         The number of bytes of the indexed characters if the columns are indexed partially. **NULL** if all columns are indexed.
 Packed                                              Shows how keys are packed. If they are not packed, it will be **NULL**. Currently no support.
@@ -226,9 +226,9 @@ The following shows the examples of this syntax.
     
 ::
 
-    Table                  Non_unique  Key_name              Seq_in_index  Column_name           Collation             Cardinality     Sub_part  Packed                Null                  Index_type            Func                  Comment               Visible
-    =================================================================================================================================================================================================================================================================================
-    'athlete'                       0  'pk_athlete_code'                1  'code'                'A'                          6677         NULL  NULL                  'NO'                  'BTREE'               NULL                  NULL                  'YES'
+      Table             Non_unique  Key_name           Seq_in_index  Column_name  Collation  Cardinality  Sub_part  Packed  Null  Index_type  func  Comment  Visible
+    =================================================================================================================================================================
+      'public.athlete'           0  'pk_athlete_code'             1  'code'       'A'               6677      NULL  NULL    'NO'  'BTREE'     NULL  NULL     'YES'
 
 .. code-block:: sql
 
@@ -245,16 +245,16 @@ The following shows the examples of this syntax.
   
 ::
 
-    Table                  Non_unique  Key_name              Seq_in_index  Column_name           Collation             Cardinality     Sub_part  Packed                Null                  Index_type            Func                  Comment               Visible
-    =================================================================================================================================================================================================================================================================================
-    'tbl1'                          1  'i_tbl1_i1'                      1  'i1'                  'D'                             0         NULL  NULL                  'YES'                 'BTREE'               NULL                  NULL                  'YES'
-    'tbl1'                          1  'i_tbl1_i1_s1'                   1  'i1'                  'A'                             0         NULL  NULL                  'YES'                 'BTREE'               NULL                  NULL                  'YES'
-    'tbl1'                          1  'i_tbl1_i1_s1'                   2  's1'                  'A'                             0         NULL  NULL                  'YES'                 'BTREE'               NULL                  NULL                  'YES'
-    'tbl1'                          0  'i_tbl1_i2_s2'                   1  'i2'                  'A'                             0         NULL  NULL                  'NO'                  'BTREE'               NULL                  NULL                  'YES'
-    'tbl1'                          0  'i_tbl1_i2_s2'                   2  's2'                  'A'                             0         NULL  NULL                  'YES'                 'BTREE'               NULL                  NULL                  'YES'
-    'tbl1'                          1  'i_tbl1_s1'                      1  's1'                  'A'                             0            7  NULL                  'YES'                 'BTREE'               NULL                  NULL                  'NO'
-    'tbl1'                          0  'u_tbl1_i3'                      1  'i3'                  'A'                             0         NULL  NULL                  'YES'                 'BTREE'               NULL                  NULL                  'YES'
-    'tbl1'                          0  'u_tbl1_s3'                      1  's3'                  'A'                             0         NULL  NULL                  'YES'                 'BTREE'               NULL                  NULL                  'YES'		  
+      Table          Non_unique  Key_name        Seq_in_index  Column_name  Collation  Cardinality  Sub_part  Packed  Null   Index_type  Func  Comment  Visible
+    =============================================================================================================================================================
+      'public.tbl1'           1  'i_tbl1_i1'                1  'i1'         'D'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           1  'i_tbl1_i1_s1'             1  'i1'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           1  'i_tbl1_i1_s1'             2  's1'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           0  'i_tbl1_i2_s2'             1  'i2'         'A'                  0      NULL  NULL    'NO'   'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           0  'i_tbl1_i2_s2'             2  's2'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           1  'i_tbl1_s1'                1  's1'         'A'                  0         7  NULL    'YES'  'BTREE'     NULL  NULL     'NO'
+      'public.tbl1'           0  'u_tbl1_i3'                1  'i3'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
+      'public.tbl1'           0  'u_tbl1_s3'                1  's3'         'A'                  0      NULL  NULL    'YES'  'BTREE'     NULL  NULL     'YES'
 
 .. _show-collation-statement:
  
@@ -265,7 +265,7 @@ It lists collations supported by the database. If LIKE clause is present, it ind
 
 ::
 
-    SHOW COLLATION [ LIKE 'pattern' ];
+    SHOW COLLATION [LIKE 'pattern'];
 
 This query has the following columns:
 
@@ -332,7 +332,7 @@ It shows the timezone information which the current CUBRID supports.
 
 ::
 
-    SHOW [FULL] TIMEZONES [ LIKE 'pattern' ];
+    SHOW [FULL] TIMEZONES [LIKE 'pattern'];
 
 If FULL is not specified, one column which has timezone's region names is displayed. The name of this column is timezone_region.
 
@@ -424,9 +424,11 @@ The LIKE condition without the WHERE condition is applied on the first column. T
 SHOW GRANTS
 ===========
 
-It shows the permissions associated with the database user accounts. ::
+It shows the permissions associated with the database user accounts.
 
-    SHOW GRANTS FOR 'user';
+::
+
+    SHOW GRANTS FOR user_name;
 
 The following shows the examples of this syntax.
 
@@ -442,7 +444,7 @@ The following shows the examples of this syntax.
 
       Grants for USER1
     ======================
-      'GRANT INSERT, SELECT ON testgrant TO USER1'
+      'GRANT INSERT, SELECT ON dba.testgrant TO USER1'
 
 .. _show-create-table-statement:
 
@@ -451,7 +453,7 @@ SHOW CREATE TABLE
 
 When a table name is specified, It shows the **CREATE TABLE** statement of the table. ::
 
-    SHOW CREATE TABLE table_name;
+    SHOW CREATE TABLE [schema_name.]table_name;
     
 .. code-block:: sql
 
@@ -461,10 +463,7 @@ When a table name is specified, It shows the **CREATE TABLE** statement of the t
 
       TABLE                 CREATE TABLE
     ============================================
-      'nation'               'CREATE TABLE [nation] ([code] CHARACTER(3) NOT NULL, 
-    [name] CHARACTER VARYING(40) NOT NULL, [continent] CHARACTER VARYING(10), 
-    [capital] CHARACTER VARYING(30),  CONSTRAINT [pk_nation_code] PRIMARY KEY  ([code])) 
-    COLLATE iso88591_bin'
+      'public.nation'       'CREATE TABLE [nation] ([code] CHARACTER(3) NOT NULL, [name] CHARACTER VARYING(40) NOT NULL, [continent] CHARACTER VARYING(10), [capital] CHARACTER VARYING(30), CONSTRAINT [pk_nation_code] PRIMARY KEY  ([code])) DONT_REUSE_OID, COLLATE iso88591_bin'
 
 **SHOW CREATE TABLE** statement does not display as the user's written syntax. For example, the comment that user wrote is not displayed, and table names and column names are always displayed as lower case letters.
 
@@ -485,16 +484,9 @@ The following shows the examples of this syntax.
      
 ::
 
-      View              Create View
-    ========================================
-      'db_class'       'SELECT c.class_name, CAST(c.owner.name AS VARCHAR(255)), CASE c.class_type WHEN 0 THEN 'CLASS' WHEN 1 THEN 'VCLASS' ELSE
-                       'UNKNOW' END, CASE WHEN MOD(c.is_system_class, 2) = 1 THEN 'YES' ELSE 'NO' END, CASE WHEN c.sub_classes IS NULL THEN 'NO'
-                       ELSE NVL((SELECT 'YES' FROM _db_partition p WHERE p.class_of = c and p.pname IS NULL), 'NO') END, CASE WHEN
-                       MOD(c.is_system_class / 8, 2) = 1 THEN 'YES' ELSE 'NO' END FROM _db_class c WHERE CURRENT_USER = 'DBA' OR {c.owner.name}
-                       SUBSETEQ (  SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{t.g.name}), SET{})  FROM db_user u, TABLE(groups) AS t(g)  WHERE
-                       u.name = CURRENT_USER) OR {c} SUBSETEQ (  SELECT SUM(SET{au.class_of})  FROM _db_auth au  WHERE {au.grantee.name} SUBSETEQ
-                       (  SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{t.g.name}), SET{})  FROM db_user u, TABLE(groups) AS t(g)  WHERE u.name =
-                       CURRENT_USER) AND  au.auth_type = 'SELECT')'
+      View                  Create View
+    ============================================
+      'db_class'            'SELECT [c].[class_name], CAST([c].[owner].[name] AS VARCHAR(255)), CASE [c].[class_type] WHEN 0 THEN 'CLASS' WHEN 1 THEN 'VCLASS' ELSE 'UNKNOWN' END, CASE WHEN MOD([c].[is_system_class], 2) = 1 THEN 'YES' ELSE 'NO' END, CASE [c].[tde_algorithm] WHEN 0 THEN 'NONE' WHEN 1 THEN 'AES' WHEN 2 THEN 'ARIA' END, CASE WHEN [c].[sub_classes] IS NULL THEN 'NO' ELSE NVL((SELECT 'YES' FROM [_db_partition] [p] WHERE [p].[class_of] = [c] and [p].[pname] IS NULL), 'NO') END, CASE WHEN MOD([c].[is_system_class] / 8, 2) = 1 THEN 'YES' ELSE 'NO' END, [coll].[coll_name], [c].[comment] FROM [_db_class] [c], [_db_collation] [coll] WHERE [c].[collation_id] = [coll].[coll_id] AND (CURRENT_USER = 'DBA' OR {[c].[owner].[name]} SUBSETEQ(SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{[t].[g].[name]}), SET{}) FROM [db_user] [u], TABLE([groups]) AS [t]([g]) WHERE [u].[name] = CURRENT_USER) OR {[c]} SUBSETEQ ( SELECT SUM(SET{[au].[class_of]}) FROM [_db_auth] [au] WHERE {[au].[grantee].[name]} SUBSETEQ ( SELECT SET{CURRENT_USER} + COALESCE(SUM(SET{[t].[g].[name]}), SET{}) FROM [db_user] [u], TABLE([groups]) AS [t]([g]) WHERE [u].[name] = CURRENT_USER) AND [au].[auth_type] = 'SELECT'))'
 
 SHOW ACCESS STATUS 
 ================== 
@@ -503,7 +495,7 @@ SHOW ACCESS STATUS
   
 :: 
   
-    SHOW ACCESS STATUS [LIKE 'pattern' | WHERE expr] ; 
+    SHOW ACCESS STATUS [LIKE 'pattern' | WHERE expr]; 
 
 This statement displays the following columns.
 
@@ -650,6 +642,10 @@ The following shows the examples of this syntax.
 Diagnostics
 ===========
 
+The following diagnostic SHOW statements can only be used by users who are DBA or members of the DBA group.
+
+::
+
 SHOW VOLUME HEADER
 ------------------
 
@@ -679,7 +675,7 @@ Sector_alloc_table_first_page       INT             First page of sector allocat
 Page_alloc_table_size_in_pages      INT             Size of page allocation table in page
 Page_alloc_table_first_page         INT             First page of page allocation table
 Last_system_page                    INT             Last system page
-Creation_time                       DATETIME        Database creation time
+Creation_time                       DATETIME        Volume creation time
 Db_charset                          INT             Charset number of database
 Checkpoint_lsa                      VARCHAR(64)     Lowest log sequence address to start the recovery process of this volume
 Boot_hfid                           VARCHAR(64)     System Heap file for booting purposes and multi volumes
@@ -727,9 +723,11 @@ It shows the header information of an active log file.
 
 ::
 
-    SHOW LOG HEADER [OF file_name];
+    SHOW LOG HEADER [OF file_path];
     
-If you omit **OF** *file_name*, it shows the header information of a memory; if you include **OF** *file_name*, it shows the header information of *file_name*.
+If you omit **OF** *file_path*, it shows the header information of a memory; if you include **OF** *file_path*, it shows the header information of *file_path*.
+In file_path, you can input either the relative path or the absolute path of the active log file.
+When entering a relative path, the base path is the directory where the active log file is located.
 
 This query has the following columns:
 
@@ -739,7 +737,7 @@ Column name                         Type            Description
 Volume_id                           INT             Volume identifier
 Magic_symbol                        VARCHAR(32)     Magic value for log file
 Magic_symbol_location               INT             Magic symbol location from log page
-Creation_time                       DATETIME        Database creation time
+Creation_time                       DATETIME        Volume creation time
 Release                             VARCHAR(32)     CUBRID Release version
 Compatibility_disk_version          VARCHAR(32)     Compatibility of the database against the current release of CUBRID
 Db_page_size                        INT             Size of pages in the database
@@ -884,6 +882,9 @@ It shows the header information of an archive log file.
 
     SHOW ARCHIVE LOG HEADER OF file_name;
 
+In file_path, you can input either the relative path or the absolute path of the archive log file.
+When entering a relative path, the base path is the directory where the archive log file is located.
+
 This query has the following columns:
 
 =================================== =============== ======================================================================================================================================
@@ -892,7 +893,7 @@ Column name                         Type            Description
 Volume_id                           INT             Identifier of log volume
 Magic_symbol                        VARCHAR(32)     Magic value for file/magic Unix utility
 Magic_symbol_location               INT             Magic symbol location from log page
-Creation_time                       DATETIME        Database creation time
+Creation_time                       DATETIME        Volume creation time
 Next_trans_id                       BIGINT          Next transaction identifier
 Num_pages                           INT             Number of pages in the archive log
 First_page_id                       BIGINT          Logical page id at physical location 1 in archive log
@@ -924,7 +925,7 @@ It shows shows the header page of the table.
 
 ::
 
-    SHOW [ALL] HEAP HEADER OF table_name;
+    SHOW  [ALL] HEAP HEADER OF [schema_name.]table_name;
 
 *   ALL: If "ALL" is given in syntax in the partition table, the basic table and its partitioned tables are shown.
 
@@ -1113,7 +1114,7 @@ It shows the capacity of the table.
 
 ::
 
-    SHOW [ALL] HEAP CAPACITY OF table_name;
+    SHOW [ALL] HEAP CAPACITY OF [schema_name.]table_name;
 
 *   ALL: If "all" is given in syntax, the basic table and its partition table(s) is shown.
 
@@ -1248,7 +1249,7 @@ It shows the header information of specified slotted page.
 
 ::
 
-    SHOW SLOTTED PAGE HEADER { WHERE|OF } VOLUME = volume_num AND PAGE = page_num;
+    SHOW SLOTTED PAGE HEADER (WHERE | OF) VOLUME = volume_num AND PAGE = page_num;
 
 This query has the following columns:
 
@@ -1298,7 +1299,7 @@ It shows the information of all slots in the specified slotted page.
 
 ::
 
-    SHOW SLOTTED PAGE SLOTS { WHERE|OF } VOLUME = volume_num AND PAGE = page_num;
+    SHOW SLOTTED PAGE SLOTS (WHERE | OF) VOLUME = volume_num AND PAGE = page_num;
     
 This query has the following columns:
 
@@ -1352,13 +1353,13 @@ It shows the index header page of the index of the table.
 
 ::
 
-    SHOW INDEX HEADER OF table_name.index_name;
+    SHOW INDEX HEADER OF [schema_name.]table_name.index_name;
 
 If ALL keyword is used and an index name is omitted, it shows the entire headers of the indexes of the table.
 
 ::
 
-    SHOW ALL INDEXES HEADER OF table_name;
+    SHOW ALL INDEXES HEADER OF [schema_name.]table_name;
 
 This query has the following columns:
 
@@ -1396,9 +1397,9 @@ The following shows the examples of this syntax.
 ::
 
     <00001> Table_name   : 'tbl1'
-            Index_name   : 'index_a'
+            Index_name   : 'index_ab'
             Btid         : '(0|378|950)'
-            Node_type    : 'LEAF'
+            Node_level   : 'LEAF'
             Max_key_len  : 0
             Num_oids     : -1
             Num_nulls    : -1
@@ -1416,13 +1417,13 @@ It shows the index capacity of the index of the table.
 
 ::
 
-    SHOW INDEX CAPACITY OF table_name.index_name;
+    SHOW INDEX CAPACITY OF [schema_name.]table_name.index_name;
 
 If ALL keyword is used and an index name is omitted, it shows the entire capacity of the indexes of the table.
 
 ::
 
-    SHOW ALL INDEXES CAPACITY OF table_name;
+    SHOW ALL INDEXES CAPACITY OF [schema_name.]table_name;
 
 This query has the following columns:
 
@@ -1434,19 +1435,33 @@ Index_name                          VARCHAR(256)    Index name
 Btid                                VARCHAR(64)     BTID (volid|fileid|root_pageid)
 Num_distinct_key                    INT             Distinct key count (in leaf pages)
 Total_value                         INT             Total number of values stored in tree
+Deduplicate_distinct_key            INT             Deduplicated distinct key count (in leaf pages)
+Num_fence_key                       INT             Number of fence keys
 Avg_num_value_per_key               INT             Average number of values (OIDs) per key
+Avg_num_value_per_deduplicate_key   INT             Average number of values (OIDs) per deduplicated key
 Num_leaf_page                       INT             Leaf page count
 Num_non_leaf_page                   INT             NonLeaf page count
+Num_ovf_page                        INT             Leaf's overflow page count
 Num_total_page                      INT             Total page count
 Height                              INT             Height of the tree
 Avg_key_len                         INT             Average key length
 Avg_rec_len                         INT             Average page record length
 Total_space                         VARCHAR(64)     Total space occupied by index
-Total_used_space                    VARCHAR(64)     Total used space in index
-Total_free_space                    VARCHAR(64)     Total free space in index
-Avg_num_page_key                    INT             Average page key count (in leaf pages)
-Avg_page_free_space                 VARCHAR(64)     Average page free space
+Total_used_space_non_ovf            VARCHAR(64)     Total space used in allocated pages (excluded leaf's overflow pages)
+Total_free_space_non_ovf            VARCHAR(64)     Total space unused in allocated pages (excluded leaf's overflow pages)
+Total_used_space_ovf                VARCHAR(64)     Total space used in pages allocated to leaf's overflow
+Total_free_space_ovf                VARCHAR(64)     Total space unused in pages allocated to leaf's overflow
+Avg_num_key_per_page_non_ovf        INT             Average page key count in leaf pages
+Avg_free_space_per_page_non_ovf     VARCHAR(64)     Average page free space
+Avg_num_ovf_page_per_key            INT             Average page key count in leaf pages
+Avg_free_space_per_page_ovf         VARCHAR(64)     Average page free space in leaf's overflow pages
+Max_num_ovf_page_a_key              INT             Maximum number of leaf's overflow pages for one key
 =================================== =============== ======================================================================================================================================
+
+.. note::
+
+    Fence key is a virtual key added to a leaf node to help operate the B-tree index.
+
 
 The following shows the examples of this syntax.
 
@@ -1463,25 +1478,33 @@ The following shows the examples of this syntax.
     SHOW INDEX CAPACITY OF tbl1.index_a;
     
 ::
-    
-    <00001> Table_name           : 'tbl1'
-            Index_name           : 'index_a'
-            Btid                 : '(0|378|950)'
-            Num_distinct_key     : 0
-            Total_value          : 0
-            Avg_num_value_per_key: 0
-            Num_leaf_page        : 1
-            Num_non_leaf_page    : 0
-            Num_total_page       : 1
-            Height               : 1
-            Avg_key_len          : 0
-            Avg_rec_len          : 0
-            Total_space          : '16.0K'
-            Total_used_space     : '116.0B'
-            Total_free_space     : '15.9K'
-            Avg_num_page_key     : 0
-            Avg_page_free_space  : '15.9K'
 
+    <00001> Table_name                       : 'dba.tbl1'
+            Index_name                       : 'index_a'
+            Btid                             : '(0|4160|4161)'
+            Num_distinct_key                 : 0
+            Total_value                      : 0
+            Deduplicate_distinct_key         : 0
+            Num_fence_key                    : 0
+            Avg_num_value_per_key            : 0
+            Avg_num_value_per_deduplicate_key: 0
+            Num_leaf_page                    : 1
+            Num_non_leaf_page                : 0
+            Num_ovf_page                     : 0
+            Num_total_page                   : 1
+            Height                           : 1
+            Avg_key_len                      : 0
+            Avg_rec_len                      : 0
+            Total_space                      : '16.0K'
+            Total_used_space_non_ovf         : '120.0B'
+            Total_free_space_non_ovf         : '15.8K'
+            Total_used_space_ovf             : '0.0B'
+            Total_free_space_ovf             : '0.0B'
+            Avg_num_key_per_page_non_ovf     : 0
+            Avg_free_space_per_page_non_ovf  : '15.8K'
+            Avg_num_ovf_page_per_key         : 0
+            Avg_free_space_per_page_ovf      : '0.0B'
+            Max_num_ovf_page_a_key           : 0
 
 .. code-block:: sql
       
@@ -1489,40 +1512,58 @@ The following shows the examples of this syntax.
     
 ::
 
-    <00001> Table_name           : 'tbl1'
-            Index_name           : 'index_a'
-            Btid                 : '(0|378|950)'
-            Num_distinct_key     : 0
-            Total_value          : 0
-            Avg_num_value_per_key: 0
-            Num_leaf_page        : 1
-            Num_non_leaf_page    : 0
-            Num_total_page       : 1
-            Height               : 1
-            Avg_key_len          : 0
-            Avg_rec_len          : 0
-            Total_space          : '16.0K'
-            Total_used_space     : '116.0B'
-            Total_free_space     : '15.9K'
-            Avg_num_page_key     : 0
-            Avg_page_free_space  : '15.9K'
-    <00002> Table_name           : 'tbl1'
-            Index_name           : 'index_b'
-            Btid                 : '(0|381|960)'
-            Num_distinct_key     : 0
-            Total_value          : 0
-            Avg_num_value_per_key: 0
-            Num_leaf_page        : 1
-            Num_non_leaf_page    : 0
-            Num_total_page       : 1
-            Height               : 1
-            Avg_key_len          : 0
-            Avg_rec_len          : 0
-            Total_space          : '16.0K'
-            Total_used_space     : '120.0B'
-            Total_free_space     : '15.9K'
-            Avg_num_page_key     : 0
-            Avg_page_free_space  : '15.9K'
+    <00001> Table_name                       : 'dba.tbl1'
+            Index_name                       : 'index_a'
+            Btid                             : '(0|4160|4161)'
+            Num_distinct_key                 : 0
+            Total_value                      : 0
+            Deduplicate_distinct_key         : 0
+            Num_fence_key                    : 0
+            Avg_num_value_per_key            : 0
+            Avg_num_value_per_deduplicate_key: 0
+            Num_leaf_page                    : 1
+            Num_non_leaf_page                : 0
+            Num_ovf_page                     : 0
+            Num_total_page                   : 1
+            Height                           : 1
+            Avg_key_len                      : 0
+            Avg_rec_len                      : 0
+            Total_space                      : '16.0K'
+            Total_used_space_non_ovf         : '120.0B'
+            Total_free_space_non_ovf         : '15.8K'
+            Total_used_space_ovf             : '0.0B'
+            Total_free_space_ovf             : '0.0B'
+            Avg_num_key_per_page_non_ovf     : 0
+            Avg_free_space_per_page_non_ovf  : '15.8K'
+            Avg_num_ovf_page_per_key         : 0
+            Avg_free_space_per_page_ovf      : '0.0B'
+            Max_num_ovf_page_a_key           : 0
+    <00002> Table_name                       : 'dba.tbl1'
+            Index_name                       : 'index_b'
+            Btid                             : '(0|4224|4225)'
+            Num_distinct_key                 : 0
+            Total_value                      : 0
+            Deduplicate_distinct_key         : 0
+            Num_fence_key                    : 0
+            Avg_num_value_per_key            : 0
+            Avg_num_value_per_deduplicate_key: 0
+            Num_leaf_page                    : 1
+            Num_non_leaf_page                : 0
+            Num_ovf_page                     : 0
+            Num_total_page                   : 1
+            Height                           : 1
+            Avg_key_len                      : 0
+            Avg_rec_len                      : 0
+            Total_space                      : '16.0K'
+            Total_used_space_non_ovf         : '124.0B'
+            Total_free_space_non_ovf         : '15.8K'
+            Total_used_space_ovf             : '0.0B'
+            Total_free_space_ovf             : '0.0B'
+            Avg_num_key_per_page_non_ovf     : 0
+            Avg_free_space_per_page_non_ovf  : '15.8K'
+            Avg_num_ovf_page_per_key         : 0
+            Avg_free_space_per_page_ovf      : '0.0B'
+            Max_num_ovf_page_a_key           : 0
 
 SHOW CRITICAL SECTIONS
 ----------------------
@@ -1589,7 +1630,7 @@ It shows internal information of transaction descriptors which is internal data 
 
 .. code-block:: sql
 
-    SHOW { TRAN | TRANSACTION } TABLES [ WHERE EXPR ];
+    SHOW { TRAN | TRANSACTION } TABLES [ WHERE expr ];
 
 This query has the following columns:
 
@@ -1727,7 +1768,7 @@ Jobq_index                  INT             Job queue index only for worker thre
 Thread_id                   BIGINT          Thread id.
 Tran_index                  INT             Transaction index to which this thread belongs. If no related tran index, NULL.
 Type                        VARCHAR(8)      Thread type. Either one of the followings: 'MASTER', 'SERVER', 'WORKER', 'DAEMON', 'VACUUM_MASTER', 'VACUUM_WORKER', 'NONE', 'UNKNOWN'.
-Status                      VARCHAR(8)      Thread status. Either one of the followings: 'DEAD', 'FREE', 'RUN', 'WAIT', 'CHECK'.
+Status                      VARCHAR(8)      Thread status. Either one of the followings: 'FREE', 'RUN', 'WAIT', 'CHECK'.
 Resume_status               VARCHAR(32)     Resume status. Either one of the followings: 'RESUME_NONE', 'RESUME_DUE_TO_INTERRUPT', 'RESUME_DUE_TO_SHUTDOWN', 'PGBUF_SUSPENDED', 'PGBUF_RESUMED', 
                                             'JOB_QUEUE_SUSPENDED', 'JOB_QUEUE_RESUMED', 'CSECT_READER_SUSPENDED', 'CSECT_READER_RESUMED', 'CSECT_WRITER_SUSPENDED', 'CSECT_WRITER_RESUMED',
                                             'CSECT_PROMOTER_SUSPENDED', 'CSECT_PROMOTER_RESUMED', 'CSS_QUEUE_SUSPENDED', 'CSS_QUEUE_RESUMED', 'QMGR_ACTIVE_QRY_SUSPENDED', 'QMGR_ACTIVE_QRY_RESUMED',
@@ -1837,3 +1878,83 @@ Num_busy_workers            INT             The number of busy worker threads of
 Num_connection_workers      INT             The number of connection worker threads of the queue
 =========================== =============== =======================================================
 
+SHOW PAGE BUFFER STATUS
+-----------------------
+
+It shows the status of the data page buffer pool.
+
+.. code-block:: sql
+
+    SHOW PAGE BUFFER STATUS;
+
+This query has the following columns:
+
+=========================== =============== ================================================================================
+Column name                 Type            Description
+=========================== =============== ================================================================================
+Hit_rate                    NUMERIC(13,10)  The buffer pool hit rate (deprecated, always NULL)
+Num_hit                     BIGINT          The number of buffer hits (deprecated, always NULL)
+Num_page_request            BIGINT          The number of page requests (deprecated, always NULL)
+Pool_size                   INT             Buffer pool size in pages
+Page_size                   INT             Data page size
+Free_pages                  INT             The number of free pages in the buffer pool
+Victim_candidate_pages      INT             The number of victim candidate pages in the cold LRU area
+Clean_pages                 INT             The number of clean pages in the buffer pool
+Dirty_pages                 INT             The number of dirty pages in the buffer pool
+Num_index_pages             INT             The number of index pages in the buffer pool
+Num_data_pages              INT             The number of data pages in the buffer pool
+Num_system_pages            INT             The number of system pages in the buffer pool
+Num_temp_pages              INT             The number of temp pages in the buffer pool
+Num_pages_created           BIGINT          The number of pages created in the buffer pool (deprecated, always NULL)
+Num_pages_written           BIGINT          The number of pages written to disk in the buffer pool (deprecated, always NULL)
+Pages_written_rate          NUMERIC(20,10)  The number of pages written per second (deprecated, always NULL)
+Num_pages_read              BIGINT          The number of pages read from disk in the buffer pool (deprecated, always NULL)
+Pages_read_rate             NUMERIC(20,10)  The number of pages read per second (deprecated, always NULL)
+Num_flusher_waiting_threads INT             The number of waiting threads for flusher (deprecated, always NULL)
+=========================== =============== ================================================================================
+
+.. note::
+
+    The **Hit_rate**, **Num_hit**, **Num_page_request**, **Num_pages_created**, **Num_pages_written**, **Pages_written_rate**, **Num_pages_read**, **Pages_read_rate** and **Num_flusher_waiting_threads** columns are deprecated as of version 11.5 and always return NULL. The columns themselves are not removed, so the number of columns, their names, types and order stay the same as in the earlier versions.
+
+    Four of them can be replaced with a statistic of **cubrid statdump**. For details on each item, see :ref:`statdump`.
+
+    *   **Hit_rate**: **Data_page_buffer_hit_ratio** (printed with two decimal places)
+    *   **Num_page_request**: **Num_data_page_fetches**
+    *   **Num_pages_read**: **Num_data_page_ioreads**
+    *   **Num_pages_written**: **Num_data_page_iowrites**
+
+    Note that before they were deprecated, these columns reported the increment since the previous **SHOW PAGE BUFFER STATUS**, while the **cubrid statdump** statistics are cumulative. To get the value of the same interval, run **cubrid statdump -i** *SECOND* and read its periodic output, or take the difference between two cumulative values.
+
+    The other five columns have no counterpart in **cubrid statdump**. **Num_hit** can be obtained indirectly by subtracting **Num_data_page_ioreads** from **Num_data_page_fetches**, and **Pages_written_rate** and **Pages_read_rate** from each periodic value above divided by the interval. **Num_pages_created** and **Num_flusher_waiting_threads** have no replacement statistic.
+
+    The columns that are not deprecated (**Pool_size**, **Page_size**, **Free_pages**, **Victim_candidate_pages**, **Clean_pages**, **Dirty_pages**, **Num_index_pages**, **Num_data_pages**, **Num_system_pages**, **Num_temp_pages**) describe the page composition of the buffer pool and still report their real values.
+
+The following shows the examples of this syntax.
+
+.. code-block:: sql
+
+    -- csql> ;line on
+    SHOW PAGE BUFFER STATUS;
+
+::
+
+    <00001> Hit_rate                   : NULL
+            Num_hit                    : NULL
+            Num_page_request           : NULL
+            Pool_size                  : 32768
+            Page_size                  : 16392
+            Free_pages                 : 32739
+            Victim_candidate_pages     : 0
+            Clean_pages                : 32767
+            Dirty_pages                : 1
+            Num_index_pages            : 2
+            Num_data_pages             : 15
+            Num_system_pages           : 12
+            Num_temp_pages             : 0
+            Num_pages_created          : NULL
+            Num_pages_written          : NULL
+            Pages_written_rate         : NULL
+            Num_pages_read             : NULL
+            Pages_read_rate            : NULL
+            Num_flusher_waiting_threads: NULL

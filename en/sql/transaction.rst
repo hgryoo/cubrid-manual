@@ -2,6 +2,8 @@
 :meta-keywords: cubrid transaction, database transaction, cubrid locking, database locking, cubrid concurrency, multiversion concurrency control, mvcc, isolation level, database recovery
 :meta-description: This chapter covers issues relating to concurrency (MVCC) and restore, as well as how to commit or rollback transactions in CUBRID database.
 
+.. _database-transaction:
+
 Database Transaction
 ====================
 
@@ -62,11 +64,11 @@ If the update is properly done, the changes can be permanently fixed. In this ti
 
 .. note:: In CUBRID, an auto-commit mode is set by default for transaction management.
 
-An auto-commit mode is a mode that commits or rolls back all SQL statements. The transaction is committed automatically if the SQL is executed successfully, or is rolled back automatically if an error occurs. Such auto commit modes are supported in any interfaces.
+An autocommit mode is a mode that commits or rolls back all SQL statements. The transaction is committed automatically if the SQL is executed successfully, or is rolled back automatically if an error occurs. Such autocommit modes are supported in any interfaces.
 
-In CCI, PHP, ODBC and OLE DB interfaces, you can configure auto-commit mode by using **CCI_DEFAULT_AUTOCOMMIT** upon startup of an application. If configuration on broker parameter is omitted, the default value is set to **ON**. To change auto-commit mode, use the following functions by interface: **cci_set_autocommit** () for CCI interface and **cubrid_set_autocommit** () for PHP interface.
+In CCI, PHP, ODBC and OLE DB interfaces, you can configure autocommit mode by using **CCI_DEFAULT_AUTOCOMMIT** upon startup of an application. If configuration on broker parameter is omitted, the default value is set to **ON**. To change autocommit mode, use the following functions by interface: **cci_set_autocommit** () for CCI interface and **cubrid_set_autocommit** () for PHP interface.
 
-For session command (**;AUtocommit**) which enables auto-commit configuration in CSQL Interpreter, see :ref:`csql-session-commands`.
+For session command (**;AUtocommit**) which enables autocommit configuration in CSQL Interpreter, see :ref:`csql-session-commands`.
 
 Transaction Rollback
 --------------------
@@ -201,7 +203,7 @@ To set cursor holdability to close the cursor when a transaction is committed, s
 
 The default setting for applications that were developed based on CCI is to hold the cursor. If the cursor is set to 'not to hold a cursor' at connection level and you want to hold the cursor, define the **CCI_PREPARE_HOLDABLE** flag while preparing a query. The default setting for CCI drivers (PHP, PDO, ODBC, OLE DB, ADO.NET, Perl, Python, Ruby) is to hold the cursor. To check whether a driver supports the cursor holdability setting, refer to the **PREPARE** function of the driver.
 
-.. note:: \
+.. note::
 
     * Note that versions lower than CUBRID 9.0 do not support cursor holdability. The default setting of those versions is to close all cursors at commit.
     * CUBRID currently does not support ResultSet.HOLD_CURSORS_OVER_COMMIT in java.sql.XAConnection interface.
@@ -226,7 +228,7 @@ The result sets that hold the cursor are closed in the following cases:
 *   Driver closes the result set, i.e. rs.close()
 *   Driver closes the statement, i.e. stmt.close()
 *   Driver disconnects the connection.
-*   Transaction aborts, for instance, application explicitly calls rollback(), auto rollback due to a query failure under auto-commit mode.
+*   Transaction aborts, for instance, application explicitly calls rollback(), auto rollback due to a query failure under autocommit mode.
 
 **Relationship with CAS**
 
@@ -276,7 +278,7 @@ You can set an isolation level by using the :ref:`set-transaction-isolation-leve
 +================================+========+===============+==========+========================+
 | :ref:`isolation-level-6` (6)   | X      | X             | X        | X                      |
 +--------------------------------+--------+---------------+----------+------------------------+
-| :ref:`isolation-level-5` (5)   | X      | X             | O        | X                      |
+| :ref:`isolation-level-5` (5)   | X      | X             | X        | X                      |
 +--------------------------------+--------+---------------+----------+------------------------+
 | :ref:`isolation-level-4` (4)   | X      | O             | O        | X                      |
 +--------------------------------+--------+---------------+----------+------------------------+
@@ -299,7 +301,7 @@ Versioning, visibility and snapshot
 
 MVCC maintains multiple versions for each database row. Each version is marked by its inserter and deleter with MVCCID's - unique identifiers for writer transactions. These markers are useful to identify the author of a change and to place the change on a timeline.
 
-When a transaction *T1* inserts a new row, it creates its first version and sets its unique identifier *MVCCID1* as insert id. The MVCCID is stored as meta-data in record header:
+When a transaction *T1* inserts a new row, it creates its first version and sets its unique identifier *MVCCID1* as insert id. The MVCCID is stored as metadata in record header:
 
 +------------------+-------------+---------------+
 | OTHER META-DATA  | MVCCID1     | RECORD DATA   |
@@ -1286,7 +1288,6 @@ You can set the level of transaction isolation by using **isolation_level** and 
 |                       | Transaction T1 may experience R read (non-repeatable read) that was updated and committed by another transaction T2 when it is repeatedly retrieving the record R.                  |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | REPEATABLE READ (5)   | Another transaction T2 cannot update the schema of table A while transaction T1 is viewing table A.                                                                                 |
-|                       | Transaction T1 may experience phantom read for the record R that was inserted by another transaction T2 when it is repeatedly retrieving a specific record.                         |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | SERIALIZABLE (6)      | Temporarily disabled - details in :ref:`isolation-level-6`                                                                                                                          |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+

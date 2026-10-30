@@ -3,7 +3,7 @@
 backupdb
 --------
 
-데이터베이스 백업은 CUBRID 데이터베이스 볼륨, 제어 파일, 로그 파일을 저장하는 작업으로 **cubrid backupdb** 유틸리티 또는 CUBRID 매니저를 이용하여 수행된다. **DBA** 는 저장 매체의 오류 또는 파일 오류 등의 장애에 대비하여 데이터베이스를 정상적으로 복구할 수 있도록 주기적으로 데이터베이스를 백업해야 한다. 이 때 복구 환경은 백업 환경과 동일한 운영체제 및 동일한 버전의 CUBRID가 설치된 환경이어야 한다. 이러한 이유로 데이터베이스를 새로운 버전으로 마이그레이션한 후에는 즉시 새로운 버전의 환경에서 백업을 수행해야 한다.
+데이터베이스 백업은 CUBRID 데이터베이스 볼륨, 제어 파일, 로그 파일을 저장하는 작업으로 **cubrid backupdb** 유틸리티 또는 CUBRID 매니저를 이용하여 수행된다. **DBA** 는 저장 매체의 오류 또는 파일 오류 등의 장애에 대비하여 데이터베이스를 정상적으로 복구할 수 있도록 주기적으로 데이터베이스를 백업해야 한다. 이 때 복구 환경은 백업 환경과 동일한 운영 체제 및 동일한 버전의 CUBRID가 설치된 환경이어야 한다. 이러한 이유로 데이터베이스를 새로운 버전으로 마이그레이션한 후에는 즉시 새로운 버전의 환경에서 백업을 수행해야 한다. 다만, CUBRID에서 사용하는 LOB(Large Object) 데이터는 데이터베이스 볼륨과 별도의 파일로 관리되므로, backupdb 유틸리티에 의해 자동으로 백업되지 않는다. 따라서 DBA는 데이터베이스 백업 시 LOB 파일이 저장된 디렉터리를 별도로 백업하여야 하며, 복구 시에도 데이터베이스 복구와 함께 해당 LOB 파일을 원래 위치에 복원해야 한다.
 
 **cubrid backupdb** 유틸리티는 모든 데이터베이스 페이지들, 제어 파일들, 데이터베이스를 백업 시와 일치된 상태로 복구하기 위해 필요한 로그 레코드들을 복사한다. ::
 
@@ -14,6 +14,21 @@ backupdb
 다음은 **cubrid backupdb** 유틸리티와 결합할 수 있는 옵션이다. 대소문자가 구분됨을 주의한다.
 
 .. program:: backupdb
+
+::
+
+  -D, --destination-path=<백업> 볼륨이 저장될 디렉터리 경로
+  -r, --remove-archive         불필요한 로그 파일을 지움
+  -l, --level=LEVEL            백업 수준
+  -o, --output-file=<파일>     자세한 백업 메시지를 파일에 출력합니다.
+  -S, --SA-mode                독립 모드 실행
+  -C, --CS-mode                클라이언트 서버 모드 실행
+      --no-check               데이터베이스의 정합성 확인 작업을 수행하지 않습니다
+  -t, --thread-count=COUNT     백업을 수행하는 스레드 개수
+      --no-compress            백업 볼륨을 압축하지 않습니다
+      --sleep-msecs=N          매 1M 읽기 마다 N 밀리초를 쉽니다
+  -k, --separate-keys          TDE에 사용되는 Key File (_keys)을 백업볼륨에 포함하지 않고 별개의 파일로 분리합니다.
+
 
 .. option:: -D, --destination-path=PATH
 
@@ -56,6 +71,7 @@ backupdb
         -----------------------------------------------------------------------------
          volume name                  | # of pages | backup progress status    | done
         -----------------------------------------------------------------------------
+         demodb_keys                  |          1 | ######################### | done
          demodb_vinf                  |          1 | ######################### | done
          demodb                       |      25000 | ######################### | done
          demodb_lginf                 |          1 | ######################### | done
@@ -88,17 +104,28 @@ backupdb
 
         cubrid backupdb -t 4 demodb
 
-.. option:: -z, --compress
+.. option:: --no-compress
 
-    대상 데이터베이스를 압축하여 백업 파일에 저장한다. **-z** 옵션을 사용하면, 백업 파일의 크기 및 백업 시간을 단축시킬 수 있다. ::
+    기본적으로 큐브리드는 백업 볼륨의 크기를 줄이기 위해서, 대상 데이터베이스를 압축한 뒤 저장한다. 백업 파일 압축 실행 시 발생하는 CPU 사용량을 없애고 싶다면, **\-\-no-compress** 옵션을 통해 백업 볼륨을 압축하지 않을 수 있다. ::
 
-        cubrid backupdb -z demodb
+        cubrid backupdb --no-compress demodb
 
 .. option:: --sleep-msecs=NUMBER
 
     대상 데이터베이스를 백업하는 도중 쉬는 시간을 설정한다. 단위는 밀리초이며, 기본값은 **0** 이다. 1MB의 파일을 읽을 때마다 설정한 시간만큼 쉰다. 백업 작업이 과도한 디스크 I/O를 유발하기 때문에, 운영 중인 서비스에 백업 작업으로 인한 영향을 줄이고자 할 때 이 옵션이 사용된다. ::
 
         cubrid backupdb --sleep-msecs=5 demodb
+
+.. option:: -k, --separate-keys
+
+    백업 볼륨에 키 파일을 포함하지 않는다. 포함되지 않은 키는 <database_name>_bk<backup_level>_keys 라는 이름을 가진 별도의 파일로 분리된다. 옵션을 주지 않을 경우 기본적으로 키 파일은 백업 볼륨에 포함된다. 키 파일 분리에 대한 자세한 설명은 :ref:`tde-enc-backup` 을 참고한다. :: 
+
+        cubrid backupdb -k demodb
+
+    .. note::
+
+        키 파일은 DB 내부에 저장되어 있는 TDE의 master key를 암/복호화하기 위한 보조 키를 관리하는 파일로 TDE 기능을 사용할 경우  백업시 배업 볼륨에 함께 백업하거나 동일한 저장 매체에 보관하지 말고, 별도의 안전한 방법으로 분리하여 관리를 권장한다. 키 파일이 유실되거나 노출될 경우 TDE 기능 사용한 데이터를 사용할 수 없거나 보안 사고로 이어질 수 있으므로 보관 정책을 명확히 수립하는 것을 권장한다.
+
 
 백업 정책 및 방식
 ^^^^^^^^^^^^^^^^^
@@ -168,13 +195,13 @@ backupdb
 
 압축 백업(compress backup)은 데이터베이스를 압축하여 백업을 수행하기 때문에 백업 볼륨의 크기가 줄어들어 디스크 I/O 비용을 감소시킬 수 있고, 디스크 공간을 절약할 수 있다.
 
-압축 백업을 하려면 **cubrid backupdb -z** | **--compress** 명령어를 사용한다.
+큐브리드 11.2버전부터는 압축 백업 모드가 기본값으로 설정되어 있다.
 
 **병렬 백업 모드**
 
 병렬 백업 또는 다중 백업(multi-thread backup)은 지정된 스레드 개수만큼 동시 백업을 수행하기 때문에 백업 시간을 크게 단축시켜 준다. 기본적으로 시스템의 CPU 수만큼 스레드를 부여하게 된다.
 
-병렬 백업을 하려면 **cubrid backupdb -t** | **--thread-count** 명령어를 사용한다.
+병렬 백업을 하려면 **cubrid backupdb -t** | **\-\-thread-count** 명령어를 사용한다.
 
 백업 파일 관리
 ^^^^^^^^^^^^^^
@@ -209,7 +236,7 @@ backupdb
 보관 로그 관리
 ^^^^^^^^^^^^^^
 
-운영체제의 파일 삭제 명령(rm, del)을 사용하여 보관 로그(archive log)를 임의로 삭제해서는 안 되며, 시스템의 설정, **cubrid backupdb** 유틸리티 또는 서버 프로세스에 의해 보관 로그가 삭제되어야 한다. 보관 로그가 삭제될 수 있는 경우는 다음의 3가지이다.
+운영 체제의 파일 삭제 명령(rm, del)을 사용하여 보관 로그(archive log)를 임의로 삭제해서는 안 되며, 시스템의 설정, **cubrid backupdb** 유틸리티 또는 서버 프로세스에 의해 보관 로그가 삭제되어야 한다. 보관 로그가 삭제될 수 있는 경우는 다음의 3가지이다.
 
 
 *   HA 환경이 아닌 경우(ha_mode=off)
@@ -226,7 +253,7 @@ backupdb
 
 *   **cubrid backupdb -r** 옵션을 사용하여 명령을 실행하면 삭제된다. 하지만 HA 환경에서는 -r 옵션을 사용하면 안 된다.
 
-즉, 데이터베이스 운영 중에 보관 로그 볼륨을 가급적 남기고 싶지 않다면 **cubrid.conf**의 **log_max_archives** 값을 작은 값 또는 0으로 설정하되, **force_remove_log_archives**\의 값은 HA 환경이면 가급적 no로 설정한다.
+즉, 데이터베이스 운영 중에 보관 로그 볼륨을 가급적 남기고 싶지 않다면 **cubrid.conf**\의 **log_max_archives** 값을 작은 값 또는 0으로 설정하되, **force_remove_log_archives**\의 값은 HA 환경이면 가급적 no로 설정한다.
 
 .. _restoredb:
 
@@ -247,6 +274,18 @@ restoredb
 
 .. program:: restoredb
 
+::
+
+  -d, --up-to-date=DATE             주어진 시간으로 데이터베이스 상태를 복구
+      --list                        복구를 하지 않고 모든 백업 볼륨을 나열
+  -B, --backup-file-path=PATH       백업된 볼륨이 존재하는 디렉터리 경로
+  -l, --level=LEVEL                 복구에 사용될 백업의 레벨
+  -p, --partial-recovery            archive 로그가 존재하지 않으면 강제로 partial recovery 수행함
+  -o, --output-file=FILE            출력 메시지가 저장될 파일
+  -u, --use-database-location-path  데이터베이스 위치 파일에 설정된 경로에 데이터베이스 볼륨과 로그 볼륨을 복구
+  -k, --keys-file-path              복구에 사용될 키 파일 (_keys)의 경로
+
+
 .. option:: -d, --up-to-date=DATE
 
     **-d** 옵션으로 지정된 날짜-시간까지 데이터베이스를 복구한다. 사용자는 dd-mm-yyyy:hh:mi:ss(예: 14-10-2008:14:10:00)의 형식으로 복구 시점을 직접 지정할 수 있다. 만약 지정한 복구 시점까지 복구하기 위해 필요한 활성 로그/보관 로그 파일이 없다면 마지막 백업 시점까지만 부분 복구된다. ::
@@ -265,34 +304,37 @@ restoredb
 
         cubrid restoredb --list demodb
 
-    다음은 **--list** 옵션에 의해 출력되는 백업 정보의 예로서, 복구 작업을 수행하기 전에 대상 데이터베이스의 백업 파일이 최초 저장된 경로와 백업 수준을 검증할 수 있다. ::
+    다음은 **\-\-list** 옵션에 의해 출력되는 백업 정보의 예로서, 복구 작업을 수행하기 전에 대상 데이터베이스의 백업 파일이 최초 저장된 경로와 백업 수준을 검증할 수 있다. ::
 
         *** BACKUP HEADER INFORMATION ***
         Database Name: /local1/testing/demodb
-         DB Creation Time: Mon Oct 1 17:27:40 2008
-                 Pagesize: 4096
+           DB Creation Time: Mon Oct 1 17:27:40 2008
+           Pagesize: 4096
         Backup Level: 1 (INCREMENTAL LEVEL 1)
-                Start_lsa: 513|3688
-                 Last_lsa: 513|3688
+           Start_lsa: 513|3688
+           Last_lsa: 513|3688
         Backup Time: Mon Oct 1 17:32:50 2008
-         Backup Unit Num: 0
+           Backup Unit Num: 0
         Release: 8.1.0
-             Disk Version: 8
+           Disk Version: 8
         Backup Pagesize: 4096
         Zip Method: 0 (NONE)
-                Zip Level: 0 (NONE)
-        Previous Backup level: 0 Time: Mon Oct 1 17:31:40 2008
-        (start_lsa was -1|-1)
-        Database Volume name: /local1/testing/demodb_vinf
-             Volume Identifier: -5, Size: 308 bytes (1 pages)
-        Database Volume name: /local1/testing/demodb
-             Volume Identifier: 0, Size: 2048000 bytes (500 pages)
-        Database Volume name: /local1/testing/demodb_lginf
-             Volume Identifier: -4, Size: 165 bytes (1 pages)
-        Database Volume name: /local1/testing/demodb_bkvinf
-             Volume Identifier: -3, Size: 132 bytes (1 pages)
+           Zip Level: 0 (NONE)
+        Previous Backup Level: 0
+           Time: Mon Oct 1 17:31:40 2008
+           (start_lsa was -1|-1)
+        Database Volume Name: /local1/testing/demodb_keys
+           Volume Identifier: -6, Size: 65 bytes (1 pages)
+        Database Volume Name: /local1/testing/demodb_vinf
+           Volume Identifier: -5, Size: 308 bytes (1 pages)
+        Database Volume Name: /local1/testing/demodb
+           Volume Identifier: 0, Size: 2048000 bytes (500 pages)
+        Database Volume Name: /local1/testing/demodb_lginf
+           Volume Identifier: -4, Size: 165 bytes (1 pages)
+        Database Volume Name: /local1/testing/demodb_bkvinf
+           Volume Identifier: -3, Size: 132 bytes (1 pages)
      
-    **--list** 옵션을 이용하여 출력된 백업 정보를 확인하면, 백업 파일이 백업 수준 1로 생성되었고, 앞의 백업 수준 0의 전체 백업이 수행된 시점을 확인할 수 있다. 따라서, 예시된 데이터베이스의 복구를 위해서는 백업 수준 0인 백업 파일과 백업 수준 1인 백업 파일이 준비되어야 한다.
+    **\-\-list** 옵션을 이용하여 출력된 백업 정보를 확인하면, 백업 파일이 백업 수준 1로 생성되었고, 앞의 백업 수준 0의 전체 백업이 수행된 시점을 확인할 수 있다. 따라서, 예시된 데이터베이스의 복구를 위해서는 백업 수준 0인 백업 파일과 백업 수준 1인 백업 파일이 준비되어야 한다.
 
 .. option:: -B, --backup-file-path=PATH
 
@@ -345,7 +387,13 @@ restoredb
 
         cubrid restoredb -u demodb
 
-데이터베이스 서버 시작이나 백업 볼륨 복구 시 서버 에러 로그 또는 restoredb 에러 로그 파일에 로그 회복(log recovery) 시작 시간과 종료 시간에 대한 NOTIFICATION 메시지를 출력하여, 해당 작업의 소요 시간을 확인할 수 있다. 해당 메시지에는 적용(redo)해야할 로그의 개수와 로그 페이지 개수가 함께 기록된다. 
+.. option:: -k, --keys-file-path=PATH
+
+    대상 데이터베이스 복구 시 필요한 키 파일을 지정한다. 올바른 키 파일이 주어지지 않았을 경우 복구에 실패한다. 옵션을 지정해주지 않을 경우 적절한 키 파일을 탐색하여 사용한다. 이에 대한 자세한 내용은 :ref:`tde-enc-backup` 을 참고한다. ::
+
+        cubrid restoredb -k /home/cubrid/backup_keys/demodb_bk1_keys demodb
+
+데이터베이스 서버 시작이나 백업 볼륨 복구 시 서버 오류 로그 또는 restoredb 오류 로그 파일에 로그 회복(log recovery) 시작 시간과 종료 시간에 대한 NOTIFICATION 메시지를 출력하여, 해당 작업의 소요 시간을 확인할 수 있다. 해당 메시지에는 적용(redo)해야할 로그의 개수와 로그 페이지 개수가 함께 기록된다. 
 
 :: 
   

@@ -14,32 +14,34 @@ CREATE SERIAL
 
 *   시리얼은 다중 사용자 환경에서 고유한 순번을 생성하는데 용이하다.
 *   시리얼 번호는 테이블과 독립적으로 생성된다. 따라서 하나 이상의 테이블에 동일한 시리얼을 사용할 수 있다.
-*   **PUBLIC** 을 포함하여 모든 사용자가 시리얼 객체를 생성할 수 있다. 일단 생성되면 모든 사용자들이 **CURRENT_VALUE**, **NEXT_VALUE** 를 통해 시리얼 숫자를 가져갈 수 있다.
+*   **PUBLIC** 을 포함한 모든 사용자가 시리얼 객체를 생성할 수 있다. 일단 생성되면 모든 사용자들이 **CURRENT_VALUE (CURRVAL과 동일)**, **NEXT_VALUE (NEXTVAL과 동일)** 를 통해 시리얼 값을 조회할 수 있다.
 *   시리얼 객체의 소유자와 **DBA** 만 시리얼 객체를 갱신하고 삭제할 수 있다. 소유자가 **PUBLIC** 이면 모든 사용자가 갱신하거나 삭제할 수 있다.
 
-**CREATE SERIAL** 문을 이용하여 데이터베이스에 시리얼 객체를 생성한다. 시리얼 이름 작성 원칙은 :doc:`/sql/identifier`\ 를 참고한다.
+**CREATE SERIAL** 문을 이용하여 데이터베이스에 시리얼 객체를 생성한다. 시리얼 이름 작성 원칙은 :doc:`/sql/identifier`\를 참고한다.
 
 ::
 
-    CREATE SERIAL serial_name
+    CREATE SERIAL [schema_name.]serial_name
     [START WITH initial]
     [INCREMENT BY interval]
     [MINVALUE min | NOMINVALUE]
     [MAXVALUE max | NOMAXVALUE]
+    [CYCLE | NOCYCLE]
     [CACHE cached_num | NOCACHE]
     [COMMENT 'comment_string'];
 
-*   *serial_identifier*: 생성할 시리얼의 이름을 지정한다(최대 254 바이트).
+*   *schema_name*: 시리얼의 스키마 이름을 지정한다(최대 31 바이트). 생략하면 현재 세션의 스키마 이름을 사용한다.
+*   *serial_name*: 생성할 시리얼의 이름을 지정한다(최대 222 바이트).
 
 *   **START WITH** *initial*: 처음 생성되는 시리얼 숫자를 지정한다. 이 값의 범위는 -1,000,000,000,000,000,000,000,000,000,000,000,000(-10^36)와   9,999,999,999,999,999,999,999,999,999,999,999,999(10^37-1) 사이이다. 오름차순 시리얼의 경우 기본값은 1이며 내림차순 시리얼의 경우 기본값은 -1이다.
 
 *   **INCREMENT BY** *interval*: 시리얼 숫자 간의 간격을 지정한다. *interval* 값으로 0을 제외하고 -9,999,999,999,999,999,999,999,999,999,999,999,999(-10^37+1)와 9,999,999,999,999,999,999,999,999,999,999,999,999(10^37-1) 사이의 어느 정수라도 올 수 있다.  *interval* 의 절대값은 **MAXVALUE** 와 **MINVALUE** 의 차이와 같거나 작아야 한다. 음수가 설정되면 시리얼은 내림차순이 되고 양수가 설정되면 오름차순이 된다. 기본값은 **1** 이다.
 
-*   **MINVALUE**: 시리얼의 최소값을 지정한다. 이 값의 범위는 -1,000,000,000,000,000,000,000,000,000,000,000,000(-10^36)와 9,999,999,999,999,999,999,999,999,999,999,999,999(10^37-1) 사이이다. **MINVALUE**\ 는 초기값보다 작거나 같아야 하고 최대값보다 작아야 한다.
+*   **MINVALUE**: 시리얼의 최소값을 지정한다. 이 값의 범위는 -1,000,000,000,000,000,000,000,000,000,000,000,000(-10^36)와 9,999,999,999,999,999,999,999,999,999,999,999,999(10^37-1) 사이이다. **MINVALUE**\는 초기값보다 작거나 같아야 하고 최대값보다 작아야 한다.
 
 *   **NOMINVALUE**: 오름차순 시리얼에 대해서는 1, 내림차순 시리얼에 대해서는 -1,000,000,000,000,000,000,000,000,000,000,000,000(-10^36) 이 최소값으로 자동 지정된다.
 
-*   **MAXVALUE**: 시리얼의 최대값을 지정한다. 이 값의 범위는 -999,999,999,999,999,999,999,999,999,999,999,999(-10^36+1)와 10,000,000,000,000,000,000,000,000,000,000,000,000(10^37) 사이이다. **MAXVALUE**\ 는 초기값보다 크거나 같아야 하고 최소값보다 커야 한다.
+*   **MAXVALUE**: 시리얼의 최대값을 지정한다. 이 값의 범위는 -999,999,999,999,999,999,999,999,999,999,999,999(-10^36+1)와 10,000,000,000,000,000,000,000,000,000,000,000,000(10^37) 사이이다. **MAXVALUE**\는 초기값보다 크거나 같아야 하고 최소값보다 커야 한다.
 
 *   **NOMAXVALUE**: 오름차순 시리얼에 대해서는 10,000,000,000,000,000,000,000,000,000,000,000,000(10^37), 내림차순 시리얼에 대해서는 -1이 최대값으로 자동 지정된다.
 
@@ -49,9 +51,9 @@ CREATE SERIAL
 
 *   **CACHE**: 시리얼 성능을 향상시키기 위하여 *cached_num* 에 지정된 개수만큼의 시리얼을 캐시에 저장하고, 시리얼 값을 요청받으면 캐시된 시리얼 값을 가져온다. 또한, 메모리에 캐시된 시리얼을 전부 사용하게 되면, *cached_num* 개수 만큼의 시리얼을 디스크로부터 메모리로 다시 가져오며, 데이터베이스 서버가 중간에 종료되면 캐시된 시리얼 값들은 삭제된다. 따라서 데이터베이스 서버가 재시작되기 이전과 이후의 시리얼 값은 비연속적일 수 있다. 캐시된 시리얼은 트랜잭션 롤백되지 않으므로, 롤백을 수행하더라도 다음에 요청하는 시리얼은 이전에 최종 요청한 시리얼 값의 다음 값이 된다. **CACHE** 키워드 뒤에 *cached_num* 는 생략할 수 없으며, 1 이하의 숫자가 지정되면 시리얼 캐시가 적용되지 않는다.
 
-*   **NOCACHE**: 시리얼 캐시 기능을 사용하지 않으며, 매번 시리얼 값을 업데이트한다.
+*   **NOCACHE**: 시리얼 캐시 기능을 사용하지 않으며, 매번 시리얼 값을 업데이트한다. 기본값은 **NOCACHE** 이다.
 
-*   *comment_string*: 시리얼의 커멘트를 지정한다.
+*   *comment_string*: 시리얼의 주석을 지정한다.
 
 .. code-block:: sql
 
@@ -64,12 +66,12 @@ CREATE SERIAL
     --creating serial with specifying the number of cached serial values
     CREATE SERIAL order_no START WITH 10000 INCREMENT BY 2 MAXVALUE 20000 CACHE 3;
      
-    --selecting serial information from the db_serial class
-    SELECT * FROM db_serial;
+    --selecting serial information from the db_serial
+    SELECT name, current_val, increment_val, max_val, min_val, cyclic, started, cached_num, attr_name FROM db_serial;
 
 ::
 
-      name            current_val      increment_val         max_val         min_val         cyclic      started       cached_num        att_name
+      name            current_val      increment_val         max_val         min_val         cyclic      started       cached_num        attr_name
     ====================================================================================================================================================
     'order_no'      10006            2                     20000           10000                0            1                3            NULL
 
@@ -95,10 +97,10 @@ CREATE SERIAL
             10004  'Choo'
             10004  'Lee'
 
-시리얼의 커멘트
+시리얼의 주석
 ---------------
 
-다음은 시리얼 생성 시 커멘트를 추가한다.
+다음은 시리얼 생성 시 주석을 추가한다.
 
 .. code-block:: sql
 
@@ -106,13 +108,13 @@ CREATE SERIAL
     START WITH 100 INCREMENT BY 2 MAXVALUE 200 
     COMMENT 'from 100 to 200 by 2';
 
-시리얼의 커멘트를 확인하려면 다음의 구문을 실행한다.
+시리얼의 주석을 확인하려면 다음의 구문을 실행한다.
 
 .. code-block:: sql
 
     SELECT name, comment FROM db_serial;
 
-시리얼 커멘트의 변경은 ALTER SERIAL 문의 설명을 참고한다.
+시리얼 주석의 변경은 ALTER SERIAL 문의 설명을 참고한다.
 
 ALTER SERIAL
 ============
@@ -121,15 +123,17 @@ ALTER SERIAL
 
 ::
 
-    ALTER SERIAL serial_identifier
+    ALTER SERIAL [schema_name.]serial_name
     [INCREMENT BY interval]
     [START WITH initial_value]
     [MINVALUE min | NOMINVALUE]
     [MAXVALUE max | NOMAXVALUE]
+    [CYCLE | NOCYCLE]
     [CACHE cached_num | NOCACHE]
     [COMMENT 'comment_string'];
 
-*   *serial_identifier*: 생성할 시리얼의 이름을 지정한다(최대 254 바이트).
+*   *schema_name*: 시리얼의 스키마 이름을 지정한다(최대 31 바이트). 생략하면 현재 세션의 스키마 이름을 사용한다.
+*   *serial_name*: 생성할 시리얼의 이름을 지정한다(최대 222 바이트).
 
 *   **INCREMENT BY** *interval*: 시리얼 숫자간의 간격을 지정한다. *interval* 값으로 0을 제외한 38자리 이하의 어떤 정수도 지정할 수 있다. *interval* 의 절대값은 **MAXVALUE** 와 **MINVALUE** 의 차이보다 작아야 한다. 음수가 설정되면 시리얼은 내림차순이 되고 양수가 설정되면 오름차순이 된다. 기본값은 **1** 이다.
 
@@ -149,9 +153,9 @@ ALTER SERIAL
 
 *   **CACHE**: 시리얼 성능을 향상시키기 위하여 *cached_num* 에 지정된 개수만큼의 시리얼을 캐시에 저장하고, 시리얼 값을 요청받으면 캐시된 시리얼 값을 가져온다. **CACHE** 키워드 뒤에 *cached_num* 는 생략할 수 없으며, 1 이하의 숫자가 지정되면 시리얼 캐시가 적용되지 않는다.
 
-*   **NOCACHE**: 시리얼 캐시 기능을 사용하지 않으며, 매번 시리얼 값이 업데이트된다. 
+*   **NOCACHE**: 시리얼 캐시 기능을 사용하지 않으며, 매번 시리얼 값이 업데이트된다. 기본값은 **NOCACHE** 이다.
 
-*   *comment_string*: 시리얼의 커멘트를 지정한다.
+*   *comment_string*: 시리얼의 주석을 지정한다.
 
 .. code-block:: sql
 
@@ -183,7 +187,7 @@ ALTER SERIAL
         -- From 9.0, above query returns 10
         -- In the version less than 9.0, above query returns 11
 
-다음은 시리얼의 커멘트를 변경한다.
+다음은 시리얼의 주석을 변경한다.
 
 .. code-block:: sql
 
@@ -193,13 +197,14 @@ DROP SERIAL
 ===========
 
 **DROP SERIAL** 문으로 시리얼 객체를 데이터베이스에서 삭제할 수 있다. 
-**IF EXISTS** 절을 함께 지정하는 경우, 대상 시리얼이 없어도 에러가 발생하지 않는다.
+**IF EXISTS** 절을 함께 지정하는 경우, 대상 시리얼이 없어도 오류가 발생하지 않는다.
 
 ::
 
-    DROP SERIAL [ IF EXISTS ] serial_identifier ;
+    DROP SERIAL [ IF EXISTS ] [schema_name.]serial_name ;
 
-*   *serial_identifier*: 삭제할 시리얼의 이름을 지정한다.
+*   *schema_name*: 시리얼의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
+*   *serial_name*: 삭제할 시리얼의 이름을 지정한다.
 
 다음 예는 *order_no* 시리얼을 삭제하는 예제이다.
 
@@ -216,11 +221,15 @@ DROP SERIAL
 
 시리얼 이름과 의사 칼럼(pseudo column)을 통해서 해당 시리얼을 읽고 갱신할 수 있다. ::
 
-    serial_identifier.CURRENT_VALUE
-    serial_identifier.NEXT_VALUE
+    [schema_name.]serial_name.CURRENT_VALUE
+    [schema_name.]serial_name.CURRVAL
 
-*   *serial_identifier*.\ **CURRENT_VALUE**: 시리얼의 현재 값을 반환한다.
-*   *serial_identifier*.\ **NEXT_VALUE**: 시리얼 값을 증가시키고 그 값을 반환한다.
+    [schema_name.]serial_name.NEXT_VALUE
+    [schema_name.]serial_name.NEXTVAL
+
+*   *schema_name*: 시리얼의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
+*   *[schema_name.]serial_name*.\ **CURRENT_VALUE**, *[schema_name.]serial_name*.\ **CURRVAL**: 시리얼의 현재 값을 반환한다.
+*   *[schema_name.]serial_name*.\ **NEXT_VALUE**, *[schema_name.]serial_name*.\ **NEXTVAL**: 시리얼 값을 증가시키고 그 값을 반환한다.
 
 다음은 선수 번호와 이름을 저장하는 *athlete_idx* 테이블을 생성하고 *order_no* 시리얼을 이용하여 인스턴스를 생성하는 예제이다.
 
@@ -233,7 +242,8 @@ DROP SERIAL
     INSERT INTO athlete_idx VALUES (order_no.NEXT_VALUE, 'Choo');
     INSERT INTO athlete_idx VALUES (order_no.NEXT_VALUE, 'Lee');
     SELECT * FROM athlete_idx;
-    
+    SELECT order_no.CURRENT_VALUE;
+
 ::
      
              code  name
@@ -243,6 +253,10 @@ DROP SERIAL
             10004  'Choo'
             10006  'Lee'
 
+            serial_current_value(order_no)
+    ======================
+            10006
+
 .. note:: 
 
     시리얼을 생성하고 처음 사용할 때 **NEXT_VALUE** 를 이용하면 초기 값을 반환한다. 그 이후에는 현재 값에 증가 값이 추가되어 반환된다.
@@ -250,11 +264,12 @@ DROP SERIAL
 함수
 ----
 
-.. function:: SERIAL_CURRENT_VALUE (serial_name)
-.. function:: SERIAL_NEXT_VALUE (serial_name, number)
+.. function:: SERIAL_CURRENT_VALUE ([schema_name.]serial_name)
+.. function:: SERIAL_NEXT_VALUE ([schema_name.]serial_name, number)
 
     시리얼 함수에는 **SERIAL_CURRENT_VALUE** 함수와 **SERIAL_NEXT_VALUE** 함수가 있다.
     
+    :param schema_name: 시리얼의 스키마 이름
     :param serial_name: 시리얼 이름
     :param number: 얻고자 하는 시리얼 개수
     :rtype:  NUMERIC(38,0)
@@ -295,6 +310,6 @@ DROP SERIAL
 
     120
 
-.. note:: \
+.. note::
 
     시리얼을 생성하고 **SERIAL_NEXT_VALUE** 함수를 처음 호출하면, 첫 번째 값은 초기값을 반환하므로 한 개의 값이 빠져 현재의 시리얼 값에 (시리얼 간격) * (얻고자 하는 시리얼 개수-1)만큼 증가한 값이 반환된다. 이후 **SERIAL_NEXT_VALUE** 함수를 호출하면 현재 값에 (시리얼 간격) * (얻고자 하는 시리얼 개수)만큼 증가한 값이 반환된다. 위의 예제를 참고한다.

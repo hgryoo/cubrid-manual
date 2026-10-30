@@ -11,15 +11,20 @@ CCI(C Client Interface)는 CUBRID 브로커와 응용 클라이언트 사이에 
 
 CCI를 사용하기 위해서는 헤더 파일과 라이브러리 파일이 필요하다.
 
-+-----------------+-------------------+-------------------+
-|                 | **Windows**       | **Unix/Linux**    |
-+=================+===================+===================+
-| C 헤더 파일     | include/cas_cci.h | include/cas_cci.h |
-+-----------------+-------------------+-------------------+
-| 정적 라이브러리 | lib/cascci.lib    | lib/libcascci.a   |
-+-----------------+-------------------+-------------------+
-| 동적 라이브러리 | bin/cascci.dll    | lib/libcascci.so  |
-+-----------------+-------------------+-------------------+
++-----------------+-----------------------+-----------------------+
+|                 | **Windows**           | **Unix/Linux**        |
++=================+=======================+=======================+
+| C 헤더 파일     | cci/include/cas_cci.h | cci/include/cas_cci.h |
++-----------------+-----------------------+-----------------------+
+| 정적 라이브러리 | cci/lib/cascci.lib    | cci/lib/libcascci.a   |
++-----------------+-----------------------+-----------------------+
+| 동적 라이브러리 | cci/bin/cascci.dll    | cci/lib/libcascci.so  |
++-----------------+-----------------------+-----------------------+
+
+.. note::
+
+    *   Windows의 경우 CCI 드라이버를 사용하려면 Microsoft Visual C ++ 2015 재배포 가능 패키지(x86 또는 x64)를 설치해야 한다.
+    *   11.2 버전부터는 CCI 드라이버에 대한 경로가 변경되었다. (cci/inculde, cci/lib, cci/bin)
 
 CCI 드라이버는 CUBRID에서 제공되는 C 언어 인터페이스로, CUBRID 설치 패키지에 포함되어 있다. CCI는 브로커를 통해서 접속하므로 다른 인터페이스인 JDBC, PHP, ODBC, Python, Ruby 등과 동일하게 관리될 수 있다. 실제로 PHP, ODBC, Python, Ruby 인터페이스는 CCI를 기반으로 개발되었다. 단, JDBC는 CCI를 기반으로 개발되지 않았다.
 
@@ -66,7 +71,7 @@ CCI를 이용하는 응용 프로그램은 기본적으로 CAS와 연결하기, 
 .. code-block:: c
 
     // Example to execute a simple query
-    // In Linux: gcc -o simple simple.c -m64 -I${CUBRID}/include -lnsl ${CUBRID}/lib/libcascci.so -lpthread
+    // In Linux: gcc -o simple simple.c -m64 -I${CUBRID}/cci/include -lnsl ${CUBRID}/cci/lib/libcascci.so -lpthread
     
     #include <stdio.h>
     #include "cas_cci.h"  
@@ -189,7 +194,7 @@ CCI를 이용하는 응용 프로그램은 기본적으로 CAS와 연결하기, 
 .. code-block:: c
 
     // Example to execute a query with a bind variable
-    // In Linux: gcc -o cci_bind cci_bind.c -m64 -I${CUBRID}/include -lnsl ${CUBRID}/lib/libcascci.so -lpthread
+    // In Linux: gcc -o cci_bind cci_bind.c -m64 -I${CUBRID}/cci/include -lnsl ${CUBRID}/cci/lib/libcascci.so -lpthread
 
     #include <stdio.h>
     #include <string.h>
@@ -341,7 +346,7 @@ CCI를 이용하는 응용 프로그램은 기본적으로 CAS와 연결하기, 
 .. code-block:: c
 
     // Example to use connection/statement pool in CCI
-    // In Linux: gcc -o cci_pool cci_pool.c -m64 -I${CUBRID}/include -lnsl ${CUBRID}/lib/libcascci.so -lpthread
+    // In Linux: gcc -o cci_pool cci_pool.c -m64 -I${CUBRID}/cci/include -lnsl ${CUBRID}/cci/lib/libcascci.so -lpthread
 
     #include <stdio.h>
     #include "cas_cci.h"
@@ -474,8 +479,9 @@ CCI를 이용한 응용 프로그램을 작성했다면 프로그램 특성에 �
 다음은 유닉스/Linux에서 동적인 라이브러리를 사용하여 링크하는 Makefile의 예제이다. ::
 
     CC=gcc
-    CFLAGS = -g -Wall -I. -I$CUBRID/include
-    LDFLAGS = -L$CUBRID/lib -lcascci -lnsl
+    CFLAGS = -g -Wall -I. -I$(CUBRID)/cci/include
+    LDFLAGS = -L$(CUBRID)/cci/lib -lcascci -lnsl
+
     TEST_OBJS = test.o
     EXES = test
     all: $(EXES)
@@ -628,36 +634,36 @@ CCI 응용 프로그램에서 다음 함수를 사용하여 **LOB** 데이터를
 
 .. _cci-error-codes:
 
-CCI 에러 코드와 에러 메시지
+CCI 오류 코드와 오류 메시지
 ---------------------------
 
-CCI API 함수는 에러 발생 시 반환 값이 음수인 CCI 에러 코드 혹은 CAS(브로커 응용 서버) 에러 코드를 반환한다. CCI 에러 코드는 CCI API 함수에서 발생하며, CAS 에러
+CCI API 함수는 오류 발생 시 반환 값이 음수인 CCI 오류 코드 혹은 CAS(브로커 응용 서버) 오류 코드를 반환한다. CCI 오류 코드는 CCI API 함수에서 발생하며, CAS 오류
 코드는 CAS에서 발생한다.
 
-*   모든 에러 코드의 값은 0보다 작은 음수이다.
-*   T_CCI_ERROR err_buf를 인자로 가지는 모든 함수의 에러 코드와 에러 메시지는 err_buf.err_code와 err_buf.err_msg에서 확인할 수 있다.
-*   T_CCI_ERROR err_buf 인자가 없는 함수의 에러 메시지는 :c:func:`cci_get_err_msg` 함수를 이용하여 에러 코드가 나타내는 에러 메시지를 출력할 수 있다.
-*   에러 번호가 -20002부터 -20999 사이이면, CCI API 함수에서 발생하는 에러이다.
-*   에러 번호가 -10000부터 -10999 사이이면, CAS에서 발생하는 에러를 CCI API 함수가 전달받아 반환하는 에러이다. CAS 에러는 :ref:`cas-error`\ 를 참고한다.
-*   함수가 리턴하는 에러 코드의 값이 **CCI_ER_DBMS** (-20001)인 경우, 데이터베이스 서버에서 발생하는 에러이다. 데이터베이스 서버 에러와 관련한 내용은 :ref:`database-server-error`\를 참고한다.
+*   모든 오류 코드의 값은 0보다 작은 음수이다.
+*   T_CCI_ERROR err_buf를 인자로 가지는 모든 함수의 오류 코드와 오류 메시지는 err_buf.err_code와 err_buf.err_msg에서 확인할 수 있다.
+*   T_CCI_ERROR err_buf 인자가 없는 함수의 오류 메시지는 :c:func:`cci_get_err_msg` 함수를 이용하여 오류 코드가 나타내는 오류 메시지를 출력할 수 있다.
+*   오류 번호가 -20002부터 -20999 사이이면, CCI API 함수에서 발생하는 오류이다.
+*   오류 번호가 -10000부터 -10999 사이이면, CAS에서 발생하는 오류를 CCI API 함수가 전달받아 반환하는 오류이다. CAS 오류는 :ref:`cas-error`\ 를 참고한다.
+*   함수가 반환하는 오류 코드의 값이 **CCI_ER_DBMS** (-20001)인 경우, 데이터베이스 서버에서 발생하는 오류이다. 데이터베이스 서버 오류와 관련한 내용은 :ref:`database-server-error`\를 참고한다.
 
 .. warning::
 
-    서버에서 에러가 발생한 경우 함수가 리턴하는 에러 코드인 **CCI_ER_DBMS** 와 err_buf.err_code 값이 서로 다름에 주의한다. 서버 에러 외에 err_buf에 저장되는 모든 에러 코드는 함수가 리턴하는 에러 코드와 동일하다.
+    서버에서 오류가 발생한 경우 함수가 반환하는 오류 코드인 **CCI_ER_DBMS** 와 err_buf.err_code 값이 서로 다름에 주의한다. 서버 오류 외에 err_buf에 저장되는 모든 오류 코드는 함수가 반환하는 오류 코드와 동일하다.
 
 .. note::
 
-    CUBRID 9.0 미만 버전에서의 CCI, CAS 에러 코드는 CUBRID 9.0 이상 버전의 에러 코드와 다른 값을 가진다. 따라서 에러 코드명을 사용하여 개발한 사용자는 응용 프로그램을 재컴파일하여 사용해야 하며, 에러 코드 번호를 직접 부여하여 개발한 사용자는 번호 값을 바꾼 후 응용 프로그램을 재컴파일해야 한다.
+    CUBRID 9.0 미만 버전에서의 CCI, CAS 오류 코드는 CUBRID 9.0 이상 버전의 오류 코드와 다른 값을 가진다. 따라서 오류 코드명을 사용하여 개발한 사용자는 응용 프로그램을 재컴파일하여 사용해야 하며, 오류 코드 번호를 직접 부여하여 개발한 사용자는 번호 값을 바꾼 후 응용 프로그램을 재컴파일해야 한다.
 
-데이터베이스 에러 버퍼(err_buf)는 **cas_cci.h** 헤더 파일의 **T_CCI_ERROR**  구조체 변수이다. 사용법은 아래의 예제 프로그램을 참고한다.
+데이터베이스 오류 버퍼(err_buf)는 **cas_cci.h** 헤더 파일의 **T_CCI_ERROR**  구조체 변수이다. 사용법은 아래의 예제 프로그램을 참고한다.
 
-**CCI_ER** 로 시작되는 CCI 에러 코드는 **$CUBRID/include/cas_cci.h** 파일에 **T_CCI_ERROR_CODE** 라는 enum 구조체 내에 정의되어 있다. 따라서 프로그램 코드에서 이 에러 코드 명을 사용하려면 코드 상단에 **#include "cas_cci.h"** 를 입력하여 헤더 파일을 포함해야 한다.
+**CCI_ER** 로 시작되는 CCI 오류 코드는 **$CUBRID/include/cas_cci.h** 파일에 **T_CCI_ERROR_CODE** 라는 enum 구조체 내에 정의되어 있다. 따라서 프로그램 코드에서 이 오류 코드 명을 사용하려면 코드 상단에 **#include "cas_cci.h"** 를 입력하여 헤더 파일을 포함해야 한다.
 
-아래의 프로그램은 에러 메시지를 출력한다. 이때 :c:func:`cci_prepare` 가 리턴하는 에러 코드 값 req의 값은 **CCI_ER_DMBS** 이고, 데이터베이스 에러 버퍼의 **cci_error.err_code** 에는 서버 에러 코드인 -493이, **cci_error.err_msg** 에는 'Syntax: Unknown class "notable". select * from notable'이라는 에러 메시지가 저장된다.
+아래의 프로그램은 오류 메시지를 출력한다. 이때 :c:func:`cci_prepare` 가 반환하는 오류 코드 값 req의 값은 **CCI_ER_DMBS** 이고, 데이터베이스 오류 버퍼의 **cci_error.err_code** 에는 서버 오류 코드인 -493이, **cci_error.err_msg** 에는 'Syntax: Unknown class "notable". select * from notable'이라는 오류 메시지가 저장된다.
 
 .. code-block:: c
 
-    // gcc -o err err.c -m64 -I${CUBRID}/include -lnsl ${CUBRID}/lib/libcascci.so -lpthread
+    // gcc -o err err.c -m64 -I${CUBRID}/cci/include -lnsl ${CUBRID}/cci/lib/libcascci.so -lpthread
     #include <stdio.h>
     #include "cas_cci.h"
      
@@ -697,12 +703,12 @@ CCI API 함수는 에러 발생 시 반환 값이 음수인 CCI 에러 코드 �
         // ...
     }
 
-다음은 CCI 함수의 에러 코드를 나타낸다. CAS 에러는 :ref:`cas-error`\ 를 참고한다.
+다음은 CCI 함수의 오류 코드를 나타낸다. CAS 오류는 :ref:`cas-error`\ 를 참고한다.
 
 +------------------------------------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
-| 에러 코드명(에러 번호)                   | 에러 메시지                                                   | 비고                                                                                             |
+| 오류 코드명(오류 번호)                   | 오류 메시지                                                   | 비고                                                                                             |
 +==========================================+===============================================================+==================================================================================================+
-| CCI_ER_DBMS(-20001)                      | CUBRID DBMS Error                                             | 서버에서 에러가 발생한 경우 함수가 반환하는 에러 코드. 실패 원인은 T_CCI_ERROR 구조체에 저장되는 |
+| CCI_ER_DBMS(-20001)                      | CUBRID DBMS Error                                             | 서버에서 오류가 발생한 경우 함수가 반환하는 오류 코드. 실패 원인은 T_CCI_ERROR 구조체에 저장되는 |
 |                                          |                                                               | err_code와 err_msg로 확인 가능.                                                                  |
 +------------------------------------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
 | CCI_ER_CON_HANDLE(-20002)                | Invalid connection handle                                     |                                                                                                  |
@@ -715,7 +721,7 @@ CCI API 함수는 에러 발생 시 반환 값이 음수인 CCI 에러 코드 �
 +------------------------------------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
 | CCI_ER_TRAN_TYPE(-20006)                 | Unknown transaction type                                      |                                                                                                  |
 +------------------------------------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
-| CCI_ER_STRING_PARAM(-20007)              | Invalid string argument                                       | :c:func:`cci_prepare`, :c:func:`cci_prepare_and_execute` 에서 sql_stmt가 NULL이면 발생하는 에러  |
+| CCI_ER_STRING_PARAM(-20007)              | Invalid string argument                                       | :c:func:`cci_prepare`, :c:func:`cci_prepare_and_execute` 에서 sql_stmt가 NULL이면 발생하는 오류  |
 +------------------------------------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
 | CCI_ER_TYPE_CONVERSION(-20008)           | Type conversion error                                         | 주어진 타입의 값을 실제 데이터의 타입으로 변경할 수 없음.                                        |
 +------------------------------------------+---------------------------------------------------------------+--------------------------------------------------------------------------------------------------+
@@ -799,7 +805,7 @@ CCI API 함수는 에러 발생 시 반환 값이 음수인 CCI 에러 코드 �
 +--------------------------+----------+-----------------------------------------+-----------------------------+
 | 이름                     | 타입     | 멤버                                    | 설명                        |
 +==========================+==========+=========================================+=============================+
-| **T_CCI_ERROR**          | struct   | char err_msg[1024]                      | 데이터베이스 에러 정보 표현 |
+| **T_CCI_ERROR**          | struct   | char err_msg[1024]                      | 데이터베이스 오류 정보 표현 |
 |                          |          +-----------------------------------------+                             |
 |                          |          | int err_code                            |                             |
 +--------------------------+----------+-----------------------------------------+-----------------------------+
@@ -1216,7 +1222,7 @@ CCI 예제 프로그램
 
 다음은 Linux에서 **make** 를 사용하지 않고 동적인 라이브러리를 사용하여 테스트 프로그램을 빌드하는 명령 행의 예제이다. ::
 
-    cc -o test test.c -I$CUBRID/include -L$CUBRID/lib -lnsl -lcascci
+    cc -o test test.c -I$CUBRID/cci/include -L$CUBRID/cci/lib -lnsl -lcascci
 
 **예제 코드**
 

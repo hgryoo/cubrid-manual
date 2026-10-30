@@ -2,6 +2,7 @@
 :meta-keywords: cubrid number, cubrid date time, cubrid string, cubrid character, cubrid collection, cubrid null, database literal
 :meta-description: This section describes how to write a literal value in CUBRID.
 
+.. _sql_literal:
 
 ******
 리터럴
@@ -46,7 +47,7 @@ CUBRID에서 리터럴(literal) 값을 작성하는 방법을 기술한다.
 
     ::
     
-        date'1974-12-31', date'12-31-1974'
+        date'1974-12-31', date'12/31/1974'
 
 
 *   시간 리터럴은 'HH:MI:SS', 'HH:MI:SS AM', 'HH:MI:SS PM'만 허용한다.

@@ -9,24 +9,26 @@
 
 .. _supported:
 
-지원 플랫폼 및 설치 권장 사양
+지원 플랫폼 및 설치 최소 사양
 -----------------------------
 
 CUBRID가 지원하는 플랫폼과 설치를 위한 하드웨어/소프트웨어 요구 사항은 아래 표와 같다.
 
-+--------------------------------------------------------------+------------------+----------------------+--------------------------+
-| 지원 플랫폼                                                  | 요구되는 메모리  | 요구되는 디스크 공간 | 필요 소프트웨어          |
-+==============================================================+==================+======================+==========================+
-| * Windows 32/64 Bit Windows 7                                | 1G 이상          | 2G 이상(\*)          | JRE 또는 JDK 1.6 이상,   |
-|                                                              |                  |                      | Java 저장 프로시저를     |
-| * Linux 계열 64 Bit(Linux kernel 2.4 및 glibc 2.3.4 이상)    |                  |                      | 사용하는 경우 필요       |
-+--------------------------------------------------------------+------------------+----------------------+--------------------------+
++------------------------------------------------------------------+-----------------+----------------------+
+| 지원 플랫폼                                                      | 요구되는 메모리 | 요구되는 디스크 공간 |
++==================================================================+=================+======================+
+| Windows 64 Bit Windows 7 이상 (native Windows)                   | 1G 이상         | 2G 이상(\*)          |
++------------------------------------------------------------------+-----------------+----------------------+
+| Windows 10 버전 2004 (빌드 19041) 이상 또는 Windows 11(with WSL) | 2G 이상         | 2G 이상(\*)          |
++------------------------------------------------------------------+-----------------+----------------------+
+| Linux 계열 64 Bit(Linux kernel 2.4 및 glibc 2.3.4 이상)          | 1G 이상         | 2G 이상(\*)          |
++------------------------------------------------------------------+-----------------+----------------------+
 
 (\*): 처음 설치 시 약 500MB의 디스크 공간이 필요하며, 하나의 DB를 기본 옵션으로 생성할 경우 약 1.5GB의 디스크 공간이 필요하다.
 
-2008 R4.0부터는 CUBRID 패키지 설치 시 CUBRID 매니저 클라이언트가 같이 설치되지 않는다. 따라서 CUBRID 매니저를 사용하려면 이를 추가로 설치해야 한다. CUBRID 설치 패키지는 http://ftp.cubrid.org 에서 받을 수 있다.
+CUBRID 패키지 설치 시 CUBRID Admin 클라이언트가 같이 설치되지 않는다. 따라서 CUBRID Admin 사용하려면 이를 추가로 설치해야 한다. CUBRID 설치 패키지는 http://ftp.cubrid.org 에서 받을 수 있다.
 
-CUBRID 매니저 JDBC, PHP, ODBC, OLE DB 등의 드라이버들도 http://ftp.cubrid.org 에서 받을 수 있다.
+JDBC, ODBC, PHP 등의 드라이버들도 http://ftp.cubrid.org 에서 받을 수 있다.
 
 CUBRID 엔진, 사용 도구 및 드라이버에 대한 자세한 정보는 https://www.cubrid.org 를 참고한다.
 
@@ -35,25 +37,19 @@ CUBRID 엔진, 사용 도구 및 드라이버에 대한 자세한 정보는 http
 
 **응용 프로그램의 호환성**
 
-*   2008 R4.1 또는 그 이상 버전에서 JDBC, PHP, CCI API 등을 사용하는 응용 프로그램은 CUBRID 10.2 브로커에 접근할 수 있다. 다만, JDBC, PHP, CCI 인터페이스에 추가/개선된 기능을 사용하기 위해서는 CUBRID 10.2 버전의 라이브러리를 링크하거나 드라이버를 사용해야 한다. 10.0에서 추가된 :ref:`timezone-type` 을 사용하기 위해서는 드라이버를 업그레이드 해야 한다.
+*   2008 R4.1 또는 그 이상 버전에서 JDBC, PHP, CCI API 등을 사용하는 응용 프로그램은 CUBRID 11.4 브로커에 접근할 수 있다. 다만, JDBC, PHP, CCI 인터페이스에 추가/개선된 기능을 사용하기 위해서는 CUBRID 11.4 버전의 라이브러리를 링크하거나 드라이버를 사용해야 한다. 10.0에서 추가된 :ref:`timezone-type` 을 사용하기 위해서는 드라이버를 업그레이드 해야 한다.
 
-*   10.2 서버와 연결하는 그 이전 버전의 드라이버는 JSON 타입 컬럼을 Varchar 타입으로 인식한다.
+*   10.2 이전 버전의 드라이버는 JSON 타입 칼럼을 Varchar 타입으로 인식한다.
 
 *   새로운 예약어 추가 및 일부 질의에 대한 스펙 변경으로 인해 질의 결과가 과거 버전과 다를 수 있으므로 주의한다.
 
 *   2008 R3.0 이하 버전에서 GLO 클래스를 이용하여 개발된 응용은 BLOB, CLOB 타입에 맞는 응용 및 스키마로 변환하여 사용해야 한다.
 
-**CUBRID 매니저의 호환성**
+**CUBRID Admin의 호환성**
 
-*   CUBRID 매니저는 CUBRID 2008 R2.2 이상 버전의 서버에 대해서 하위 호환성을 보장하며, 각 서버 버전과 일치하는 CUBRID JDBC 드라이버를 사용한다. 하지만 CUBRID 매니저에서 제공하는 모든 기능을 제대로 사용하기 위해서는 CUBRID 서버 버전보다 높은 버전의 CUBRID 매니저를 사용해야 한다. CUBRID JDBC 드라이버는 CUBRID 설치 시 $CUBRID/jdbc 디렉터리에 포함되어 있다(Linux 환경에서 $CUBRID는 Windows 환경에서는 %CUBRID% 형식으로 사용됨).
+*   CUBRID Admin는 CUBRID 10.0 이상 버전의 서버에 대해서 하위 호환성을 보장하며, 각 서버 버전과 일치하는 CUBRID JDBC 드라이버를 사용한다. 하지만 CUBRID Admin에서 제공하는 모든 기능을 제대로 사용하기 위해서는 CUBRID 서버 버전보다 높은 버전의 CUBRID Admin를 사용해야 한다. CUBRID JDBC 드라이버는 CUBRID 설치 시 $CUBRID/jdbc 디렉터리에 포함되어 있다(Linux 환경에서 $CUBRID는 Windows 환경에서는 %CUBRID% 형식으로 사용됨).
 
-*   CUBRID 매니저의 Bit 버전과 JRE의 Bit 버전은 서로 동일해야 한다. 
-
-    예를 들어, 64Bit 버전 DB 서버라도 CUBRID Manager 32Bit 버전을 사용한다면 JRE 또는 JDK 32Bit 버전을 설치해야 한다.
-
-*   CUBRID 2008 R2.2 이상 버전의 드라이버는 CUBRID 매니저에 기본으로 내장되어 있으며, https://www.cubrid.org 웹사이트에서 별도로 받을 수도 있다.
-
-.. note:: 과거 버전 사용자들은 드라이버, 브로커, DB 서버 모두를 반드시 업그레이드해야 하며, DB 볼륨이 10.2와 호환되지 않으므로 반드시 데이터 마이그레이션을 해야 한다.
+.. note:: 과거 버전 사용자들은 드라이버, 브로커, DB 서버 모두를 반드시 업그레이드해야 하며, 11.3 이하 버전의 DB 볼륨이 11.4와 호환되지 않으므로 반드시 데이터 마이그레이션을 해야 한다.
     업그레이드 및 데이터 마이그레이션은 :doc:`/upgrade`\ 를 참고한다.
 
 **CUBRID DB 서버와 브로커 간 상호 운용성**
@@ -97,7 +93,7 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
     
     *   Curses Library (rpm -q ncurses)
 
-        CUBRID는 Curses 라이브러리 버전 5와 함께 패키지된다. 시스템에 최신 버전이 있고 다운 그레이드할 수 없는 경우 ncurses-compat-libs 패키지를 설치해야할 수 있다.
+        CUBRID는 curses 라이브러리를 사용하여 구동되므로 시스템에 curses 라이브러리가 없는 경우 사전에 최신 ncurses-compat-libs 패키지를 설치해야 한다.
 
     *   gcrypt Library (rpm -q libgcrypt)
     *   stdc++ Library (rpm -q libstdc++)
@@ -108,16 +104,16 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
   
 **CUBRID 설치**
 
-설치 프로그램은 바이너리를 포함한 쉘 스크립트로 되어 있어 자동으로 설치할 수 있다. 다음은 리눅스에서 "CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.sh" 파일을 이용하여 CUBRID를 설치하는 예제이다. 
+설치 프로그램은 바이너리를 포함한 쉘 스크립트로 되어 있어 자동으로 설치할 수 있다. 다음은 리눅스에서 "CUBRID-11.4-latest-Linux.x86_64.sh" 파일을 이용하여 CUBRID를 설치하는 예제이다. 
 
 ::
 
-    $ sh CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.sh 
+    $ sh CUBRID-11.4-latest-Linux.x86_64.sh
     Do you agree to the above license terms? (yes or no) : yes
     Do you want to install this software(CUBRID) to the default(/home1/cub_user/CUBRID) directory? (yes or no) [Default: yes] : yes
     Install CUBRID to '/home1/cub_user/CUBRID' ...
     In case a different version of the CUBRID product is being used in other machines, 
-    please note that the CUBRID 10.2 servers are only compatible with the CUBRID 10.2 clients and vice versa.
+    please note that the CUBRID 11.4 servers are only compatible with the CUBRID 11.4 clients and vice versa.
     Do you want to continue? (yes or no) [Default: yes] : yes
     Copying old .cubrid.sh to .cubrid.sh.bak ...
 
@@ -129,7 +125,8 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
     $ . /home1/cub_user/.cubrid.sh
     $ cubrid service start
 
-위의 예제와 같이 다운로드한 파일(CUBRID-10.2.0.8787-a31ea42.x86_64.sh)을 설치한 후, CUBRID 데이터베이스를 사용하기 위해서는 CUBRID 관련 환경 정보를 설정해야 한다. 이 설정은 해당 터미널에 로그인할 때 자동 설정되도록 지정되어 있으므로 설치 후 최초 한 번만 수행하면 된다. ::
+위의 예제와 같이 다운로드한 파일(CUBRID-11.4-latest-Linux.x86_64.sh)을 설치한 후, CUBRID 데이터베이스를 사용하기 위해서는 사용자의 shell 환경에 맞게 .cubrid.sh (또는 .cubrid.csh) 수행하여 CUBRID 관련 환경 변수값을 설정해야 한다. 
+또한, 로그인시 자동 설정하려면 사용자의 shell 환경에 맞게 .cubrid.sh (또는 .cubrid.csh)를 .bashrc (또는 .cshrc) 등에 수동으로 등록해주어야 한다. ::
 
     $ . /home1/cub_user/.cubrid.sh
 
@@ -160,7 +157,7 @@ cubrid service를 구동시킨 후 정상적으로 구동되었는지 확인하�
 
 CentOS 6 환경에서 생성한 RPM 파일을 사용하여 CUBRID를 설치할 수 있으며, 일반적인 RPM 유틸리티와 동일한 방법으로 설치하고 삭제할 수 있다. 설치하면 새로운 시스템 그룹(cubrid) 및 사용자 계정(cubrid)이 생성되며, 설치 후에는 cubrid 사용자 계정으로 로그인하여 CUBRID 서비스를 시작해야 한다. ::
 
-    $ rpm -Uvh cubrid-10.2.0.8787-a31ea42-Linux.x86_64.rpm
+    $ rpm -Uvh CUBRID-11.4-latest-Linux.x86_64.rpm
 
 RPM을 실행하면 CUBRID는 "cubrid" 홈 디렉터리(/opt/cubrid)에 설치되고, CUBRID 관련 환경 설정 파일(cubrid.[c]sh)이 /etc/profile.d 디렉터리에 설치된다. 단, demodb는 자동으로 설치되지 않으므로 "cubrid" Linux 계정으로 로그인하여 /opt/cubrid/demo/make_cubrid_demo.sh를 실행하여야 한다. CUBRID가 설치 완료되면 "cubrid" Linux 계정으로 로그인하여 CUBRID 서비스를 다음과 같이 시작한다. ::
 
@@ -170,7 +167,7 @@ RPM을 실행하면 CUBRID는 "cubrid" 홈 디렉터리(/opt/cubrid)에 설치�
 
     *   **RPM과 의존성**
     
-        RPM으로 설치할 때에는 의존성을 꼭 확인해야 한다. 의존성을 무시(--nodeps)하고 설치하면 실행되지 않을 수 있다.
+        RPM으로 설치할 때에는 의존성을 꼭 확인해야 한다. 의존성을 무시(\-\-nodeps)하고 설치하면 실행되지 않을 수 있다.
 
     *   **RPM 삭제 후에도 계정 및 DB는 남아 있음**
 
@@ -215,10 +212,125 @@ CCI, JDBC, PHP, ODBC, OLE DB, ADO.NET, Ruby, Python, Node.js 등의 인터페이
     
 **CUBRID 도구 설치**
 
-CUBRID 매니저 등의 도구는 https://www.cubrid.org/downloads 에서 최신 정보를 확인할 수 있고 관련 파일을 내려받아 설치할 수 있다.
+CUBRID Admin, CUBRID Migration ToolKit 등의 도구는 https://www.cubrid.org/downloads 에서 최신 정보를 확인할 수 있고 관련 파일을 내려받아 설치할 수 있다.
 
 .. FIXME CUBRID 웹매니저는 CUBRID 설치 시 같이 설치된다. 자세한 설명은 `CUBRID 웹 매니저 매뉴얼 <http://www.cubrid.org/wiki_tools/entry/cubrid-web-manager-manual>`_\ 을 참고한다.
     
+.. _Installing-and-Running-on-Windows-With-WSL:
+
+Windows에서 WSL(Windows Subsystem for Linux) 환경을 이용한 설치와 실행
+-----------------------------------------------------------------------
+
+Windows의 WSL(Windows Subsystem for Linux) 환경에서 CUBRID를 설치하고 실행할 수 있는 설치 프로그램을 제공한다. (https://www.cubrid.com/downloads)
+WSL 환경에서 CUBRID를 설치하고 실행하려면, WSL이 설치되어 있어야 한다. WSL 설치 방법은 https://learn.microsoft.com/ko-kr/windows/wsl/install 에서 확인할 수 있다.
+
+**설치 전 확인 사항**
+
+WSL 환경에 CUBRID를 설치하기 전에 다음 사항을 점검한다.
+
+*   Windows 버전 호환성 확인
+
+    Windows 10 버전 2004 이상(Build 19041 이상) 또는 Windows 11
+
+*   가상화 기술 지원 확인 (Intel VT-x, AMD-V)
+
+    BIOS/UEFI에서 가상화 기술이 활성화되어 있는지 확인한다.
+
+*   WSL(Windows Subsystem for Linux) 설치 및 활성화
+
+    https://github.com/microsoft/WSL/releases 에서 최신 WSL2를 설치하고 Windows 기능에서 WSL을 활성화 한다.
+    CUBRID 설치 프로그램은 WSL 설치를 자동으로 수행하지 않으며, WSL 활성화 상태를 체크하고 활성화 하는 기능만 제공한다.
+    WSL 기능을 설치 & 활성화 하는 경우 재부팅이 필요하며, 재부팅 후 설치 프로그램을 다시 실행해야 한다.
+
+*   설치 프로그램은 관리자 권한이 필요하다.
+
+**설치 과정**
+
+제공 되는 EXE 설치 프로그램을 실행하면, 설치 프로그램이 WSL 환경을 체크하고, 환경을 만족하지 않은 경우 안내 메시지를 보여주고 설치를 중단한다. 
+WSL이 활성화 되어 있으면, 설치 프로그램은 CUBRID가 포함되어 있는 Linux 배포판과 CUBRID Server 관리를 위한 Tray 애플리케이션을 설치 한다.
+
+**1단계: 설치 옵션 선택**
+
+    *   배포판 이름 설정
+    *   자동 실행 목록에 Tray 애플리케이션 등록 여부 선택
+    *   바탕화면 바로가기 생성 여부
+    *   샘플 데이터베이스 생성 여부
+    *   WSL2 모드 선택(기본값: 체크됨). 체크하면 WSL2 모드로, 체크를 해제하면 WSL1 모드로 설치한다.
+
+        위의 지원 플랫폼 요구 사양과 동작 검증은 WSL2 모드를 기준으로 한다.
+        WSL1 모드는 Linux 커널을 직접 사용하지 않으므로, 일부 기능이 제한될 수 있다.
+
+**2단계: 설치 디렉터리 지정**
+
+**3단계: 설치 완료**
+
+    *   설치 완료 후 Tray 애플리케이션을 실행할 지 선택 할 수 있다.
+    *   설치 프로그램은 설치와 제거 기능만 제공된다. 제거 시에는 WSL 배포판과 Tray 애플리케이션이 제거되며,
+        배포판 내부의 데이터베이스 및 설정 파일은 모두 삭제되므로, 제거 전에 데이터베이스를 백업해야 한다.
+
+    .. warning::
+        backupdb 또는 기타 방법으로 백업한 파일은 Windows 파일 시스템(/mnt/c/... 경로)으로 복사해 배포판 밖에 보관해야 한다.
+        배포판 안에 보관하면 제거 시 삭제되므로 주의한다.
+
+    *   CUBRID를 업그레이드할 때에는 설치 프로그램을 다시 실행하지 않고, 
+        배포판 안에 접속하여 Linux용 설치 파일로 Linux와 동일한 절차로 진행한다. 
+        자세한 내용은 :ref:`Installing-and-Running-on-Linux`\ 의 CUBRID 업그레이드를 참고한다.
+
+
+.. note:: 
+
+    설치 프로그램을 통해 설치완료되면 시스템 재구동 시 CUBRID WSL 배포판과 CUBRID Server가 자동으로 실행하게 되어 있다. 
+    시스템 재구동 시 자동 실행을 중단하려면 "설정 > 앱 > 시작 프로그램 > **cubrid_starter.exe**" 를 끔으로 설정 한다.
+    마찬가지로 자동 실행 목록에 Tray 애플리케이션을 등록한 경우 중단하려면 "설정 > 앱 > 시작 프로그램 > **cubrid_tray_app.exe**" 를 끔으로 설정 한다.
+
+**4단계: 설치 확인**
+
+    *   설치 완료 후, Windows 명령 프롬프트에서 ``wsl -l -v`` 명령으로 배포판이 설치되어 있는지 확인한다.
+    *   설치 완료 후, Windows 명령 프롬프트에서 ``wsl -d <배포판 이름> -u cubrid -- bash -l -c 'cubrid service status'`` 명령으로 
+        CUBRID Server가 구동 중인지 확인한다.
+    *   Tray 애플리케이션을 실행하여 About 메뉴를 선택하면 설치된 배포판 이름과 CUBRID 버전,상태를 확인할 수 있다.        
+
+**배포판 관련**
+
+    *   설치 프로그램은 배포판 이름을 설정할 수 있으며, 배포판 이름은 Windows 명령 프롬프트에서 ``wsl -l`` 명령으로 확인할 수 있다.
+    *   배포판의 CUBRID는 cubrid 사용자 계정으로 설치되며, cubrid 사용자의 홈 디렉터리는 /home/cubrid 이다.
+    *   배포판의 CUBRID 설치 경로는 /home/cubrid/CUBRID 이며, CUBRID 환경 변수는 /home/cubrid/.cubrid.sh 에 설정되어 있다.
+    *   배포판 안으로 접속하려면 Windows 명령 프롬프트에서 ``wsl -d <배포판 이름> -u cubrid`` 명령으로 접속 가능하다.
+
+
+**Tray 애플리케이션**
+
+    *   Tray 애플리케이션은 CUBRID Server를 시작/중지/재시작 할 수 있으며, 아래와 같은 메뉴를 제공한다.
+
+        *   About : 설치된 배포판 이름과 CUBRID 버전, 상태를 확인
+        *   CUBRID Start : CUBRID Server를 시작
+        *   CUBRID Stop : CUBRID Server를 중지
+        *   Guide : 네트워크 설정 및 업그레이드 가이드
+        *   Exit : Tray 애플리케이션 종료
+
+**WSL 관련 사항**
+
+    *   WSL2는 WSL1에 비해 성능이 향상되었으며, Linux 커널을 직접 사용하므로, 최신 Linux 기능을 사용할 수 있다.
+    *   CUBRID는 WSL2와 WSL1 모두에서 설치 및 실행이 가능하나, WSL2를 사용 할 수 있는 환경이라면 WSL2를 사용하는 것을 권장한다.
+    *   WSL 관련 사항은 https://learn.microsoft.com/ko-kr/windows/wsl/ 에서 확인 할 수 있다.
+
+**네트워크 관련 사항**
+
+    *   WSL2 모드에서는 Windows와 WSL이 가상 네트워크 NAT 방식으로 동작하여 포트포워딩 설정이 필요할 수 있다.
+
+        대부분의 버전에서는 포트포워딩이 자동지원되어 localhost:<port> 로 접근이 가능하다.
+        WSL2에서는 NAT 방식으로 인한 포트 포워딩 및 배포판 IP 변경 문제를 해결하기 위해, Mirrored Mode라는 네트워크 옵션을 지원합니다.
+        %USERPROFILE%\.wslconfig 파일에 아래 내용을 설정하면, WSL2가 WSL1처럼 윈도우의 네트워크 인터페이스를 Mirror하여 사용합니다.  ::
+
+            [wsl2]
+            networkingMode=mirrored
+
+        주의 사항 :
+        mirrored에 경우 윈도우와 WSL2가 동일한 네트워크 공간을 공유하므로, 윈도우에서 사용 중인 포트(예: 30000)를 WSL2 내부에서 중복으로 띄우면 포트 충돌발생 할 수 있습니다.
+
+    *   WSL1 모드에서는 Windows와 WSL이 호스트 통합형으로 윈도우의 호스트의 IP와 네트워크 스택을 그대로 공유합니다. (윈도우 방화벽 규칙 적용)
+    *   네트워크 설정은 https://learn.microsoft.com/ko-kr/windows/wsl/networking 을 참고할 수 있다.
+
 .. _Installing-and-Running-on-Windows:
 
 Windows에서의 설치와 실행
@@ -348,7 +460,7 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
 
         ::
         
-            tar xvfz CUBRID-10.2.0.8787-a31ea42-Linux.x86_64.tar.gz /home1/cub_user/
+            tar xvfz CUBRID-11.4-latest-Linux.x86_64.tar.gz /home1/cub_user/
 
         /home1/cub_user/ 이하에 CUBRID 디렉터리가 생기고 그 이하에 파일이 생성된다.
 
@@ -356,7 +468,7 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
 
     #.  사용자의 홈 디렉터리(/home1/cub_user) 이하에서 자동으로 실행되는 쉘 스크립트에 아래의 환경 변수를 추가한다.
     
-        **$CUBRID_DATABASES** 변수에 설정된 디렉토리 생성이 필요하다. 적절한 권한이 있는 임의의 디렉토리를 지정할 수 있다.
+        **$CUBRID_DATABASES** 변수에 설정된 디렉터리 생성이 필요하다. 적절한 권한이 있는 임의의 디렉터리를 지정할 수 있다.
 
         다음은 bash 쉘로 수행하는 경우 .bash_profile에 다음을 추가하는 예이다.
 
@@ -406,7 +518,7 @@ Linux 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항�
     *   server 파라미터에는 자동으로 구동할 DB 이름을 지정한다.
         
 CUBRID 설치 이후 환경 설정, 도구 설치, 인터페이스 설치 등은 :ref:`Installing-and-Running-on-Linux`\을 확인하도록 한다.
-            
+
 Windows에서 zip 파일로 CUBRID 설치
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -429,7 +541,7 @@ Windows 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항
         ::
         
             C:\CUBRID
-    *   **$CUBRID_DATABASES** 변수에 설정된 디렉토리 생성이 필요하다. 적절한 권한이 있는 임의의 디렉터리를 지정할 수 있다.
+    *   **$CUBRID_DATABASES** 변수에 설정된 디렉터리 생성이 필요하다. 적절한 권한이 있는 임의의 디렉터리를 지정할 수 있다.
 
     **환경 변수 설정**
 
@@ -447,12 +559,18 @@ Windows 버전의 CUBRID 데이터베이스를 설치하기 전에 다음 사항
         
             %CUBRID%\jdbc\cubrid_jdbc.jar       
             
-    #.  **Path** 시스템 변수에 CUBRID bin 디렉터리를 추가한다.
+    #.  **Path** 시스템 변수에 CUBRID bin 과 CUBRID cci\bin 디렉터리를 추가한다.
       
         ::
-        
-            %CUBRID%\bin
-                
+
+            %CUBRID%\bin;%CUBRID%\cci\bin
+
+	.. note:: 
+	
+	    CUBRID를 사용하기 위한 환경변수 설정은 아래의 Batch file(cubrid_env.bat)을 이용하여 설정을 편리하게 할 수 있다.
+	    C:\\CUBRID\\shard\\windows_scripts\\cubrid_env.bat
+
+
     **DB 생성**
         
     *   cmd 명령으로 콘솔 창을 띄운 후 DB를 생성할 디렉터리로 이동해서 DB를 직접 생성한다.
@@ -549,3 +667,13 @@ zip 파일로 CUBRID를 설치하는 경우 CUBRID Service Tray가 자동으로 
     *   [시작 버튼] > [모든 프로그램] > [시작프로그램]에 CUBRID Service Tray가 등록되어 있는지 확인하고, 그렇지 않으면 CUBRID Service Tray를 등록한다.
 
 CUBRID 설치 이후 환경 설정, 도구 설치, 인터페이스 설치 등은 :ref:`Installing-and-Running-on-Windows`\을 확인하도록 한다.
+
+.. note:: 
+
+    zip 파일로 CUBRID를 설치한 경우, CUBRID 실행에 필요한 DLL 이 없어 실행이 되지 않을 수 있다.
+    이런 경우 Microsoft Visual C++ Redistributable 를 설치해야 한다.
+    
+    *   **Microsoft Visual C++ Redistributable**
+    
+        https://visualstudio.microsoft.com/ko/downloads/
+        

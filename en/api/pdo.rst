@@ -31,7 +31,7 @@ Linux
 
 *   Operating system: 32-bit or 64-bit Linux
 *   Web server: Apache
-*   PHP: 5.2 or 5.3 ( https://www.php.net/downloads.php )
+*   PHP: 5.6.x, 7.1.x, or 7.4.x (https://www.php.net/downloads.php)
 
 **Installing CUBRID PHP Driver using PECL**
 
@@ -67,7 +67,8 @@ Windows
 
 *   Operating system: 32-bit or 64-bit Windows
 *   Web server: Apache or IIS
-*   PHP: 5.2 or 5.3 ( https://windows.php.net/download )
+*   PHP: 5.6.x, 7.1.x, or 7.4.x (https://windows.php.net/download/)
+*   For PHP 7.1.x or 7.4.x, you need to install Microsoft Visual C++ 2015 Redistributable Package for 32bit or 64bit.
 
 **Downloading and Installing Compiled CUBRID PDO Driver**
 
@@ -94,6 +95,12 @@ After you download the driver, you will see the **php_cubrid.dll** file for CUBR
         extension = php_pdo_cubrid.dll
 
 #.  Restart your web server to apply changes.
+
+Building CUBRID PHP Driver from Source Code
+===========================================
+
+Building CUBRID PDO driver and :ref:`Building CUBRID PHP driver from source code<how-to-php-driver-build>` \are the same.
+
 
 PDO Programming
 ===============
@@ -126,7 +133,7 @@ Predefined Constants
 
 The constants defined by CUBRID PDO driver are available only when the extension has been either compiled into PHP or dynamically loaded at runtime. In addition, these driver-specific constants should only be used if you are using PDO driver. Using driver-specific attributes with another driver may result in unexpected behavior.
 
-The `PDO::getAttribute() <http://docs.php.net/manual/en/pdo.getattribute.php>`_ function may be used to obtain the **PDO_ATTR_DRIVER_NAME** attribute value to check the driver if your code can run.
+The `PDO::getAttribute() <https://www.php.net/manual/en/pdo.getattribute.php>`_ function may be used to obtain the **PDO_ATTR_DRIVER_NAME** attribute value to check the driver if your code can run.
 
 The constants below can be used with the `PDO::cubrid_schema <https://www.php.net/manual/en/pdo.cubrid-schema.php>`_ function to get schema information.
 
@@ -177,7 +184,7 @@ PDO Sample Program
 Verifying CUBRID PDO Driver Version
 -----------------------------------
 
-If you want to verify that the CUBRID PDO driver is accessible, you can use the `PDO::getAvailableDrivers <http://docs.php.net/manual/en/pdo.getavailabledrivers.php>`_ () function.
+If you want to verify that the CUBRID PDO driver is accessible, you can use the `PDO::getAvailableDrivers <https://www.php.net/manual/en/pdo.getavailabledrivers.php>`_ () function.
 
 .. code-block:: php
 
@@ -246,13 +253,13 @@ Executing a SELECT Statement
 
 In PDO, there is more than one way to execute SQL queries.
 
-*   Using the `query <http://docs.php.net/manual/en/pdo.exec.php>`_ () function
-*   Using prepared statements (see `prepare <http://docs.php.net/manual/en/pdo.prepare.php>`_ ()/ `execute <http://docs.php.net/manual/en/pdostatement.execute.php>`_ ()) functions)
-*   Using the `exec <http://docs.php.net/manual/en/pdo.exec.php>`_ () function
+*   Using the `query <https://www.php.net/manual/en/pdo.query.php>`_ () function
+*   Using prepared statements (see `prepare <https://www.php.net/manual/en/pdo.prepare.php>`_ ()/ `execute <https://www.php.net/manual/en/pdostatement.execute.php>`_ ()) functions)
+*   Using the `exec <https://www.php.net/manual/en/pdo.exec.php>`_ () function
 
-The example script below shows the simplest one - using the `query <http://docs.php.net/manual/en/pdo.exec.php>`_ () function. You can retrieve the return values from the resultset (a PDOStatement object) by using the column names, like $rs["*column_name*"].
+The example script below shows the simplest one - using the `query <https://www.php.net/manual/en/pdo.query.php>`_ () function. You can retrieve the return values from the resultset (a PDOStatement object) by using the column names, like $rs["*column_name*"].
 
-Note that when you use the `query <http://docs.php.net/manual/en/pdo.exec.php>`_ () function, you must ensure that the query code is properly escaped. For information about escaping, see `PDO::quote <https://www.php.net/manual/en/pdo.quote.php>`_ () function.
+Note that when you use the `query <https://www.php.net/manual/en/pdo.query.php>`_ () function, you must ensure that the query code is properly escaped. For information about escaping, see `PDO::quote <https://www.php.net/manual/en/pdo.quote.php>`_ () function.
 
 .. code-block:: php
 
@@ -292,7 +299,7 @@ The output of the script is as follows: ::
 Executing an UPDATE Statement
 -----------------------------
 
-The following example shows how to execute an UPDATE statement by using a prepared statement and parameters. You can use the `exec <http://docs.php.net/manual/en/pdo.exec.php>`_ () function as an alternative.
+The following example shows how to execute an UPDATE statement by using a prepared statement and parameters. You can use the `exec <https://www.php.net/manual/en/pdo.exec.php>`_ () function as an alternative.
 
 .. code-block:: php
 
@@ -458,16 +465,16 @@ The output of the script is as follows: ::
 Using the PDO::getAttribute() Function
 --------------------------------------
 
-The `PDO::getAttribute <http://docs.php.net/manual/en/pdo.getattribute.php>`_ () function is very useful to retrieve the database connection attributes. For example,
+The `PDO::getAttribute <https://www.php.net/manual/en/pdo.getattribute.php>`_ () function is very useful to retrieve the database connection attributes. For example,
 
 *   Driver name
 *   Database version
 *   Auto-commit state
 *   Error mode
 
-Note that if you want to set attributes values (assuming that they are writable), you should use the `PDO::setAttribute <http://docs.php.net/manual/en/pdo.setattribute.php>`_ function.
+Note that if you want to set attributes values (assuming that they are writable), you should use the `PDO::setAttribute <https://www.php.net/manual/en/pdo.setattribute.php>`_ function.
 
-The following example script shows how to retrieve the current versions of client and server by using the `PDO::getAttribute <http://docs.php.net/manual/en/pdo.getattribute.php>`_ () function.
+The following example script shows how to retrieve the current versions of client and server by using the `PDO::getAttribute <https://www.php.net/manual/en/pdo.getattribute.php>`_ () function.
 
 .. code-block:: php
 
@@ -525,6 +532,6 @@ The output of the script is as follows: ::
 PDO API
 =======
 
-For more information about PHP Data Objects (PDO) API, see http://docs.php.net/manual/en/book.pdo.php. The API provided by CUBRID PDO driver is as follows:
+For more information about PHP Data Objects (PDO) API, see https://www.php.net/manual/en/book.pdo.php. The API provided by CUBRID PDO driver is as follows:
 
 For more information about CUBRID PDO API provides, see http://ftp.cubrid.org/CUBRID_Docs/Drivers/PDO/.

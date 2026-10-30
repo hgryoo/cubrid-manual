@@ -30,18 +30,18 @@ CREATE TRIGGER
 
 *   **트리거가 재귀적으로 실행되고 있지는 않는가?**
 
-    트리거의 실행 영역이 트리거를 부르고 이 트리거가 다시 처음 트리거를 부르면 재귀 루프(recursive loop)가 데이터베이스에 만들어진다. 재귀 루프가 만들어지면, 트리거가 정확히 수행되지 않거나 진행 중인 루프를 단절하기 위해 현재 세션을 강제로 종료해야 할 수도 있다.
+    트리거의 실행 영역이 트리거를 호출하고 이 트리거가 다시 처음 트리거를 호출하면  재귀 루프(recursive loop)가 데이터베이스에 만들어진다. 재귀 루프가 만들어지면, 트리거가 정확히 수행되지 않거나 진행 중인 루프를 단절하기 위해 현재 세션을 강제로 종료해야 할 수도 있다.
 
 *   **트리거의 정의는 유일한가?**
 
-    동일한 테이블에서 정의된 트리거나, 동일한 실행 영역에서 시작된 트리거는 복구할 수 없는 에러의 원인이 된다. 동일한 테이블에 있는 트리거는 다른 트리거 이벤트를 가져야 한다. 또한, 트리거의 우선순위는 명시적으로 정의되어 있거나 모호하지 않아야 한다.
+    동일한 테이블에서 정의된 트리거나, 동일한 실행 영역에서 시작된 트리거는 복구할 수 없는 오류의 원인이 된다. 동일한 테이블에 있는 트리거는 다른 트리거 이벤트를 가져야 한다. 또한, 트리거의 우선순위는 명시적으로 정의되어 있거나 모호하지 않아야 한다.
 
 트리거 정의 구문
 ----------------
 
 **CREATE TRIGGER** 문을 사용하여 새로운 트리거를 생성하고, 트리거 대상, 실행 조건과 수행할 내용을 정의할 수 있다. 트리거는 데이터베이스 객체로서, 특정 이벤트가 대상 테이블에 대해 발생하면 정의된 동작을 수행한다. ::
 
-    CREATE TRIGGER trigger_name
+    CREATE TRIGGER [schema_name.]trigger_name
     [ STATUS { ACTIVE | INACTIVE } ]
     [ PRIORITY key ]
     <event_time> <event_type> [<event_target>]
@@ -65,8 +65,8 @@ CREATE TRIGGER
         COMMIT
      
     <event_target> ::=
-        ON table_name |
-        ON table_name [ (column_name) ]
+        ON [schema_name.]table_name |
+        ON [schema_name.]table_name [ (column_name) ]
      
     <condition> ::=
         expression
@@ -79,6 +79,7 @@ CREATE TRIGGER
         UPDATE statement |
         DELETE statement
 
+*   *schema_name*: 트리거의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
 *   *trigger_name*: 정의하려는 트리거의 이름을 지정한다.
 *   [ **STATUS** { **ACTIVE** | **INACTIVE** } ]: 트리거의 상태를 정의한다(정의하지 않을 경우 기본값은 **ACTIVE** ).
 
@@ -93,7 +94,11 @@ CREATE TRIGGER
 
 *   <*condition*>: 트리거의 조건영역을 지정한다. 자세한 내용은 :ref:`trigger-condition` 을 참조한다.
 *   <*action*>: 트리거의 실행영역을 지정한다. 자세한 내용은 :ref:`trigger-action` 을 참조한다.
-*   *trigger_comment*: 트리거의 커멘트를 지정한다.
+*   *trigger_comment*: 트리거의 주석을 지정한다.
+
+.. note::
+
+    *   **DBA** 와 **DBA** 멤버는 다른 스키마에 트리거를 생성할 수 있다. 사용자가 **DBA** 도 아니고 **DBA** 멤버도 아니면 해당 사용자의 스키마에서만 트리거를 생성할 수 있다.
 
 다음은 *participant* 테이블의 레코드를 갱신할 때 획득 메달의 개수가 0보다 작을 경우 갱신을 거절하는 트리거를 생성하는 예제이다.
 2004년도 올림픽에 한국이 획득한 금메달의 개수를 음수로 갱신할 경우 갱신이 거절되는 것을 알 수 있다.
@@ -257,7 +262,7 @@ CREATE TRIGGER
 상관명(correlation name)
 ------------------------
 
-트리거를 정의할 때 상관명을 사용하여 대상 테이블의 칼럼 값에 접근할 수 있다. 상관명은 실제적으로 트리거를 부르는 데이터베이스 연산에 의해 영향을 받는 인스턴스를 나타낸다. 상관명은 트리거의 조건 영역이나 실행 영역에도 기술할 수 있다.
+트리거를 정의할 때 상관명을 사용하여 대상 테이블의 칼럼 값에 접근할 수 있다. 상관명은 실제적으로 트리거를 호출하는 데이터베이스 연산에 의해 영향을 받는 인스턴스를 나타낸다. 상관명은 트리거의 조건 영역이나 실행 영역에도 기술할 수 있다.
 
 상관명의 종류에는 **new**, **old**, **obj** 가 있으며 이러한 상관명은 인스턴스 트리거에서 **INSERT**, **UPDATE**, **DELETE** 의 이벤트 타입을 가지고 있는 트리거에서만 사용할 수 있다.
 
@@ -320,24 +325,24 @@ CREATE TRIGGER
     *   **INSERT** 이벤트가 정의된 트리거의 실행 영역에 **INSERT** 를 사용할 때는 트리거가 무한 루프에 빠질 수 있으므로 주의해야 한다.
     *   **UPDATE** 이벤트가 정의된 트리거가 분할된 테이블에서 동작하는 경우, 정의된 분할이 깨지거나 의도하지 않은 오동작이 발생할 수 있으므로 주의해야 한다. 이를 방지하기 위해 CUBRID는 트리거가 동작중인 경우 분할 변경을 야기하는 **UPDATE** 가 실행되지 않도록 오류 처리한다. **UPDATE** 이벤트가 정의된 트리거의 실행 영역에 **UPDATE** 를 사용할 때는 무한 루프에 빠질 수 있으므로 주의해야 한다.
 
-트리거의 커멘트
+트리거의 주석
 ---------------
 
-트리의 커멘트를 다음과 같이 명시할 수 있다. 
+트리거의 주석을 다음과 같이 명시할 수 있다. 
 
 .. code-block:: sql
 
     CREATE TRIGGER trg_ab BEFORE UPDATE on abc(c) EXECUTE UPDATE cube_ab SET sumc = sumc + 1
     COMMENT 'test trigger comment';
 
-트리거의 커멘트는 다음 구문에서 확인할 수 있다.
+트리거의 주석은 다음 구문에서 확인할 수 있다.
 
 .. code-block:: sql
 
 	SELECT name, comment FROM db_trigger;
-	SELECT trigger_name, comment FROM db_trig;
+	SELECT trigger_name, comment FROM db_trigger;
 
-또는 CSQL 인터프리터에서 스키마를 출력하는 ;sc 명령으로 트리거의 커멘트를 확인할 수 있다.
+또는 CSQL 인터프리터에서 스키마를 출력하는 ;sc 명령으로 트리거의 주석을 확인할 수 있다.
 
 .. code-block:: sql
 
@@ -345,7 +350,7 @@ CREATE TRIGGER
     
     csql> ;sc tbl
 
-트리거 커멘트의 변경은 아래의 **ALTER TRIGGER** 문을 참고한다.
+트리거 주석의 변경은 아래의 **ALTER TRIGGER** 문을 참고한다.
 
 .. _alter-trigger:
 
@@ -356,12 +361,13 @@ ALTER TRIGGER
 
 ::
 
-    ALTER TRIGGER trigger_name <trigger_option> ;
+    ALTER TRIGGER [schema_name.]trigger_name <trigger_option> ;
 
     <trigger_option> ::=
         STATUS { ACTIVE | INACTIVE } |
         PRIORITY key
 
+*   *schema_name*: 트리거의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
 *   *trigger_name*: 변경할 트리거의 이름을 지정한다.
 *   **STATUS** { **ACTIVE** | **INACTIVE** }: 트리거의 상태를 변경한다.
 *   **PRIORITY** *key*: 우선순위를 변경한다.
@@ -385,19 +391,21 @@ ALTER TRIGGER
     *   만약 테이블 트리거를 변경하려면, 해당 트리거의 소유자이거나, 해당 트리거가 있는 테이블에 대해 **ALTER** 권한이 부여되어 있어야 한다.
     *   사용자 트리거를 변경하기 위해서는 반드시 해당 트리거의 소유자여야 한다. *trigger_option* 에 대한 자세한 내용은 :ref:`create-trigger` 을 참조한다. **PRIORITY** 옵션과 같이 기술하는 key는 반드시 음이 아닌 부동 소수점 값(non-negative floating point value)이어야 한다.
 
-트리거 커멘트
+트리거 주석
 -------------
 
-트리거 커멘트는 **ALTER TRIGGER** 문을 실행하여 다음과 같이 변경할 수 있다.
+트리거 주석은 **ALTER TRIGGER** 문을 실행하여 다음과 같이 변경할 수 있다.
 
 ::
 
-    ALTER TRIGGER trigger_name [trigger_option] 
+    ALTER TRIGGER [schema_name.]trigger_name [trigger_option] 
     [COMMENT ‘comment_string’];
 
-*   *comment_string*: 트리거의 커멘트를 지정한다.
+*   *schema_name*: 트리거의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
+*   *trigger_name*: 변경할 트리거의 이름을 지정한다.
+*   *comment_string*: 트리거의 주석을 지정한다.
 
-트리거의 커멘트만 변경하는 경우 트리거 옵션(trigger_option)을 생략할 수 있다.
+트리거의 주석만 변경하는 경우 트리거 옵션(trigger_option)을 생략할 수 있다.
 
 *trigger_option*\은 위의 :ref:`alter-trigger` 구문을 참고한다.
 
@@ -410,8 +418,9 @@ DROP TRIGGER
 
 **DROP TRIGGER** 구문을 이용하여 트리거를 삭제한다. ::
 
-    DROP TRIGGER trigger_name ; 
+    DROP TRIGGER [schema_name.]trigger_name ; 
 
+*   *schema_name*: 트리거의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
 *   *trigger_name*: 삭제할 트리거의 이름을 지정한다.
 
 다음은 medal_trig 트리거를 삭제하는 예제이다.
@@ -430,8 +439,9 @@ RENAME TRIGGER
 
 트리거의 이름은 **RENAME** 구문의 **TRIGGER** 예약어를 이용해서 변경한다. ::
 
-    RENAME TRIGGER old_trigger_name AS new_trigger_name ;
+    RENAME TRIGGER [schema_name.]old_trigger_name {AS | TO} [schema_name.]new_trigger_name ;
 
+*   *schema_name*: 트리거의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다. 현재 트리거의 스키마와 변경할 트리거의 스키마가 동일해야 한다.
 *   *old_trigger_name*: 트리거의 현재 이름을 입력한다.
 *   *new_trigger_name*: 변경할 트리거의 이름을 지정한다.
 
@@ -441,7 +451,7 @@ RENAME TRIGGER
 
 .. note::
 
-    *   트리거 이름은 모든 트리거 사이에서 유일해야 한다. 하지만 데이터베이스 내의 테이블 이름과 같은 이름을 가질 수는 있다.
+    *   트리거 이름은 사용자가 소유하고 있는 트리거 중에서 유일해야 한다. 하지만 데이터베이스 내의 테이블 이름과 같거나 다른 소유자가 소유하고 있는 트리거의 이름과는 같을 수 있다.
     *   만약 테이블 트리거의 이름을 변경하려면, 트리거의 소유자이거나, 해당 트리거가 있는 테이블에 대해 **ALTER** 권한이 부여되어 있어야 한다. 사용자 트리거는 트리거의 소유자만 이름을 변경할 수 있다.
 
 지연된 트리거
@@ -457,9 +467,10 @@ RENAME TRIGGER
     EXECUTE DEFERRED TRIGGER <trigger_identifier> ;
 
     <trigger_identifier> ::=
-        trigger_name |
+        [schema_name.]trigger_name |
         ALL TRIGGERS
 
+*   *schema_name*: 트리거의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
 *   *trigger_name*: 트리거의 이름을 지정하면 지정된 트리거의 지연된 활동이 실행된다.
 *   **ALL TRIGGERS**: 현재 모든 지연된 활동이 실행된다.
 
@@ -471,9 +482,10 @@ RENAME TRIGGER
     DROP DEFERRED TRIGGER <trigger_identifier> ;
 
     <trigger_identifier> ::=
-        trigger_name |
+        [schema_name.]trigger_name |
         ALL TRIGGERS
 
+*   *schema_name*: 트리거의 스키마 이름을 지정한다. 생략하면 현재 세션의 스키마 이름을 사용한다.
 *   *trigger_name*: 트리거의 이름을 지정하면 지정된 트리거의 지연된 활동이 취소된다.
 *   **ALL TRIGGERS**: 현재 모든 지연된 활동이 취소된다.
 
@@ -576,7 +588,7 @@ CUBRID에서는 **REPLACE** 문과 **INSERT ... ON DUPLICATE KEY UPDATE** 문 �
 *   **ON**: **TRACE** 가 작동되며 **OFF** 하거나 현재 데이터베이스 세션을 종료할 때까지 계속 유지된다.
 *   **OFF**: **TRACE** 의 작동을 멈춘다.
 
-다음 예제는 트리거의 실행 로그를 보기 위해 **TRACE** 를 작동시키고 *loop_trg* 트리거를 작동시키는 예제이다. 트리거가 호출될 때 수행된 각각의 조건 영역과 실행 영역에 대한 추적을 식별하기 위한 메시지가 터미널에 나타난다. *loop_trg* 트리거는 *gold* 값이 0이 될 때까지 실행되므로 예제에서는 아래의 메세지가 15번 나타난다.
+다음 예제는 트리거의 실행 로그를 보기 위해 **TRACE** 를 작동시키고 *loop_trg* 트리거를 작동시키는 예제이다. 트리거가 호출될 때 수행된 각각의 조건 영역과 실행 영역에 대한 추적을 식별하기 위한 메시지가 터미널에 나타난다. *loop_trg* 트리거는 *gold* 값이 0이 될 때까지 실행되므로 예제에서는 아래의 메시지가 15번 나타난다.
 
 .. code-block:: sql
 
@@ -597,7 +609,7 @@ CUBRID에서는 **REPLACE** 문과 **INSERT ... ON DUPLICATE KEY UPDATE** 문 �
 
 *   *count*: 양의 정수값으로 트리거가 다른 트리거나 자신을 재귀적으로 발동할 수 있는 횟수를 지정한다. 트리거의 수가 최대 깊이에 도달하면 데이터베이스 요청은 중단되고 트랜잭션은 유효하지 않은 것처럼 표시된다. 설정된 **DEPTH** 는 현재 세션을 제외한 나머지 모든 트리거에 적용된다. 최대값은 32이다.
 
-다음은 재귀적 트리거 호출의 최대 값을 10으로 설정하는 예제이다. 이는 이후에 발동하는 모든 트리거에 적용된다. 이 예제에서 *gold* 칼럼에 대한 값은 15로 갱신되어 트리거는 총 16번 불려지게 된다. 이는 현재 설정된 최대 깊이를 초과하게 되고 아래와 같은 에러 메시지가 발생한다.
+다음은 재귀적 트리거 호출의 최대 값을 10으로 설정하는 예제이다. 이는 이후에 발동하는 모든 트리거에 적용된다. 이 예제에서 *gold* 칼럼에 대한 값은 15로 갱신되어 트리거는 총 16번 불려지게 된다. 이는 현재 설정된 최대 깊이를 초과하게 되고 아래와 같은 오류 메시지가 발생한다.
 
 .. code-block:: sql
 
@@ -607,6 +619,12 @@ CUBRID에서는 **REPLACE** 문과 **INSERT ... ON DUPLICATE KEY UPDATE** 문 �
 ::
 
     ERROR: Maximum trigger depth 10 exceeded at trigger "loop_tgr".
+
+.. note::
+
+    **DEFERRED** 트리거는 호출되어도 동작이 즉시 실행되지 않고 트랜잭션이 종료될 때까지 지연된 활동으로 누적되므로, 한 트랜잭션에 누적되는 지연된 활동이 많아질수록 CAS의 메모리 사용량도 함께 증가한다. 특히 트리거가 서로를 반복해서 호출하거나 한 트랜잭션에서 많은 수의 **DEFERRED** 트리거가 호출되면 지연된 활동이 과도하게 누적될 수 있으며, 이때 CAS의 메모리 사용량이 :ref:`APPL_SERVER_MAX_SIZE_HARD_LIMIT <appl_server_max_size_hard_limit>` 에 도달하면 해당 CAS는 재구동된다.
+
+    **MAXIMUM DEPTH** 는 트리거가 중첩 호출되는 깊이만 제한하며 누적되는 지연된 활동의 총 개수는 제한하지 않으므로, 이러한 누적은 **MAXIMUM DEPTH** 로 방지할 수 없다. 따라서 트리거가 서로를 순환 호출하지 않도록 하고, 한 트랜잭션에서 대량의 행을 변경하는 작업에는 **DEFERRED** 트리거를 사용하지 않는 등 누적되는 지연된 활동의 수가 과도해지지 않도록 트리거를 설계해야 한다.
 
 트리거를 이용한 응용
 ====================
@@ -676,7 +694,7 @@ CUBRID에서는 **REPLACE** 문과 **INSERT ... ON DUPLICATE KEY UPDATE** 문 �
         IF old.n = 100
         EXECUTE PRINT 'foo_trigger';
 
-위와 같이 트리거를 생성하려고 하면 다음과 같은 에러 메시지를 보여주고, 실패한다. 
+위와 같이 트리거를 생성하려고 하면 다음과 같은 오류 메시지를 보여주고, 실패한다. 
 
 ::
 

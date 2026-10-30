@@ -5,7 +5,7 @@
 .. _reference-index:
 
 #######################
-CUBRID 10.2 User Manual
+CUBRID 11.4 User Manual
 #######################
 
 Topic Quick Reference Table
@@ -25,12 +25,12 @@ Topic Quick Reference Table
 | :doc:`/sql/index`              | :doc:`/admin/control`           | :doc:`/sql/tuning`              | :ref:`blocking DDL              | :doc:`/api/pdo`                 | :ref:`database-server-error`    |
 |                                |                                 |                                 | <block_ddl_statement>`          |                                 |                                 |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
-|                                | :doc:`/admin/admin_utils`       | :doc:`/sql/partition`           | :ref:`blocking DML w/o WHERE    | :doc:`/api/odbc`                | :ref:`cas-error`                |
+| :doc:`/pl/index`               | :doc:`/admin/admin_utils`       | :doc:`/sql/partition`           | :ref:`blocking DML w/o WHERE    | :doc:`/api/odbc`                | :ref:`cas-error`                |
 |                                |                                 |                                 | <block_nowhere_statement>`      |                                 |                                 |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
-|                                | :ref:`database-volume`          | :ref:`cursor-holding`           |                                 | :doc:`/api/adodotnet`           | :ref:`ha-error`                 |
+|                                | :ref:`database-volume`          | :ref:`cursor-holding`           | :ref:`tde`                      | :doc:`/api/adodotnet`           | :ref:`ha-error`                 |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
-|                                | :ref:`backupdb`                 |                                 |                                 | :doc:`/api/perl`                | :ref:`server-logs`              |
+|                                | :ref:`backupdb`                 | :doc:`/pl/plcsql`               |                                 | :doc:`/api/perl`                | :ref:`server-logs`              |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
 |                                | :ref:`restoredb`                |                                 |                                 | :doc:`/api/python`              | :ref:`broker-logs`              |
 +--------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+---------------------------------+
@@ -52,8 +52,11 @@ Table of Contents
     start.rst
     csql.rst
     sql/index.rst
+    pl/index.rst
     admin/index.rst
     ha.rst
+    security.rst
+    shard.rst
     api/index.rst
     release_note/index.rst
 
