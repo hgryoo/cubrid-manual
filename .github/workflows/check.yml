@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "develop", "release/[0-9]*" ]
   pull_request_target:
-    branches: [ "develop", "release/[0-9]*" ]
+    branches: [ "develop", "release/[0-9]*", "preview-demo" ]  # DEMO ONLY (fork)
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -161,7 +161,7 @@ jobs:
         if: github.event_name == 'pull_request_target'
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.GH_PAGES_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # DEMO ONLY (fork has no GH_PAGES_TOKEN)
           publish_branch: gh-pages
           publish_dir: ./dist
           destination_dir: pr-preview/${{ github.event.pull_request.number }}/${{ matrix.lang }}
@@ -178,7 +178,7 @@ jobs:
         if: github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.GH_PAGES_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # DEMO ONLY (fork has no GH_PAGES_TOKEN)
           publish_branch: gh-pages
           publish_dir: ./dist
           destination_dir: ${{ matrix.lang }}/${{ github.ref_name }}/${{ env.SHORT_SHA }}
