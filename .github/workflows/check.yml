@@ -28,11 +28,18 @@ jobs:
     container:
       image: rockylinux:9.3
     steps:
+      # Without git in the container, actions/checkout downloads the files with no .git,
+      # and the change preview needs git to find the merge base.
+      - name: Install git
+        run: |
+          for i in {1..3}; do dnf install -y git && break || sleep 5; done
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           allow-unsafe-pr-checkout: true
+          fetch-depth: 0  # the change preview diffs against the merge base
           
       - name: Compute short SHA
         id: sha
@@ -61,7 +68,7 @@ jobs:
           update-alternatives --set python3 /usr/bin/python3.12
           # PIP Retry Logic
           for i in {1..3}; do
-            pip3.12 install 'urllib3<2.0' Sphinx==9.1.0 \
+            pip3.12 install 'urllib3<2.0' Sphinx==9.1.0 lxml \
               sphinx_design sphinxext-rediraffe sphinxawesome-theme==6.0.0 \
               weasyprint==68.0 sphinx-simplepdf==1.7 sphinx-rtd-theme && break || sleep 5;
           done
@@ -77,6 +84,30 @@ jobs:
           if [ -f "_build/simplepdf/CUBRID.pdf" ]; then
             cp _build/simplepdf/CUBRID.pdf _build/html/CUBRID.pdf
           fi
+
+      # Change preview: marks what the PR adds and deletes on the rendered pages.
+      # The script comes from the base branch, so a PR cannot change what runs here.
+      - name: Checkout base-branch preview script
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base-tools
+          sparse-checkout: .github/scripts
+
+      - name: Mark changes (change preview)
+        if: github.event_name == 'pull_request_target'
+        env:
+          LANG: ko_KR.utf8
+        run: |
+          if [ ! -f base-tools/.github/scripts/manual_preview.py ]; then
+            echo "The base branch has no change preview script yet; skipping."
+            exit 0
+          fi
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          python3 base-tools/.github/scripts/manual_preview.py --repo . \
+            --base ${{ github.event.pull_request.base.sha }} \
+            --lang ${{ matrix.lang }} --head-html ${{ matrix.lang }}/_build/html --inplace
 
       - name: Check link
         env:
@@ -180,6 +211,7 @@ jobs:
             | :--- | :--- | :--- |
             | 🌐 **Web** | [View Docs](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/ko/index.html) | [View Docs](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/en/index.html) |
             | 📄 **PDF** | [Download](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/ko/CUBRID.pdf) | [Download](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/en/CUBRID.pdf) |
+            | 🔍 **Changes** | [View Changes](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/ko/_changes.html) | [View Changes](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/en/_changes.html) |
           comment_tag: cubrid-manual-preview
           mode: recreate
 
