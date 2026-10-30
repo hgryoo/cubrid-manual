@@ -86,12 +86,13 @@ jobs:
           fi
 
       # Change preview: marks what the PR adds and deletes on the rendered pages.
-      # The script comes from the base branch, so a PR cannot change what runs here.
-      - name: Checkout base-branch preview script
+      # The script comes from the default branch (github.sha for pull_request_target),
+      # the same trusted source as this workflow, so a PR cannot change what runs here.
+      - name: Checkout preview script (default branch)
         if: github.event_name == 'pull_request_target'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.sha }}
           path: base-tools
           sparse-checkout: .github/scripts
 
@@ -101,7 +102,7 @@ jobs:
           LANG: ko_KR.utf8
         run: |
           if [ ! -f base-tools/.github/scripts/manual_preview.py ]; then
-            echo "The base branch has no change preview script yet; skipping."
+            echo "The default branch has no change preview script yet; skipping."
             exit 0
           fi
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -197,7 +198,7 @@ jobs:
     steps:
       # --- Case A: PR Preview Link ---
       # The change list comes from the _changes.json each language build wrote; the
-      # script that renders it comes from the base branch, as in the build job.
+      # script that renders it comes from the default branch, as in the build job.
       - name: Download build artifacts (change lists)
         if: github.event_name == 'pull_request_target'
         uses: actions/download-artifact@v4
@@ -205,11 +206,11 @@ jobs:
           pattern: build-artifact-*
           path: ./artifacts
 
-      - name: Checkout base-branch preview script
+      - name: Checkout preview script (default branch)
         if: github.event_name == 'pull_request_target'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.sha }}
           path: base-tools
           sparse-checkout: .github/scripts
 
