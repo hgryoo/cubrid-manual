@@ -196,22 +196,51 @@ jobs:
       pull-requests: write
     steps:
       # --- Case A: PR Preview Link ---
+      # The change list comes from the _changes.json each language build wrote; the
+      # script that renders it comes from the base branch, as in the build job.
+      - name: Download build artifacts (change lists)
+        if: github.event_name == 'pull_request_target'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-artifact-*
+          path: ./artifacts
+
+      - name: Checkout base-branch preview script
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base-tools
+          sparse-checkout: .github/scripts
+
+      - name: Compose PR preview comment
+        if: github.event_name == 'pull_request_target'
+        env:
+          URL_BASE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}
+        run: |
+          {
+            echo "✅ **CUBRID Manual Preview is Ready!**"
+            echo
+            echo "All docs (KO/EN) are successfully built and deployed."
+            echo
+            echo "| Type | 🇰🇷 Korean (KO) | 🇺🇸 English (EN) |"
+            echo "| :--- | :--- | :--- |"
+            echo "| 🌐 **Web** | [View Docs]($URL_BASE/ko/index.html) | [View Docs]($URL_BASE/en/index.html) |"
+            echo "| 📄 **PDF** | [Download]($URL_BASE/ko/CUBRID.pdf) | [Download]($URL_BASE/en/CUBRID.pdf) |"
+          } > comment.md
+          if [ -f base-tools/.github/scripts/manual_preview.py ]; then
+            python3 base-tools/.github/scripts/manual_preview.py --comment-md changes.md \
+              --changes-json artifacts/build-artifact-ko/_changes.json artifacts/build-artifact-en/_changes.json \
+              --url-base "$URL_BASE" && { echo; cat changes.md; } >> comment.md
+          fi
+
       - name: Comment PR Preview Link
         if: github.event_name == 'pull_request_target'
         uses: thollander/actions-comment-pull-request@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_number: ${{ github.event.pull_request.number }}
-          message: |
-            ✅ **CUBRID Manual Preview is Ready!**
-
-            All docs (KO/EN) are successfully built and deployed.
-
-            | Type | 🇰🇷 Korean (KO) | 🇺🇸 English (EN) |
-            | :--- | :--- | :--- |
-            | 🌐 **Web** | [View Docs](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/ko/index.html) | [View Docs](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/en/index.html) |
-            | 📄 **PDF** | [Download](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/ko/CUBRID.pdf) | [Download](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/en/CUBRID.pdf) |
-            | 🔍 **Changes** | [View Changes](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/ko/_changes.html) | [View Changes](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/${{ github.event.pull_request.number }}/en/_changes.html) |
+          filePath: comment.md
           comment_tag: cubrid-manual-preview
           mode: recreate
 

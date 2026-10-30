@@ -20,12 +20,15 @@ rendered page:
 CI mode (the manual's GitHub Actions PR preview) takes the HEAD build that
 ``make html`` already made (``--head-html``, one language) and, with
 ``--inplace``, writes each marked page next to its original as
-``<page>.diff.html`` plus a list page ``_changes.html`` in that directory, so
-the marked pages are published with the normal preview and keep its links,
-styles and images. It exits 0 when the language has no changed page.
+``<page>.diff.html`` plus a list page ``_changes.html`` and its data
+``_changes.json`` in that directory, so the marked pages are published with
+the normal preview and keep its links, styles and images. It exits 0 when the
+language has no changed page. ``--comment-md`` then turns the ko and en
+``_changes.json`` into the Markdown section of the PR comment.
 
-Needs ``lxml``: run it with the manual venv's interpreter, e.g.
+Marking needs ``lxml``: run it with the manual venv's interpreter, e.g.
 ``/data/workspace/venv/cubrid-manual/bin/python manual_preview.py …``.
+``--comment-md`` needs neither lxml, git nor Sphinx.
 
 Usage::
 
@@ -33,6 +36,7 @@ Usage::
         [--lang ko,en] [--out DIR] [--sphinx-build PATH] [--serve PORT]
     manual_preview.py --repo . --base origin/develop --lang ko
         --head-html ko/_build/html --inplace [--sphinx-build PATH]
+    manual_preview.py --comment-md OUT --changes-json KO.json EN.json --url-base URL
 """
 
 from __future__ import annotations
@@ -42,6 +46,7 @@ import difflib
 import hashlib
 import html
 import http.server
+import json
 import pathlib
 import re
 import shutil
@@ -52,8 +57,8 @@ import tempfile
 try:
     import lxml.html as LH
     from lxml.html.diff import htmldiff
-except ImportError:  # pragma: no cover - environment check
-    sys.exit("manual_preview.py needs lxml; run it with the manual venv's python")
+except ImportError:  # only marking needs lxml; main() checks before it marks
+    LH = htmldiff = None
 
 STYLE = """
 ins.mp-diff, ins { background: #c8f2c8; color: inherit; text-decoration: none; }
@@ -339,13 +344,15 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;pad
 
 
 def write_changes(path: pathlib.Path, lang: str, rows: list, base_sha: str, head_sha: str) -> None:
-    """Write ``--inplace``'s list of one language's changed pages; its links are relative to ``path``."""
+    """Write ``--inplace``'s list of one language's changed pages (links relative to ``path``)
+    and, next to it, the same list as ``_changes.json`` for ``--comment-md``."""
     t = TEXT[lang]
-    items = []
+    items, pages = [], []
     for _, doc, rel, n_ins, n_del, n_blk, is_new in rows:
         if not (path.parent / rel).exists():  # an .inc without its own page, or a page deleted in head
             items.append(f'<tr><td>{html.escape(doc)} ({t["nohtml"]})</td><td></td><td></td><td></td><td></td></tr>')
-            continue
+            continue  # no .diff.html to link to, so not in the JSON either
+        pages.append({"doc": doc, "blocks": n_blk, "ins": n_ins, "del": n_del, "new": is_new})
         diff = html.escape(f"{doc}.diff.html") + ("#mp-1" if n_blk else "")
         new = f' ({t["new"]})' if is_new else ""
         items.append(f'<tr><td><a href="{diff}">{html.escape(doc)}</a>{new}</td><td>{n_blk}</td><td>{n_ins}</td>'
@@ -363,6 +370,37 @@ def write_changes(path: pathlib.Path, lang: str, rows: list, base_sha: str, head
 </head><body><h1>{t["title"]} ({lang})</h1>
 {body}
 </body></html>""", encoding="utf-8")
+    path.with_suffix(".json").write_text(json.dumps(
+        {"lang": lang, "base": base_sha, "head": head_sha, "pages": sorted(pages, key=lambda x: x["doc"])},
+        ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
+def comment_md(changes: dict[str, dict], url: str) -> str:
+    """Render the PR comment's changed-page section from each language's ``_changes.json``."""
+    pages = {lang: {p["doc"]: p for p in data.get("pages", [])} for lang, data in changes.items()}
+    docs = sorted(set(pages["ko"]) | set(pages["en"]))
+    if not docs:
+        return "**🔍 Changed pages** — none.\n"
+
+    def cell(lang: str, doc: str) -> str:
+        p = pages[lang].get(doc)
+        if p is None:
+            return "—"
+        n = p["blocks"]
+        href = f"{url}/{lang}/{doc}.diff.html" + ("#mp-1" if n else "")
+        return ("🆕 " if p["new"] else "") + f"[{n} change{'' if n == 1 else 's'}]({href})"
+
+    rows = []
+    for doc in docs:
+        ko, en = pages["ko"].get(doc), pages["en"].get(doc)
+        warn = " ⚠️" if ko is None or en is None or ko["blocks"] != en["blocks"] else ""
+        rows.append(f"| {doc}{warn} | {cell('ko', doc)} | {cell('en', doc)} |")
+    table = "| Page | KO | EN |\n| --- | --- | --- |\n" + "\n".join(rows)
+    if len(docs) > 15:
+        table = f"<details><summary>Show {len(docs)} changed pages</summary>\n\n{table}\n\n</details>"
+    return (f"**🔍 Changed pages ({len(docs)})** — Each link opens the page at its first change. "
+            "Additions are green and deletions are struck through in red. Press `n` / `p` to move between "
+            f"changes. Full lists: [KO]({url}/ko/_changes.html) · [EN]({url}/en/_changes.html)\n\n{table}\n")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -380,7 +418,28 @@ def main(argv: list[str] | None = None) -> int:
                    help="write <page>.diff.html next to each page in --head-html and _changes.html there")
     p.add_argument("--serve", type=int, metavar="PORT", help="serve the marked site on this port")
     p.add_argument("--bind", default="0.0.0.0")
+    p.add_argument("--comment-md", metavar="OUT",
+                   help="write the PR comment's changed-page section (Markdown) from --changes-json")
+    p.add_argument("--changes-json", nargs=2, metavar=("KO_JSON", "EN_JSON"),
+                   help="the _changes.json of ko and en; a missing file counts as no changes")
+    p.add_argument("--url-base", metavar="URL", help="URL holding ko/ and en/ of the preview")
     a = p.parse_args(argv)
+
+    if a.comment_md:
+        if not (a.changes_json and a.url_base):
+            p.error("--comment-md needs --changes-json KO_JSON EN_JSON and --url-base")
+        changes = {}
+        for lang, f in zip(("ko", "en"), a.changes_json):
+            f = pathlib.Path(f)
+            changes[lang] = json.loads(f.read_text(encoding="utf-8")) if f.is_file() else {}
+            if not f.is_file():
+                print(f"{f}: missing, {lang} counted as unchanged", file=sys.stderr)
+            elif changes[lang].get("lang") != lang:
+                p.error(f"{f} holds lang {changes[lang].get('lang')!r}, expected {lang} (order: KO_JSON EN_JSON)")
+        pathlib.Path(a.comment_md).write_text(comment_md(changes, a.url_base.rstrip("/")), encoding="utf-8")
+        return 0
+    if LH is None:
+        sys.exit("manual_preview.py needs lxml; run it with the manual venv's python")
 
     langs = [x for x in a.lang.split(",") if x]
     if not langs or set(langs) - TEXT.keys():
