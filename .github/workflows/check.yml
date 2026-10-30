@@ -67,8 +67,9 @@ jobs:
           update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2
           update-alternatives --set python3 /usr/bin/python3.12
           # PIP Retry Logic
+          # lxml is pinned for the change preview: htmldiff in lxml 6.0-6.1.3 repeats and nests changed words.
           for i in {1..3}; do
-            pip3.12 install 'urllib3<2.0' Sphinx==9.1.0 lxml \
+            pip3.12 install 'urllib3<2.0' Sphinx==9.1.0 lxml==5.4.0 \
               sphinx_design sphinxext-rediraffe sphinxawesome-theme==6.0.0 \
               weasyprint==68.0 sphinx-simplepdf==1.7 sphinx-rtd-theme && break || sleep 5;
           done
@@ -86,8 +87,10 @@ jobs:
           fi
 
       # Change preview: marks what the PR adds and deletes on the rendered pages.
-      # The script comes from the default branch (github.sha for pull_request_target),
-      # the same trusted source as this workflow, so a PR cannot change what runs here.
+      # The script comes from the default branch (github.sha for pull_request_target), the
+      # same source as this workflow, so the reviewed copy runs, not the PR's. This adds no
+      # isolation: the PR's own code has already run in this job through make html.
+      # A failure here must not fail the build, the deploy or the comment.
       - name: Checkout preview script (default branch)
         if: github.event_name == 'pull_request_target'
         uses: actions/checkout@v4
@@ -98,6 +101,7 @@ jobs:
 
       - name: Mark changes (change preview)
         if: github.event_name == 'pull_request_target'
+        continue-on-error: true
         env:
           LANG: ko_KR.utf8
         run: |
@@ -232,7 +236,8 @@ jobs:
           if [ -f base-tools/.github/scripts/manual_preview.py ]; then
             python3 base-tools/.github/scripts/manual_preview.py --comment-md changes.md \
               --changes-json artifacts/build-artifact-ko/_changes.json artifacts/build-artifact-en/_changes.json \
-              --url-base "$URL_BASE" && { echo; cat changes.md; } >> comment.md
+              --url-base "$URL_BASE" && { echo; cat changes.md; } >> comment.md \
+              || echo "Change list unavailable; posting the comment without it."
           fi
 
       - name: Comment PR Preview Link

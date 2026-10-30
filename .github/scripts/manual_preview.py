@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Render a cubrid-manual change as HTML with the additions and deletions marked.
 
-Per ``issue/methodology/manual-writing.md`` §6.6–§6.7, the author shows the
-rendered change before opening the PR. Reviewers read the built pages, not
-the RST diff, so this builds the manual twice and marks the difference on the
-rendered page:
+Reviewers read the built pages, not the RST diff, so this builds the manual
+twice and marks the difference on the rendered page:
 
 1. Find the ko/en documents the change touches (``BASE...HEAD``). A changed
    ``.inc`` file brings in every page that includes it.
@@ -13,9 +11,11 @@ rendered page:
 3. For each changed page, diff the ``div#content`` body of BASE and HEAD with
    ``lxml.html.diff.htmldiff`` and write it into a copy of the HEAD site:
    ``<ins>`` (green) marks added text, ``<del>`` (red, struck through) removed
-   text. A new page is marked as added in full.
+   text. Tables are diffed cell by cell and code blocks line by line. A new
+   page is marked as added in full. A page that cannot be marked is listed as
+   such, with a link to the unmarked page, and the other pages go on.
 4. Write ``index.html`` listing the changed pages per language, then serve the
-   site with ``--serve PORT``.
+   site with ``--serve PORT`` (on 127.0.0.1 unless ``--bind`` says otherwise).
 
 CI mode (the manual's GitHub Actions PR preview) takes the HEAD build that
 ``make html`` already made (``--head-html``, one language) and, with
@@ -26,9 +26,9 @@ the normal preview and keep its links, styles and images. It exits 0 when the
 language has no changed page. ``--comment-md`` then turns the ko and en
 ``_changes.json`` into the Markdown section of the PR comment.
 
-Marking needs ``lxml``: run it with the manual venv's interpreter, e.g.
-``/data/workspace/venv/cubrid-manual/bin/python manual_preview.py …``.
-``--comment-md`` needs neither lxml, git nor Sphinx.
+Marking needs ``lxml``: run it with the Python environment that builds the
+manual (Sphinx and lxml installed). ``--comment-md`` needs neither lxml, git
+nor Sphinx.
 
 Usage::
 
@@ -42,6 +42,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import copy
 import difflib
 import hashlib
 import html
@@ -53,6 +54,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import traceback
 
 try:
     import lxml.html as LH
@@ -85,14 +87,21 @@ tr.mp-changed > td:first-child { box-shadow: inset 6px 0 0 #5cb85c; }
 """
 
 
+# in --out: the directory was made by this script, so a later run may replace it
+MARKER = ".manual_preview"
+
+
 def git(repo: pathlib.Path, *args: str) -> str:
-    return subprocess.run(["git", "-C", str(repo), *args], check=True,
-                          capture_output=True, text=True).stdout
+    try:
+        return subprocess.run(["git", "-C", str(repo), *args], check=True,
+                              capture_output=True, text=True).stdout
+    except subprocess.CalledProcessError as e:
+        sys.exit(f"git {' '.join(args)} failed (exit {e.returncode}):\n{e.stderr.strip()}")
 
 
 def changed_docs(repo: pathlib.Path, base: str, head: str, langs: list[str]) -> dict[str, list[str]]:
     """Map language -> docnames (path under the language dir, no suffix) touched by BASE...HEAD."""
-    names = git(repo, "diff", "--name-only", f"{base}...{head}", "--", *langs).split()
+    names = [n for n in git(repo, "diff", "-z", "--name-only", f"{base}...{head}", "--", *langs).split("\0") if n]
     out: dict[str, set[str]] = {lang: set() for lang in langs}
     for name in names:
         lang, _, rel = name.partition("/")
@@ -158,7 +167,8 @@ def pull_code_blocks(div) -> dict[str, tuple[str, str]]:
     return blocks
 
 
-PH_RE = re.compile(r'(?:<p[^>]*>)?\s*(?:<(ins|del)>)?\s*@@P([0-9a-f]{12})@@\s*(?:</(?:ins|del)>)?\s*(?:</p>)?')
+# htmldiff may nest the marks around a placeholder, e.g. <del><ins>@@P…@@</ins></del>
+PH_RE = re.compile(r'(?:<p[^>]*>)?((?:\s*<(?:ins|del)>)*)\s*@@P([0-9a-f]{12})@@(?:\s*</(?:ins|del)>)*\s*(?:</p>)?')
 
 
 def code_line_diff(old: str, new: str) -> str:
@@ -173,16 +183,33 @@ def code_line_diff(old: str, new: str) -> str:
     return '<div class="mp-code"><pre>' + "\n".join(rows) + "</pre></div>"
 
 
+def placeholder_kind(m: re.Match, base_blocks: dict, head_blocks: dict) -> str | None:
+    """"del", "ins" or None (unchanged) for a placeholder match.
+
+    The block's side decides, not the marks htmldiff put around it (they can be
+    nested or contradict the side): a key only in BASE is deleted, only in HEAD
+    added. A key on both sides keeps its mark only when the marks agree (a block
+    that moved or was duplicated).
+    """
+    key = m.group(2)
+    if key not in head_blocks:
+        return "del"
+    if key not in base_blocks:
+        return "ins"
+    marks = set(re.findall(r"<(ins|del)>", m.group(1)))
+    return marks.pop() if len(marks) == 1 else None
+
+
 def restore_code_blocks(marked: str, base_blocks: dict, head_blocks: dict) -> str:
     """Put code blocks back: unchanged as rendered, changed as a line diff."""
     hits = list(PH_RE.finditer(marked))
+    kinds = [placeholder_kind(m, base_blocks, head_blocks) for m in hits]
     out, pos, i = [], 0, 0
     while i < len(hits):
-        m = hits[i]
-        kind, key = m.group(1), m.group(2)
+        m, kind, key = hits[i], kinds[i], hits[i].group(2)
         out.append(marked[pos:m.start()])
         nxt = hits[i + 1] if i + 1 < len(hits) else None
-        if (kind and nxt is not None and nxt.group(1) and nxt.group(1) != kind
+        if (kind and nxt is not None and kinds[i + 1] and kinds[i + 1] != kind
                 and nxt.start() - m.end() < 80):  # a changed block: htmldiff emits del/ins in either order
             old_key, new_key = (key, nxt.group(2)) if kind == "del" else (nxt.group(2), key)
             out.append(code_line_diff(base_blocks[old_key][1], head_blocks[new_key][1]))
@@ -193,10 +220,211 @@ def restore_code_blocks(marked: str, base_blocks: dict, head_blocks: dict) -> st
         elif kind == "del":
             out.append(f'<div class="mp-delblock"><pre>{html.escape(base_blocks[key][1])}</pre></div>')
         else:
-            out.append(head_blocks.get(key, base_blocks.get(key, ("", "")))[0])
+            out.append(head_blocks[key][0])
         pos, i = m.end(), i + 1
     out.append(marked[pos:])
     return "".join(out)
+
+
+def diff(old: str, new: str) -> str:
+    """``htmldiff``, which on an internal error prints it and returns "" (lxml 6): raise instead."""
+    out = htmldiff(old, new)
+    if not out and (old.strip() or new.strip()):
+        raise ValueError("htmldiff failed and returned nothing (see the message printed above)")
+    return out
+
+
+NEST = "mp-n-"  # prefix of a tag renamed by split_nesting
+
+
+def split_nesting(div) -> None:
+    """Rename each element nested directly in one of the same tag (``<section>`` in ``<section>``).
+
+    lxml 6's htmldiff miscounts a run of start or end tags of one name when it
+    places a deletion, and then drops or doubles text: a changed last word of a
+    subsection comes out as ``<ins>new <del>old</del> old</ins>``. The renaming
+    leaves no such run; ``join_nesting`` undoes it.
+    """
+    for el in div.iterdescendants():
+        par = el.getparent()
+        if isinstance(el.tag, str) and el.tag == par.tag:
+            el.tag = NEST + el.tag
+
+
+def join_nesting(div) -> None:
+    for el in div.iter():
+        if isinstance(el.tag, str) and el.tag.startswith(NEST):
+            el.tag = el.tag[len(NEST):]
+
+
+def set_inner(el, markup: str) -> None:
+    """Replace the content of ``el`` with the HTML fragment ``markup``."""
+    for child in list(el):
+        el.remove(child)
+    el.text = None
+    for frag in LH.fragments_fromstring(markup):
+        if isinstance(frag, str):
+            el.text = (el.text or "") + frag
+        else:
+            el.append(frag)
+
+
+def pull_tables(div) -> list[tuple[str, object]]:
+    """Replace each table in ``div`` with a placeholder paragraph; return [(key, table)] in page order.
+
+    htmldiff over a whole table puts a change at the end of a cell between the
+    cells or after the table, where a browser moves it above the table, and turns
+    a changed cell value into an added and a deleted cell, so the row gets one
+    cell too many. Tables are therefore taken out like code blocks and diffed
+    cell by cell (``diff_table``). The key hashes the table's HTML, so an
+    unchanged table yields the same placeholder on both sides.
+    """
+    tables = []
+    for tbl in div.xpath(".//table[not(ancestor::table)]"):
+        key = hashlib.sha1(LH.tostring(tbl, encoding="unicode", with_tail=False).encode()).hexdigest()[:12]
+        ph = LH.fromstring(f'<p class="mp-ph">@@T{key}@@</p>')
+        ph.tail, tbl.tail = tbl.tail, None
+        tbl.getparent().replace(tbl, ph)
+        tables.append((key, tbl))
+    return tables
+
+
+def align(old_keys: list, new_keys: list, old_words: list, new_words: list) -> list[tuple[int | None, int | None]]:
+    """Pair BASE items with HEAD items in order: [(BASE index or None, HEAD index or None)].
+
+    Items with equal keys pair first. A stretch between them that has as many
+    items on both sides was edited in place and pairs one to one. In any other
+    stretch the most similar two (word ratio 0.5 or more) pair, then the parts
+    before and after that pair are paired the same way; what is left is
+    deleted or added.
+    """
+    out: list[tuple[int | None, int | None]] = []
+
+    def best(i1: int, i2: int, j1: int, j2: int) -> None:
+        top, bi, bj = 0.0, -1, -1
+        for i in range(i1, i2):
+            for j in range(j1, j2):
+                sm = difflib.SequenceMatcher(None, old_words[i], new_words[j], autojunk=False)
+                if sm.real_quick_ratio() > top and sm.quick_ratio() > top and sm.ratio() > top:
+                    top, bi, bj = sm.ratio(), i, j
+        if top < 0.5:
+            out.extend([(i, None) for i in range(i1, i2)] + [(None, j) for j in range(j1, j2)])
+            return
+        best(i1, bi, j1, bj)
+        out.append((bi, bj))
+        best(bi + 1, i2, bj + 1, j2)
+
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old_keys, new_keys, autojunk=False).get_opcodes():
+        if tag == "equal" or i2 - i1 == j2 - j1:
+            out.extend(zip(range(i1, i2), range(j1, j2)))
+        else:
+            best(i1, i2, j1, j2)
+    return out
+
+
+def words(el) -> list[str]:
+    return " ".join(el.itertext()).split()  # text_content() would glue the texts of adjacent cells
+
+
+def table_rows(tbl) -> list:
+    return [r for r in tbl.iter("tr") if next(r.iterancestors("table")) is tbl]
+
+
+def row_cells(row) -> list:
+    return [c for c in row if c.tag in ("td", "th")]
+
+
+def mark_whole(el, kind: str) -> None:
+    """Mark the content of each cell of row ``el`` (or of ``el`` itself) as added ("ins") or deleted ("del")."""
+    for c in row_cells(el) or [el]:
+        body = inner_html(c)
+        set_inner(c, diff("", body) if kind == "ins" else diff(body, ""))
+
+
+def diff_table(old, new) -> str:
+    """Return HEAD's table ``new`` as HTML with its differences from BASE's ``old`` marked inside the cells.
+
+    Either side may be None (a table added or deleted). Rows pair by ``align``.
+    A pair with as many cells on both sides is diffed cell by cell; otherwise,
+    and for a row only in BASE, the BASE row is put back struck through before
+    the HEAD row. Every mark therefore stays in a cell and every row keeps its
+    own cells.
+    """
+    old, new = copy.deepcopy(old), copy.deepcopy(new)  # the same table can be shown twice
+    if old is None or new is None:
+        tbl = new if old is None else old
+        for el in table_rows(tbl) + tbl.findall("caption"):
+            mark_whole(el, "ins" if old is None else "del")
+        return LH.tostring(tbl, encoding="unicode", with_tail=False)
+    olds, news = table_rows(old), table_rows(new)
+
+    def key(row) -> str:  # the cells only: an added row changes the row-odd/row-even class of the rows after it
+        return "".join(LH.tostring(c, encoding="unicode", with_tail=False) for c in row_cells(row))
+
+    placed, prev = 0, None  # HEAD rows done so far, and the row placed last
+    for i, j in align([key(r) for r in olds], [key(r) for r in news],
+                      [words(r) for r in olds], [words(r) for r in news]):
+        if i is not None and j is not None and len(row_cells(olds[i])) == len(row_cells(news[j])):
+            for oc, nc in zip(row_cells(olds[i]), row_cells(news[j])):
+                a, b = inner_html(oc), inner_html(nc)
+                if a != b:
+                    set_inner(nc, diff(a, b))
+        else:
+            if i is not None:  # put the BASE row back, in its own section (thead/tbody) when possible
+                row, section = olds[i], olds[i].getparent().tag
+                mark_whole(row, "del")
+                nxt = news[placed] if placed < len(news) else None
+                if nxt is not None and (prev is None or nxt.getparent().tag == section):
+                    nxt.addprevious(row)
+                elif prev is not None:
+                    prev.addnext(row)
+                else:
+                    new.append(row)
+                prev = row
+            if j is not None:
+                mark_whole(news[j], "ins")
+        if j is not None:
+            placed, prev = placed + 1, news[j]
+    old_cap, new_cap = old.find("caption"), new.find("caption")
+    if new_cap is not None:
+        a = inner_html(old_cap) if old_cap is not None else ""
+        if a != inner_html(new_cap):
+            set_inner(new_cap, diff(a, inner_html(new_cap)))
+    return LH.tostring(new, encoding="unicode", with_tail=False)
+
+
+# a table placeholder and the marks htmldiff put around it (groups as in PH_RE)
+TABLE_RE = re.compile(r'(?:<p class="mp-ph">)?((?:\s*<(?:ins|del)>)*)\s*@@T([0-9a-f]{12})@@'
+                      r'(?:\s*</(?:ins|del)>)*\s*(?:</p>)?')
+
+
+def restore_tables(marked: str, base_tables: list, head_tables: list) -> str:
+    """Put tables back: unchanged as rendered, changed ones marked by ``diff_table``.
+
+    A changed table leaves a BASE-only and a HEAD-only key. ``align`` pairs such
+    keys by the tables' words, whatever htmldiff did around the placeholders,
+    and the pair is shown where HEAD has the table.
+    """
+    base, head = dict(base_tables), dict(head_tables)
+    gone = [k for k in dict.fromkeys(k for k, _ in base_tables) if k not in head]
+    added = [k for k in dict.fromkeys(k for k, _ in head_tables) if k not in base]
+    partner = {added[j]: gone[i] for i, j in align(gone, added, [words(base[k]) for k in gone],
+                                                     [words(head[k]) for k in added])
+               if i is not None and j is not None}
+    paired = set(partner.values())
+
+    def put(m: re.Match) -> str:
+        key = m.group(2)
+        if key in partner:
+            return diff_table(base[partner[key]], head[key])
+        if key in paired:
+            return ""  # shown, marked, where HEAD has the table
+        kind = placeholder_kind(m, base, head)
+        if kind is None:
+            return LH.tostring(head[key], encoding="unicode", with_tail=False)
+        return diff_table(base[key], None) if kind == "del" else diff_table(None, head[key])
+
+    return TABLE_RE.sub(put, marked)
 
 
 BLOCK_TAGS = {"p", "li", "tr", "dt", "dd", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre"}
@@ -205,13 +433,15 @@ MARK_DIVS = {"mp-code", "mp-newblock", "mp-delblock"}
 NAV_JS = """
 (function () {
   var m = [].slice.call(document.querySelectorAll('[data-mp]')), i = -1;
+  function show(k) {
+    // scroll directly: the theme's smooth scrolling does not settle reliably on table rows
+    var r = (m[k].tagName === 'TR' ? m[k].cells[0] : m[k]).getBoundingClientRect();
+    window.scrollTo({top: window.scrollY + r.top - window.innerHeight / 3, behavior: 'instant'});
+  }
   function go(k) {
     if (!m.length) return;
     m.forEach(function (e) { e.classList.remove('mp-current'); });
-    i = k; m[i].classList.add('mp-current');
-    // scroll directly: the theme's smooth scrolling does not settle reliably on table rows
-    var r = (m[i].tagName === 'TR' ? m[i].cells[0] : m[i]).getBoundingClientRect();
-    window.scrollTo({top: window.scrollY + r.top - window.innerHeight / 3, behavior: 'instant'});
+    i = k; m[i].classList.add('mp-current'); show(i);
     var c = document.getElementById('mp-pos'); if (c) c.textContent = (i + 1) + ' / ' + m.length;
   }
   window.mpStep = function (d) { go((i + d + m.length) % m.length); };
@@ -221,7 +451,21 @@ NAV_JS = """
   });
   window.addEventListener('load', function () {
     var h = /^#mp-(\\d+)$/.exec(location.hash);
-    if (h) go(Math.min(+h[1], m.length) - 1);
+    if (!h || !m.length) return;
+    go(Math.min(+h[1], m.length) - 1);
+    // fonts and the theme's scripts still change heights after load: keep the block in view while
+    // they do, for 3 s at most, and stop as soon as the reader scrolls, clicks or presses a key
+    var k = i, live = true, evs = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+    var ro = window.ResizeObserver && new ResizeObserver(function () { if (live) show(k); });
+    function stop() {
+      live = false;
+      if (ro) ro.disconnect();
+      evs.forEach(function (e) { window.removeEventListener(e, stop, true); });
+    }
+    evs.forEach(function (e) { window.addEventListener(e, stop, true); });
+    if (ro) ro.observe(document.body);
+    if (document.fonts) document.fonts.ready.then(function () { if (live) show(k); });
+    setTimeout(stop, 3000);
   });
 })();
 """
@@ -231,7 +475,7 @@ TEXT = {
     "ko": {"preview": "변경 미리보기", "added": "추가", "deleted": "삭제", "list": "변경된 페이지 목록",
            "unmarked": "표시 없이 보기", "changes": "변경 {n}곳", "prev": "◀ 이전", "next": "다음 ▶",
            "keys": "(단축키 n / p)", "title": "매뉴얼 변경 미리보기", "page": "페이지", "blocks": "변경 블록",
-           "new": "새 페이지", "nohtml": "head 에 HTML 페이지 없음",
+           "new": "새 페이지", "nohtml": "head 에 HTML 페이지 없음", "failed": "변경 표시 실패",
            "none": "이 언어({lang})에는 바뀐 페이지가 없다.",
            "intro": "페이지 안에서 초록 배경은 추가, 빨간 취소선은 삭제다. 페이지 링크는 첫 번째 변경 위치로 열리고, "
                     "페이지 위 배너의 이전·다음 버튼(단축키 n / p)으로 바뀐 곳을 차례로 옮겨 다닌다. "
@@ -239,7 +483,7 @@ TEXT = {
     "en": {"preview": "Change preview", "added": "added", "deleted": "deleted", "list": "list of changed pages",
            "unmarked": "view without marks", "changes": "{n} change{s}", "prev": "◀ prev", "next": "next ▶",
            "keys": "(keys n / p)", "title": "Manual change preview", "page": "Page", "blocks": "Changed blocks",
-           "new": "new page", "nohtml": "no HTML page in head",
+           "new": "new page", "nohtml": "no HTML page in head", "failed": "could not be marked",
            "none": "No page changed in this language ({lang}).",
            "intro": "On a page, a green background marks added text and red strikethrough deleted text. A page link "
                     "opens at the first change; the prev/next buttons in the banner (keys n / p) step through the "
@@ -300,26 +544,24 @@ def mark_page(base_page: pathlib.Path, head_page: pathlib.Path, out_page: pathli
     """Write HEAD's page with BASE->HEAD differences marked; return (#ins, #del, #changed blocks)."""
     head_tree, head_div = content_div(head_page)
     if head_div is None:
-        return 0, 0, 0  # page not built (e.g. an .inc rendered only through its includer)
+        raise ValueError(f"{head_page} has no div#content")
     _, base_div = content_div(base_page)
     if base_div is None:
         marked = f"<ins>{inner_html(head_div)}</ins>"
     else:
         base_blocks, head_blocks = pull_code_blocks(base_div), pull_code_blocks(head_div)
-        marked = htmldiff(inner_html(base_div), inner_html(head_div))
+        split_nesting(base_div)
+        split_nesting(head_div)
+        base_tables, head_tables = pull_tables(base_div), pull_tables(head_div)
+        marked = diff(inner_html(base_div), inner_html(head_div))
+        marked = restore_tables(marked, base_tables, head_tables)
         marked = re.sub(r"\s*Link: [^\s<]+", "", marked)  # htmldiff spells out changed hrefs
-        # htmldiff also wraps the whitespace between cells, e.g. </td><ins> </ins><td>. A browser
-        # moves such an <ins> out of the <tr>, which breaks the table, so drop the empty marks.
+        # htmldiff also leaves marks around nothing but whitespace, e.g. <ins></ins> next to a
+        # wholly deleted cell; drop them.
         marked = re.sub(r"<(ins|del)>(\s*)</\1>", r"\2", marked)
         marked = restore_code_blocks(marked, base_blocks, head_blocks)
-    for child in list(head_div):
-        head_div.remove(child)
-    head_div.text = None
-    for frag in LH.fragments_fromstring(banner + marked):
-        if isinstance(frag, str):
-            head_div.text = (head_div.text or "") + frag
-        else:
-            head_div.append(frag)
+    set_inner(head_div, banner + marked)
+    join_nesting(head_div)
     n_blocks = number_changes(head_div)
     n_ins = sum(1 for _ in head_div.iter("ins")) - banner.count("<ins")  # the banner's legend
     n_del = sum(1 for _ in head_div.iter("del")) - banner.count("<del")
@@ -348,15 +590,20 @@ def write_changes(path: pathlib.Path, lang: str, rows: list, base_sha: str, head
     and, next to it, the same list as ``_changes.json`` for ``--comment-md``."""
     t = TEXT[lang]
     items, pages = [], []
-    for _, doc, rel, n_ins, n_del, n_blk, is_new in rows:
-        if not (path.parent / rel).exists():  # an .inc without its own page, or a page deleted in head
+    for _, doc, rel, n_ins, n_del, n_blk, is_new, failed in rows:
+        if not (path.parent / rel).exists():  # a page deleted in head
             items.append(f'<tr><td>{html.escape(doc)} ({t["nohtml"]})</td><td></td><td></td><td></td><td></td></tr>')
-            continue  # no .diff.html to link to, so not in the JSON either
-        pages.append({"doc": doc, "blocks": n_blk, "ins": n_ins, "del": n_del, "new": is_new})
-        diff = html.escape(f"{doc}.diff.html") + ("#mp-1" if n_blk else "")
+            continue  # no page to link to, so not in the JSON either
+        pages.append({"doc": doc, "blocks": n_blk, "ins": n_ins, "del": n_del, "new": is_new, "error": failed})
         new = f' ({t["new"]})' if is_new else ""
+        unmarked = f'<td><a href="{html.escape(rel)}">{t["unmarked"]}</a></td>'
+        if failed:  # no .diff.html was written: link the page itself
+            items.append(f'<tr><td><a href="{html.escape(rel)}">{html.escape(doc)}</a>{new} ({t["failed"]})</td>'
+                         f'<td></td><td></td><td></td>{unmarked}</tr>')
+            continue
+        diff = html.escape(f"{doc}.diff.html") + ("#mp-1" if n_blk else "")
         items.append(f'<tr><td><a href="{diff}">{html.escape(doc)}</a>{new}</td><td>{n_blk}</td><td>{n_ins}</td>'
-                     f'<td>{n_del}</td><td><a href="{html.escape(rel)}">{t["unmarked"]}</a></td></tr>')
+                     f'<td>{n_del}</td>{unmarked}</tr>')
     shas = f'base <code>{base_sha[:9]}</code> → head <code>{head_sha[:9]}</code>.'
     if rows:
         body = (f'<p>{shas} {t["intro"]}</p>\n<table><tr><th>{t["page"]}</th><th>{t["blocks"]}</th>'
@@ -375,17 +622,52 @@ def write_changes(path: pathlib.Path, lang: str, rows: list, base_sha: str, head
         ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
-def comment_md(changes: dict[str, dict], url: str) -> str:
-    """Render the PR comment's changed-page section from each language's ``_changes.json``."""
-    pages = {lang: {p["doc"]: p for p in data.get("pages", [])} for lang, data in changes.items()}
+# a docname as the comment may show it: path characters only, so a forged entry cannot add Markdown,
+# a link, a table cell or an @mention
+DOC_RE = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_./-]*")
+
+
+def well_formed(p) -> bool:
+    """Whether a ``_changes.json`` page entry is fit for the comment (the file comes from the PR's build)."""
+    return (isinstance(p, dict) and isinstance(p.get("doc"), str) and DOC_RE.fullmatch(p["doc"]) is not None
+            and ".." not in p["doc"] and all(type(p.get(k)) is int and p[k] >= 0 for k in ("blocks", "ins", "del"))
+            and type(p.get("new")) is bool and type(p.get("error", False)) is bool)
+
+
+def comment_md(changes: dict[str, dict | None], url: str) -> str:
+    """Render the PR comment's changed-page section from each language's ``_changes.json``.
+
+    None for a language means its file is missing or unreadable. Page entries
+    that are not well formed are left out with a note on stderr.
+    """
+    pages: dict[str, dict] = {}
+    for lang, data in changes.items():
+        entries = [] if data is None else data.get("pages", [])
+        if not isinstance(entries, list):
+            print(f"{lang}: \"pages\" is not a list; ignored", file=sys.stderr)
+            entries = []
+        pages[lang] = {}
+        for p in entries:
+            if well_formed(p):
+                pages[lang][p["doc"]] = p
+            else:
+                print(f"{lang}: skipped a malformed page entry {json.dumps(p)[:200]}", file=sys.stderr)
+    gone = " and ".join(lang.upper() for lang, data in changes.items() if data is None)
     docs = sorted(set(pages["ko"]) | set(pages["en"]))
     if not docs:
-        return "**🔍 Changed pages** — none.\n"
+        if not gone:
+            return "**🔍 Changed pages** — none.\n"
+        rest = " and ".join(lang.upper() for lang, data in changes.items() if data is not None)
+        return f"**🔍 Changed pages** — change list unavailable for {gone}" + (f"; none in {rest}" if rest else "") + ".\n"
 
     def cell(lang: str, doc: str) -> str:
+        if changes[lang] is None:
+            return "?"
         p = pages[lang].get(doc)
         if p is None:
             return "—"
+        if p.get("error"):  # no .diff.html: link the page itself
+            return f"⚠️ [not marked]({url}/{lang}/{doc}.html)"
         n = p["blocks"]
         href = f"{url}/{lang}/{doc}.diff.html" + ("#mp-1" if n else "")
         return ("🆕 " if p["new"] else "") + f"[{n} change{'' if n == 1 else 's'}]({href})"
@@ -398,9 +680,12 @@ def comment_md(changes: dict[str, dict], url: str) -> str:
     table = "| Page | KO | EN |\n| --- | --- | --- |\n" + "\n".join(rows)
     if len(docs) > 15:
         table = f"<details><summary>Show {len(docs)} changed pages</summary>\n\n{table}\n\n</details>"
+    lists = " · ".join(f"[{lang.upper()}]({url}/{lang}/_changes.html)" for lang, data in changes.items()
+                       if data is not None)
     return (f"**🔍 Changed pages ({len(docs)})** — Each link opens the page at its first change. "
             "Additions are green and deletions are struck through in red. Press `n` / `p` to move between "
-            f"changes. Full lists: [KO]({url}/ko/_changes.html) · [EN]({url}/en/_changes.html)\n\n{table}\n")
+            f"changes. Full lists: {lists}" + (f". Change list unavailable for {gone}." if gone else "")
+            + f"\n\n{table}\n")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -409,7 +694,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--base", default="origin/develop")
     p.add_argument("--head", default="HEAD")
     p.add_argument("--lang", default="ko,en")
-    p.add_argument("--out", default=None, help="output dir (default: a temp dir)")
+    p.add_argument("--out", default=None,
+                   help=f"output dir (default: a temp dir); an existing one must be empty or from an earlier run "
+                        f"(holding {MARKER}), as it is replaced")
     p.add_argument("--sphinx-build", default=shutil.which("sphinx-build")
                    or str(pathlib.Path(sys.executable).with_name("sphinx-build")))
     p.add_argument("--head-html", metavar="DIR",
@@ -417,25 +704,30 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--inplace", action="store_true",
                    help="write <page>.diff.html next to each page in --head-html and _changes.html there")
     p.add_argument("--serve", type=int, metavar="PORT", help="serve the marked site on this port")
-    p.add_argument("--bind", default="0.0.0.0")
+    p.add_argument("--bind", default="127.0.0.1", help="address --serve listens on (default: 127.0.0.1)")
     p.add_argument("--comment-md", metavar="OUT",
                    help="write the PR comment's changed-page section (Markdown) from --changes-json")
     p.add_argument("--changes-json", nargs=2, metavar=("KO_JSON", "EN_JSON"),
-                   help="the _changes.json of ko and en; a missing file counts as no changes")
+                   help="the _changes.json of ko and en; a missing or unreadable file is reported as unavailable")
     p.add_argument("--url-base", metavar="URL", help="URL holding ko/ and en/ of the preview")
     a = p.parse_args(argv)
 
     if a.comment_md:
         if not (a.changes_json and a.url_base):
             p.error("--comment-md needs --changes-json KO_JSON EN_JSON and --url-base")
-        changes = {}
-        for lang, f in zip(("ko", "en"), a.changes_json):
-            f = pathlib.Path(f)
-            changes[lang] = json.loads(f.read_text(encoding="utf-8")) if f.is_file() else {}
-            if not f.is_file():
-                print(f"{f}: missing, {lang} counted as unchanged", file=sys.stderr)
-            elif changes[lang].get("lang") != lang:
-                p.error(f"{f} holds lang {changes[lang].get('lang')!r}, expected {lang} (order: KO_JSON EN_JSON)")
+        changes: dict[str, dict | None] = {}
+        for lang, f in zip(("ko", "en"), map(pathlib.Path, a.changes_json)):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as e:  # e.g. the language's preview step was skipped or failed
+                print(f"{f}: {'missing' if not f.exists() else e}; change list for {lang} unavailable", file=sys.stderr)
+                data = None
+            if data is not None and not isinstance(data, dict):
+                print(f"{f}: not a JSON object; change list for {lang} unavailable", file=sys.stderr)
+                data = None
+            if data is not None and data.get("lang") != lang:
+                p.error(f"{f} holds lang {data.get('lang')!r}, expected {lang} (order: KO_JSON EN_JSON)")
+            changes[lang] = data
         pathlib.Path(a.comment_md).write_text(comment_md(changes, a.url_base.rstrip("/")), encoding="utf-8")
         return 0
     if LH is None:
@@ -453,6 +745,9 @@ def main(argv: list[str] | None = None) -> int:
     head_html = pathlib.Path(a.head_html).resolve() if a.head_html else None
     if head_html and not (head_html / "index.html").is_file():
         p.error(f"--head-html {a.head_html}: no index.html (build it first)")
+    given = pathlib.Path(a.out) if a.out else None
+    if given and given.exists() and not (given / MARKER).is_file() and (not given.is_dir() or any(given.iterdir())):
+        p.error(f"--out {a.out}: not empty and not made by this script (no {MARKER}); give a new or empty directory")
 
     repo = pathlib.Path(git(pathlib.Path(a.repo), "rev-parse", "--show-toplevel").strip())
     base_sha = git(repo, "merge-base", a.base, a.head).strip()
@@ -467,9 +762,12 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         sys.exit(f"no ko/en .rst/.inc changes in {a.base}...{a.head}")
 
-    out = pathlib.Path(a.out or tempfile.mkdtemp(prefix="manual-preview-"))
-    if out.exists():
-        shutil.rmtree(out)
+    out = given or pathlib.Path(tempfile.mkdtemp(prefix="manual-preview-"))
+    if (out / MARKER).is_file():
+        shutil.rmtree(out)  # an earlier run's output (checked above)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / MARKER).write_text("made by manual_preview.py; a later run with this --out replaces the directory\n",
+                              encoding="utf-8")
     site = out / "site"
     base_wt = out / "base-src"
     heads = {lang: head_html or out / "head" / lang for lang in langs}
@@ -491,6 +789,10 @@ def main(argv: list[str] | None = None) -> int:
         t = TEXT[lang]
         for doc in docs[lang]:
             rel = f"{doc}.html"
+            is_new = not (out / "base" / lang / rel).exists()
+            if not (heads[lang] / rel).exists():  # deleted in head: listed without a link
+                rows.append((lang, doc, rel, 0, 0, 0, is_new, False))
+                continue
             if a.inplace:  # the marked page sits next to the original; links stay relative to it
                 out_page = head_html / f"{doc}.diff.html"
                 links = (f'<a href="{"../" * rel.count("/")}_changes.html">{t["list"]}</a>'
@@ -500,23 +802,32 @@ def main(argv: list[str] | None = None) -> int:
                 links = f'<a href="{"../" * (rel.count("/") + 1)}index.html">{t["list"]}</a>'
             banner = (f'<div class="mp-banner">{t["preview"]} — <ins>{t["added"]}</ins> · <del>{t["deleted"]}</del>'
                       f' · base <code>{base_sha[:9]}</code> → head <code>{head_sha[:9]}</code> · {links}</div>')
-            n_ins, n_del, n_blk = mark_page(out / "base" / lang / rel, heads[lang] / rel, out_page, banner, t)
-            is_new = not (out / "base" / lang / rel).exists()
-            rows.append((lang, doc, rel, n_ins, n_del, n_blk, is_new))
+            try:
+                n_ins, n_del, n_blk = mark_page(out / "base" / lang / rel, heads[lang] / rel, out_page, banner, t)
+                failed = False
+            except Exception:  # one page must not cost the others, nor fail the build
+                traceback.print_exc()
+                print(f"{lang}/{rel}: could not be marked; listed with a link to the unmarked page", file=sys.stderr)
+                n_ins = n_del = n_blk = 0
+                failed = True
+            rows.append((lang, doc, rel, n_ins, n_del, n_blk, is_new, failed))
 
     if a.inplace:
         write_changes(head_html / "_changes.html", langs[0], rows, base_sha, head_sha)
         if a.out is None:
             shutil.rmtree(out, ignore_errors=True)
         print(f"changes: {head_html / '_changes.html'}")
-        for lang, doc, rel, i, d, b, new in rows:
-            print(f"  {lang}/{doc}.diff.html: {b} block(s), +{i} -{d}{' (new)' if new else ''}")
+        for lang, doc, rel, i, d, b, new, failed in rows:
+            print(f"  {lang}/{doc}.diff.html: " + ("could not be marked" if failed else
+                                                   f"{b} block(s), +{i} -{d}{' (new)' if new else ''}"))
         return 0
 
-    items = "\n".join(
+    items = "\n".join(  # a page that could not be marked is the unmarked copy in the site
         f'<tr><td>{lang}</td><td><a href="{lang}/{html.escape(rel)}{"#mp-1" if b else ""}">{html.escape(doc)}</a>'
-        f'{" (새 페이지)" if new else ""}</td><td>{b}</td><td>{i}</td><td>{d}</td></tr>'
-        for lang, doc, rel, i, d, b, new in rows)
+        f'{" (새 페이지)" if new else ""}{" (변경 표시 실패)" if failed else ""}</td><td>{b}</td><td>{i}</td><td>{d}</td></tr>'
+        if (site / lang / rel).exists() else
+        f'<tr><td>{lang}</td><td>{html.escape(doc)} (head 에 HTML 페이지 없음)</td><td></td><td></td><td></td></tr>'
+        for lang, doc, rel, i, d, b, new, failed in rows)
     (site / "index.html").write_text(f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>매뉴얼 변경 미리보기</title>
 <style>{LIST_STYLE}</style>
@@ -528,8 +839,9 @@ def main(argv: list[str] | None = None) -> int:
 {items}
 </table></body></html>""", encoding="utf-8")
     print(f"site: {site}")
-    for lang, doc, rel, i, d, b, new in rows:
-        print(f"  {lang}/{rel}: {b} block(s), +{i} -{d}{' (new)' if new else ''}")
+    for lang, doc, rel, i, d, b, new, failed in rows:
+        print(f"  {lang}/{rel}: " + ("could not be marked" if failed else
+                                     f"{b} block(s), +{i} -{d}{' (new)' if new else ''}"))
 
     if a.serve:
         handler = lambda *x, **k: http.server.SimpleHTTPRequestHandler(*x, directory=str(site), **k)
