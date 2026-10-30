@@ -1,56 +1,63 @@
 {
  "lang": "en",
- "base": "4b5fef493622b20618bd31fdec6356b6a06f2295",
- "head": "b25342ed1b14163fabba5f494f889cac536341ac",
+ "base": "7fe08a21e26c37d244bed4b338408345e5d03a66",
+ "head": "26ee91fcf35ee5cd137a2b7e0a785c4e5f48f635",
  "pages": [
   {
    "doc": "admin/config",
    "blocks": 10,
    "ins": 17,
    "del": 0,
-   "new": false
+   "new": false,
+   "error": false
   },
   {
    "doc": "admin/error_log_ha",
    "blocks": 2,
    "ins": 2,
    "del": 0,
-   "new": false
+   "new": false,
+   "error": false
   },
   {
    "doc": "ha",
    "blocks": 2,
-   "ins": 3,
+   "ins": 5,
    "del": 1,
-   "new": false
+   "new": false,
+   "error": false
   },
   {
    "doc": "sql/catalog",
    "blocks": 1,
    "ins": 1,
    "del": 0,
-   "new": false
+   "new": false,
+   "error": false
   },
   {
    "doc": "sql/information_schema",
    "blocks": 1,
    "ins": 1,
    "del": 1,
-   "new": false
+   "new": false,
+   "error": false
   },
   {
    "doc": "sql/schema/serial_stmt",
    "blocks": 1,
    "ins": 3,
    "del": 2,
-   "new": false
+   "new": false,
+   "error": false
   },
   {
    "doc": "sql/schema/table_stmt",
    "blocks": 2,
    "ins": 2,
    "del": 0,
-   "new": false
+   "new": false,
+   "error": false
   }
  ]
 }
